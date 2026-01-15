@@ -8,8 +8,17 @@ const path = require('path');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
 const fs = require('fs');
+const cloudinary = require('cloudinary').v2; // ADDED: Cloudinary
 
 dotenv.config();
+
+// Cloudinary Configuration - ADDED
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dlgrdnghb',
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+console.log('☁️ Cloudinary configured:', process.env.CLOUDINARY_CLOUD_NAME ? 'Yes' : 'No');
 
 // Import models
 const Admin = require('./models/Admin');
@@ -25,7 +34,22 @@ const app = express();
 
 // ========== MIDDLEWARE ==========
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'https://kerala-catering.vercel.app',  // Your Vercel frontend
+      'https://yourdomain.in'  // Your custom domain when you get it
+    ];
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -1519,11 +1543,11 @@ app.get('/api/admin/festivals/menu-management', authenticateAdmin, async (req, r
       // Convert main image to absolute URL
       if (festivalObj.image && !festivalObj.image.startsWith('http')) {
         if (festivalObj.image.startsWith('/uploads')) {
-          festivalObj.image = `http://localhost:5000${festivalObj.image}`;
+          festivalObj.image = `http://localhost:10000${festivalObj.image}`;
         } else if (festivalObj.image.startsWith('http')) {
           // Already absolute
         } else {
-          festivalObj.image = `http://localhost:5000/uploads/${festivalObj.image}`;
+          festivalObj.image = `http://localhost:10000/uploads/${festivalObj.image}`;
         }
       }
       
@@ -1532,8 +1556,8 @@ app.get('/api/admin/festivals/menu-management', authenticateAdmin, async (req, r
         festivalObj.menuImages = festivalObj.menuImages.map(img => ({
           ...img,
           imageUrl: img.imageUrl.startsWith('/') ? 
-            `http://localhost:5000${img.imageUrl}` : 
-            `http://localhost:5000/${img.imageUrl}`
+            `http://localhost:10000${img.imageUrl}` : 
+            `http://localhost:10000/${img.imageUrl}`
         }));
       }
       
@@ -2238,7 +2262,7 @@ app.get('/api/debug/check-menu-images/:slug', async (req, res) => {
           const exists = fs.existsSync(filePath);
           fileChecks.push({
             imageUrl: img.imageUrl,
-            absoluteUrl: `http://localhost:5000${img.imageUrl}`,
+            absoluteUrl: `http://localhost:10000${img.imageUrl}`,
             filePath: filePath,
             existsOnDisk: exists,
             caption: img.caption,
@@ -2282,7 +2306,7 @@ app.use('*', (req, res) => {
 });
 
 // =================== SERVER START ===================
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`\n🚀 Server running on port ${PORT}`);
   console.log(`📡 Test endpoints:`);
