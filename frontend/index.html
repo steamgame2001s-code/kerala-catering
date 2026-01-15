@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- Your existing links -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kerala Catering - Authentic Festival Food</title>
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Bootstrap for quick styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #FF6B35;
+            --secondary: #F7931E;
+            --accent: #FFD166;
+            --dark: #1A1A2E;
+            --light: #F8F9FA;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary) !important;
+        }
+        
+        .btn-primary-custom {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary-custom:hover {
+            background: var(--secondary);
+            border-color: var(--secondary);
+        }
+        
+        .festival-card {
+            transition: transform 0.3s;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .festival-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 100px 0;
+            margin-top: 56px;
+        }
+        
+        .food-item {
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .price-tag {
+            background: var(--primary);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-utensils me-2"></i>Kerala Catering
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#festivals">Festivals</a></li>
+                    <li class="nav-link"><a class="nav-link" href="#menu">Menu</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#cart"><i class="fas fa-shopping-cart"></i> Cart</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#login">Login</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- React App Container -->
+    <div id="root"></div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Our React App -->
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        
+        function App() {
+            const [cart, setCart] = useState([]);
+            const [backendStatus, setBackendStatus] = useState('Checking...');
+            
+            // Test backend connection
+            useEffect(() => {
+                fetch('http://localhost:5000/api')
+                    .then(res => res.json())
+                    .then(data => {
+                        setBackendStatus('✅ Connected');
+                        console.log('Backend:', data);
+                    })
+                    .catch(err => {
+                        setBackendStatus('❌ Not Connected');
+                        console.log('Backend error:', err);
+                    });
+            }, []);
+            
+            const festivals = [
+                {
+                    id: 1,
+                    name: "Christmas",
+                    description: "Traditional Kerala Christmas Feast",
+                    image: "https://images.unsplash.com/photo-1541783245831-57d6fb0926d3?ixlib=rb-4.0.3&w=400&h=300&fit=crop",
+                    items: ["Chicken Biriyani", "Beef Roast", "Fish Molee", "Plum Cake"]
+                },
+                {
+                    id: 2,
+                    name: "Onam",
+                    description: "Complete Onam Sadhya with 26+ items",
+                    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&w=400&h=300&fit=crop",
+                    items: ["Sadhya Rice", "Sambar", "Avial", "Payasam"]
+                },
+                {
+                    id: 3,
+                    name: "Vishu",
+                    description: "Vishu Kanji & Traditional Sadhya",
+                    image: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?ixlib=rb-4.0.3&w=400&h=300&fit=crop",
+                    items: ["Vishu Kanji", "Mango Pickle", "Meen Curry", "Parippu"]
+                }
+            ];
+            
+            const foodItems = [
+                { id: 1, name: "Chicken Biriyani", price: 299, category: "Christmas", image: "🍗" },
+                { id: 2, name: "Beef Roast", price: 349, category: "Christmas", image: "🥩" },
+                { id: 3, name: "Fish Molee", price: 249, category: "Christmas", image: "🐟" },
+                { id: 4, name: "Onam Sadhya", price: 399, category: "Onam", image: "🍽️" },
+                { id: 5, name: "Avial", price: 199, category: "Onam", image: "🥗" },
+                { id: 6, name: "Payasam", price: 149, category: "Onam", image: "🍮" },
+                { id: 7, name: "Vishu Kanji", price: 179, category: "Vishu", image: "🍚" },
+                { id: 8, name: "Meen Curry", price: 279, category: "Vishu", image: "🐠" }
+            ];
+            
+            const addToCart = (item) => {
+                setCart([...cart, item]);
+                alert(`Added ${item.name} to cart!`);
+            };
+            
+            return (
+                <div>
+                    {/* Hero Section */}
+                    <section id="home" className="hero-section">
+                        <div className="container text-center">
+                            <h1 className="display-4 fw-bold mb-4">Taste the <span style={{color: '#FFD166'}}>Authentic</span> Kerala</h1>
+                            <p className="lead mb-5">Experience traditional festival feasts delivered to your doorstep</p>
+                            <button className="btn btn-light btn-lg px-5 me-3" onClick={() => document.getElementById('festivals').scrollIntoView()}>
+                                Explore Festivals
+                            </button>
+                            <button className="btn btn-outline-light btn-lg px-5" onClick={() => document.getElementById('menu').scrollIntoView()}>
+                                View Menu
+                            </button>
+                        </div>
+                    </section>
+                    
+                    {/* Festivals Section */}
+                    <section id="festivals" className="py-5">
+                        <div className="container">
+                            <h2 className="text-center mb-5 fw-bold">🎉 Festival Specials</h2>
+                            <div className="row">
+                                {festivals.map(festival => (
+                                    <div key={festival.id} className="col-md-4 mb-4">
+                                        <div className="card festival-card h-100">
+                                            <img src={festival.image} className="card-img-top" alt={festival.name} style={{height: '200px', objectFit: 'cover'}} />
+                                            <div className="card-body">
+                                                <h3 className="card-title">{festival.name}</h3>
+                                                <p className="card-text">{festival.description}</p>
+                                                <ul className="list-unstyled">
+                                                    {festival.items.map((item, idx) => (
+                                                        <li key={idx}><i className="fas fa-check text-success me-2"></i>{item}</li>
+                                                    ))}
+                                                </ul>
+                                                <button className="btn btn-primary-custom w-100">View Menu</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                    
+                    {/* Menu Section */}
+                    <section id="menu" className="py-5 bg-light">
+                        <div className="container">
+                            <h2 className="text-center mb-5 fw-bold">🍽️ Our Menu</h2>
+                            <div className="row">
+                                {foodItems.map(item => (
+                                    <div key={item.id} className="col-md-3 mb-4">
+                                        <div className="card food-item">
+                                            <div className="card-body text-center">
+                                                <div className="display-4 mb-3">{item.image}</div>
+                                                <h5 className="card-title">{item.name}</h5>
+                                                <p className="text-muted">{item.category}</p>
+                                                <div className="price-tag d-inline-block mb-3">₹{item.price}</div>
+                                                <br />
+                                                <button className="btn btn-primary-custom" onClick={() => addToCart(item)}>
+                                                    <i className="fas fa-cart-plus me-2"></i>Add to Cart
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                    
+                    {/* Cart Summary */}
+                    <section id="cart" className="py-5">
+                        <div className="container">
+                            <h2 className="text-center mb-5 fw-bold">🛒 Your Cart ({cart.length} items)</h2>
+                            {cart.length === 0 ? (
+                                <p className="text-center text-muted">Your cart is empty. Add some delicious items!</p>
+                            ) : (
+                                <div className="row">
+                                    <div className="col-md-8">
+                                        <div className="card">
+                                            <div className="card-body">
+                                                <h4>Order Summary</h4>
+                                                <ul className="list-group">
+                                                    {cart.map((item, idx) => (
+                                                        <li key={idx} className="list-group-item d-flex justify-content-between">
+                                                            <span>{item.name}</span>
+                                                            <span>₹{item.price}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                                <div className="mt-3">
+                                                    <strong>Total: ₹{cart.reduce((sum, item) => sum + item.price, 0)}</strong>
+                                                </div>
+                                                <button className="btn btn-primary-custom mt-3">Proceed to Checkout</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+                    
+                    {/* Backend Status */}
+                    <div className="position-fixed bottom-0 end-0 m-3">
+                        <div className="alert alert-info">
+                            <i className="fas fa-server me-2"></i>Backend: {backendStatus}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

@@ -1,0 +1,579 @@
+/* Updated FoodMenu.css - Unified Orange & White Theme */
+
+/* Color Variables */
+:root {
+  --primary-orange: #f97316;
+  --primary-orange-dark: #ea580c;
+  --primary-orange-light: #fb923c;
+  --orange-50: #fff7ed;
+  --orange-100: #ffedd5;
+  --white: #ffffff;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+}
+
+/* Remove old header-section styles and replace with these: */
+
+/* Container - make it full width for the banner */
+.food-menu-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--gray-50);
+}
+
+/* New Banner Section */
+.relative {
+  position: relative;
+}
+
+.bg-gradient-to-r {
+  background-image: linear-gradient(to right, var(--primary-orange), var(--primary-orange-dark));
+}
+
+.text-white {
+  color: var(--white);
+}
+
+.shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.absolute {
+  position: absolute;
+}
+
+.inset-0 {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.bg-black {
+  background-color: #000;
+}
+
+.opacity-5 {
+  opacity: 0.05;
+}
+
+.max-w-6xl {
+  max-width: 72rem;
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.z-10 {
+  z-index: 10;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Typography classes */
+.text-5xl {
+  font-size: 3rem;
+}
+
+.text-6xl {
+  font-size: 3.75rem;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.mb-6 {
+  margin-bottom: 1.5rem;
+}
+
+.mb-8 {
+  margin-bottom: 2rem;
+}
+
+.px-6 {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.py-20 {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+
+/* Responsive text sizes */
+@media (min-width: 768px) {
+  .md\:text-6xl {
+    font-size: 3.75rem;
+  }
+  
+  .md\:text-2xl {
+    font-size: 1.5rem;
+  }
+}
+
+/* Category Filters - adjust spacing for new banner */
+.category-filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 40px auto;
+  max-width: 1200px;
+  padding: 0 20px;
+}
+
+.category-btn {
+  padding: 10px 24px;
+  border: 2px solid var(--primary-orange);
+  background: var(--white);
+  color: var(--primary-orange);
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 600;
+}
+
+.category-btn.active,
+.category-btn:hover {
+  background: var(--primary-orange);
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+/* Festival Menu Groups - adjust container */
+.festival-menu-group {
+  margin-bottom: 40px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 20px;
+}
+
+.festival-name {
+  color: var(--gray-800);
+  border-bottom: 3px solid var(--primary-orange);
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+/* Menu Items Grid */
+.menu-items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+.menu-item-card {
+  background: var(--white);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s;
+  border: 1px solid var(--gray-200);
+}
+
+.menu-item-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(249, 115, 22, 0.15);
+  border-color: var(--primary-orange-light);
+}
+
+.menu-item-image {
+  height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+
+.menu-item-image::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.3), transparent);
+}
+
+.menu-item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.menu-item-card:hover .menu-item-image img {
+  transform: scale(1.05);
+}
+
+.menu-item-content {
+  padding: 20px;
+}
+
+.menu-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.menu-item-name {
+  font-size: 1.3rem;
+  color: var(--gray-800);
+  margin: 0;
+  font-weight: 700;
+}
+
+
+.menu-item-description {
+  color: var(--gray-600);
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.menu-item-category {
+  display: inline-block;
+  background: var(--orange-50);
+  color: var(--primary-orange-dark);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.menu-item-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid var(--gray-200);
+}
+
+.conditions-note {
+  color: var(--primary-orange);
+  font-size: 0.9rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.talk-to-us-btn {
+  background: var(--primary-orange);
+  color: var(--white);
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 600;
+}
+
+.talk-to-us-btn:hover:not(:disabled) {
+  background: var(--primary-orange-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+.talk-to-us-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* No Items Message */
+.no-items-message {
+  text-align: center;
+  padding: 60px 40px;
+  background: var(--white);
+  border-radius: 12px;
+  border: 2px dashed var(--gray-300);
+  max-width: 1200px;
+  margin: 0 auto 40px;
+}
+
+.no-items-message button {
+  background: var(--primary-orange);
+  color: var(--white);
+  border: none;
+  padding: 12px 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 15px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.no-items-message button:hover {
+  background: var(--primary-orange-dark);
+  transform: translateY(-2px);
+}
+
+/* Conditions Section */
+.conditions-section {
+  background: var(--orange-50);
+  padding: 30px;
+  border-radius: 12px;
+  margin: 40px auto;
+  border-left: 4px solid var(--primary-orange);
+  max-width: 1200px;
+}
+
+.conditions-section h3 {
+  color: var(--primary-orange-dark);
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.conditions-list {
+  list-style: none;
+  padding: 0;
+}
+
+.conditions-list li {
+  padding: 8px 0;
+  padding-left: 30px;
+  position: relative;
+  color: var(--gray-700);
+  line-height: 1.6;
+}
+
+.conditions-list li:before {
+  content: "•";
+  color: var(--primary-orange);
+  font-size: 1.5rem;
+  position: absolute;
+  left: 0;
+  top: 4px;
+  font-weight: bold;
+}
+
+/* Contact Form Section */
+.contact-section {
+  background: var(--white);
+  padding: 50px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--gray-200);
+  max-width: 1200px;
+  margin: 40px auto;
+}
+
+.contact-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.contact-header h2 {
+  color: var(--primary-orange);
+  margin-bottom: 10px;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.contact-subtitle {
+  color: var(--gray-600);
+  font-size: 1.2rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--gray-800);
+  font-weight: 600;
+}
+
+.required {
+  color: var(--primary-orange);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid var(--gray-300);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s;
+  background-color: var(--white);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
+}
+
+.submit-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-dark));
+  color: var(--white);
+  border: none;
+  padding: 16px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 24px;
+  font-weight: 700;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.3);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.privacy-note {
+  margin-top: 24px;
+}
+
+.privacy-note p {
+  color: var(--gray-500);
+  text-align: center;
+}
+
+/* Loading & Error States */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.spinner {
+  border: 4px solid var(--gray-200);
+  border-top: 4px solid var(--primary-orange);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container {
+  text-align: center;
+  padding: 60px 40px;
+  background: var(--white);
+  border-radius: 12px;
+  border: 2px solid var(--gray-200);
+  max-width: 1200px;
+  margin: 40px auto;
+}
+
+.error-container h2 {
+  color: var(--primary-orange);
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.error-container button {
+  background: var(--primary-orange);
+  color: var(--white);
+  border: none;
+  padding: 12px 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 20px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.error-container button:hover {
+  background: var(--primary-orange-dark);
+  transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .menu-items-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .contact-section {
+    padding: 30px 20px;
+  }
+
+  /* Updated banner responsive styles */
+  .text-5xl {
+    font-size: 2.5rem;
+  }
+
+  .text-6xl {
+    font-size: 3rem;
+  }
+
+  .py-20 {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+
+  .conditions-section,
+  .contact-section,
+  .no-items-message,
+  .festival-menu-group {
+    margin-left: 15px;
+    margin-right: 15px;
+    padding: 20px;
+  }
+
+  .category-filters {
+    padding: 0 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .category-filters {
+    gap: 8px;
+  }
+  
+  .category-btn {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+}

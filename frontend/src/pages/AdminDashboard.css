@@ -1,0 +1,36 @@
+/* frontend/src/pages/AdminDashboard.css */
+.admin-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+.admin-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 250px; /* Width of sidebar */
+  transition: margin-left 0.3s ease;
+}
+
+.admin-main.sidebar-closed {
+  margin-left: 70px; /* Collapsed sidebar width */
+}
+
+.admin-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background: #f8f9fa;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .admin-main {
+    margin-left: 0;
+  }
+  
+  .admin-content {
+    padding: 15px;
+  }
+}
