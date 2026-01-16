@@ -1,24 +1,37 @@
-// frontend/src/api/axiosConfig.js - FINAL SIMPLE VERSION
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+// Use environment variable for production, fallback to localhost for dev
+const API_BASE_URL = process.env.NODE_ENV === 'production'
+  ? 'https://kerala-catering.onrender.com/api'
+  : 'http://localhost:5000/api';
+
+console.log('🔧 API Configuration:', {
+  nodeEnv: process.env.NODE_ENV,
+  apiUrl: API_BASE_URL,
+  envApiUrl: process.env.REACT_APP_API_URL
+});
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
 
 // Request interceptor - ATTACHES TOKEN
 axiosInstance.interceptors.request.use(
   (config) => {
-    const adminToken = localStorage.getItem('adminToken');
+    // Only attach token if we're on an admin route
+    const isAdminRoute = config.url.includes('/admin/') || 
+                        config.url === '/admin/login' ||
+                        config.url === '/admin/verify-otp';
     
-    if (adminToken) {
-      config.headers.Authorization = `Bearer ${adminToken}`;
-      config.headers['Content-Type'] = 'application/json';
-      console.log('✅ Token attached:', adminToken.substring(0, 20) + '...');
-    } else {
-      console.warn('⚠️ No admin token found');
+    if (isAdminRoute) {
+      const adminToken = localStorage.getItem('adminToken');
+      if (adminToken) {
+        config.headers.Authorization = `Bearer ${adminToken}`;
+      }
     }
     
     return config;
@@ -32,19 +45,18 @@ axiosInstance.interceptors.request.use(
 // Response interceptor - HANDLES ERRORS
 axiosInstance.interceptors.response.use(
   (response) => {
-    console.log('✅ Response received:', response.status, response.config.url);
     return response;
   },
   (error) => {
-    console.error('❌ Response error:', {
+    console.error('❌ API Error:', {
       url: error.config?.url,
       status: error.response?.status,
       message: error.message
     });
     
-    // Handle 401 Unauthorized
-    if (error.response?.status === 401) {
-      console.log('🔒 Unauthorized - redirecting to login');
+    // Handle 401 Unauthorized for admin routes only
+    if (error.response?.status === 401 && 
+        error.config?.url.includes('/admin/')) {
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminData');
       window.location.href = '/admin/login';

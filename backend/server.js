@@ -1,4 +1,4 @@
-// backend/server.js - FINAL COMPLETE VERSION WITH DEBUG MIDDLEWARE AND USER ACTION TRACKING
+// backend/server.js - UPDATED WITH PROPER CORS FOR VERCEl
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -33,27 +33,47 @@ const UserAction = require('./models/UserAction'); // ADDED: User Action model
 const app = express();
 
 // ========== MIDDLEWARE ==========
+// UPDATED CORS CONFIGURATION FOR VERCEl
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://kerala-catering.vercel.app',
+  'https://kerala-catering-*.vercel.app',  // For Vercel preview deployments
+  'https://*.vercel.app'  // All Vercel subdomains
+];
+
 app.use(cors({
-  origin: function(origin, callback) {
+  origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'https://kerala-catering.vercel.app',  // Your Vercel frontend
-      'https://yourdomain.in'  // Your custom domain when you get it
-    ];
-    
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('.vercel.app')) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+    // Check exact matches
+    if (allowedOrigins.some(allowedOrigin => {
+      if (allowedOrigin.includes('*')) {
+        // Handle wildcard patterns
+        const pattern = allowedOrigin.replace('*', '.*');
+        const regex = new RegExp(`^${pattern}$`);
+        return regex.test(origin);
+      }
+      return allowedOrigin === origin;
+    })) {
+      return callback(null, true);
     }
+    
+    // Special check for Vercel preview URLs
+    if (origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    
+    console.log('❌ CORS blocked origin:', origin);
+    console.log('✅ Allowed origins:', allowedOrigins);
+    return callback(new Error('Not allowed by CORS'), false);
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range']
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -326,6 +346,17 @@ app.get('/api/health', async (req, res) => {
       error: error.message 
     });
   }
+});
+
+// ADD THIS NEW ENDPOINT FOR CORS TESTING
+app.get('/api/cors-test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'CORS is working!',
+    origin: req.headers.origin,
+    allowedOrigins: allowedOrigins,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // =================== EMAIL & INQUIRY ROUTES ===================
@@ -1116,6 +1147,7 @@ app.post('/api/admin/reset-password', async (req, res) => {
 // =================== PUBLIC ROUTES ===================
 app.get('/api/festivals', async (req, res) => {
   try {
+    console.log(`🌐 GET /api/festivals from origin: ${req.headers.origin}`);
     const festivals = await Festival.find({ isActive: true }).sort({ isFeatured: -1, createdAt: -1 });
     res.json({
       success: true,
@@ -1311,7 +1343,7 @@ app.post('/api/admin/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    console.log(`🔐 Admin login attempt: ${email}`);
+    console.log(`🔐 Admin login attempt: ${email} from origin: ${req.headers.origin}`);
     
     const admin = await Admin.findOne({ email });
     if (!admin) {
@@ -1543,11 +1575,11 @@ app.get('/api/admin/festivals/menu-management', authenticateAdmin, async (req, r
       // Convert main image to absolute URL
       if (festivalObj.image && !festivalObj.image.startsWith('http')) {
         if (festivalObj.image.startsWith('/uploads')) {
-          festivalObj.image = `http://localhost:10000${festivalObj.image}`;
+          festivalObj.image = `${req.protocol}://${req.get('host')}${festivalObj.image}`;
         } else if (festivalObj.image.startsWith('http')) {
           // Already absolute
         } else {
-          festivalObj.image = `http://localhost:10000/uploads/${festivalObj.image}`;
+          festivalObj.image = `${req.protocol}://${req.get('host')}/uploads/${festivalObj.image}`;
         }
       }
       
@@ -1556,8 +1588,8 @@ app.get('/api/admin/festivals/menu-management', authenticateAdmin, async (req, r
         festivalObj.menuImages = festivalObj.menuImages.map(img => ({
           ...img,
           imageUrl: img.imageUrl.startsWith('/') ? 
-            `http://localhost:10000${img.imageUrl}` : 
-            `http://localhost:10000/${img.imageUrl}`
+            `${req.protocol}://${req.get('host')}${img.imageUrl}` : 
+            `${req.protocol}://${req.get('host')}/${img.imageUrl}`
         }));
       }
       
@@ -2312,6 +2344,7 @@ app.listen(PORT, () => {
   console.log(`📡 Test endpoints:`);
   console.log(`   http://localhost:${PORT}/api/ping`);
   console.log(`   http://localhost:${PORT}/api/health`);
+  console.log(`   http://localhost:${PORT}/api/cors-test`); // ADDED
   console.log(`   http://localhost:${PORT}/api/festivals`);
   console.log(`   http://localhost:${PORT}/api/email/test`);
   console.log(`\n🔑 Admin login: POST http://localhost:${PORT}/api/admin/login`);
@@ -2320,6 +2353,8 @@ app.listen(PORT, () => {
   console.log(`\n📨 Email Configuration:`);
   console.log(`   FROM: ${process.env.EMAIL_USER || 'Not set'}`);
   console.log(`   TO: ${process.env.BUSINESS_EMAIL || 'Not set'}`);
+  console.log(`\n🌐 CORS Configuration:`);
+  console.log(`   Allowed origins: ${JSON.stringify(allowedOrigins)}`);
   console.log(`\n✨ Admin routes available:`);
   console.log(`   GET  /api/admin/festivals`);
   console.log(`   POST /api/admin/festivals (with image upload & debug)`);
