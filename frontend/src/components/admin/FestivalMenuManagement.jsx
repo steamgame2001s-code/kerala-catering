@@ -1,6 +1,6 @@
-// frontend/src/components/admin/FestivalMenuManagement.jsx - ULTRA SIMPLE WORKING VERSION
 import React, { useState, useEffect } from 'react';
 import { FaUpload, FaTrash, FaImage, FaSpinner } from 'react-icons/fa';
+import axiosInstance from '../../api/axiosConfig'; // ADD THIS IMPORT
 import '../../components/admin/AdminPages.css';
 
 const FestivalMenuManagement = () => {
@@ -20,47 +20,18 @@ const FestivalMenuManagement = () => {
     try {
       setLoading(true);
       
-      // Get token from localStorage
-      const token = localStorage.getItem('adminToken');
-      console.log('Token:', token ? 'Present' : 'Missing');
+      console.log('📋 Fetching festivals for menu management...');
       
-      if (!token) {
-        console.error('No token found, redirecting to login');
-        window.location.href = '/admin/login';
-        return;
-      }
+      const response = await axiosInstance.get('/admin/festivals/menu-management');
       
-      // Use the CORRECT route that exists in your backend
-      const response = await fetch('http://localhost:5000/api/admin/festivals/menu-management', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      console.log('✅ Response:', response.data);
       
-      console.log('Response status:', response.status);
-      
-      if (response.status === 401) {
-        console.error('Token invalid, redirecting to login');
-        localStorage.removeItem('adminToken');
-        window.location.href = '/admin/login';
-        return;
-      }
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('API Response:', data);
-      
-      if (data.success) {
-        console.log(`Loaded ${data.festivals.length} festivals`);
-        setFestivals(data.festivals);
+      if (response.data.success) {
+        console.log(`Loaded ${response.data.festivals.length} festivals`);
+        setFestivals(response.data.festivals);
       } else {
-        console.error('API error:', data.error);
-        alert(data.error || 'Failed to load festivals');
+        console.error('API error:', response.data.error);
+        alert(response.data.error || 'Failed to load festivals');
       }
     } catch (error) {
       console.error('Error fetching festivals:', error);
@@ -73,13 +44,11 @@ const FestivalMenuManagement = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
         alert('Image size should be less than 5MB');
         return;
       }
       
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         alert('Please select a valid image file (JPG, PNG, GIF, etc.)');
         return;
@@ -106,36 +75,29 @@ const FestivalMenuManagement = () => {
     try {
       setUploading(true);
       
-      const token = localStorage.getItem('adminToken');
-      
       const formData = new FormData();
       formData.append('image', imageFile);
       formData.append('caption', caption);
 
-      console.log('Uploading to festival:', selectedFestival);
+      console.log('📤 Uploading to festival:', selectedFestival);
       
-      const response = await fetch(
-        `http://localhost:5000/api/admin/festivals/${selectedFestival}/menu-images`,
+      const response = await axiosInstance.post(
+        `/admin/festivals/${selectedFestival}/menu-images`,
+        formData,
         {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData
+          headers: { 'Content-Type': 'multipart/form-data' }
         }
       );
 
-      const data = await response.json();
+      const data = response.data;
       
-      if (data.success) {
+      if (response.status === 201 && data.success) {
         alert('Menu image uploaded successfully!');
         
-        // Reset form
         setImageFile(null);
         setImagePreview('');
         setCaption('');
         
-        // Refresh festivals
         fetchFestivals();
       } else {
         alert(data.error || 'Failed to upload image');
@@ -154,20 +116,11 @@ const FestivalMenuManagement = () => {
     }
 
     try {
-      const token = localStorage.getItem('adminToken');
-      
-      const response = await fetch(
-        `http://localhost:5000/api/admin/festivals/${festivalId}/menu-images/${imageId}`,
-        {
-          method: 'DELETE',
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
+      const response = await axiosInstance.delete(
+        `/admin/festivals/${festivalId}/menu-images/${imageId}`
       );
 
-      const data = await response.json();
+      const data = response.data;
 
       if (data.success) {
         alert('Menu image deleted successfully!');
@@ -239,11 +192,7 @@ const FestivalMenuManagement = () => {
                   {imagePreview && (
                     <div className="image-preview-upload mt-3">
                       <h6>Preview:</h6>
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="preview-image"
-                      />
+                      <img src={imagePreview} alt="Preview" className="preview-image" />
                     </div>
                   )}
                 </div>
