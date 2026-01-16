@@ -1,41 +1,59 @@
+// frontend/src/components/admin/AdminLogin.jsx - UPDATED
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAdmin } from '../../context/AdminContext';
-import { FaLock, FaEnvelope, FaSignInAlt, FaArrowLeft, FaKey } from 'react-icons/fa';
+import { FaLock, FaEnvelope, FaSignInAlt, FaArrowLeft, FaKey, FaExclamationCircle } from 'react-icons/fa';
 import './AdminLogin.css';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const { login, admin } = useAdmin();
   const navigate = useNavigate();
 
   // Redirect if already logged in
   useEffect(() => {
     if (admin) {
-      console.log('Already logged in, redirecting to dashboard');
+      console.log('✅ Already logged in, redirecting to dashboard');
       navigate('/admin/dashboard');
     }
   }, [admin, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(''); // Clear previous errors
     setIsLoading(true);
     
-    console.log('Form submitted:', { email, password });
+    console.log('📝 Form submitted');
+    console.log('Email:', email);
+    console.log('Password length:', password.length);
     
-    const result = await login(email, password);
-    console.log('Login result:', result);
-    
-    setIsLoading(false);
-    
-    if (result.success) {
-      console.log('Login successful! Admin data:', result.admin);
-      // Force redirect to dashboard
-      setTimeout(() => {
-        navigate('/admin/dashboard');
-      }, 100);
+    try {
+      const result = await login(email, password);
+      console.log('🔐 Login result:', result);
+      
+      if (result.success) {
+        console.log('✅ Login successful! Admin data:', result.admin);
+        
+        // Show success message briefly
+        setError('');
+        
+        // Redirect to dashboard
+        setTimeout(() => {
+          navigate('/admin/dashboard');
+        }, 500);
+      } else {
+        // Show error message
+        console.log('❌ Login failed:', result.error);
+        setError(result.error || 'Invalid email or password. Please try again.');
+        setIsLoading(false);
+      }
+    } catch (err) {
+      console.error('❌ Login error:', err);
+      setError('An unexpected error occurred. Please try again.');
+      setIsLoading(false);
     }
   };
 
@@ -56,6 +74,13 @@ const AdminLogin = () => {
           <p className="subtitle">Kerala Catering Management System</p>
         </div>
 
+        {/* Error Message */}
+        {error && (
+          <div className="error-message">
+            <FaExclamationCircle /> {error}
+          </div>
+        )}
+
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
@@ -70,6 +95,7 @@ const AdminLogin = () => {
               placeholder="Enter admin email"
               required
               className="form-input"
+              disabled={isLoading}
             />
           </div>
 
@@ -85,6 +111,7 @@ const AdminLogin = () => {
               placeholder="Enter password"
               required
               className="form-input"
+              disabled={isLoading}
             />
           </div>
 
@@ -94,13 +121,16 @@ const AdminLogin = () => {
               <FaKey /> Forgot Password?
             </Link>
           </div>
+
           <button 
             type="submit" 
             className="login-btn"
             disabled={isLoading}
           >
             {isLoading ? (
-              <span className="loading">Logging in...</span>
+              <span className="loading">
+                <span className="spinner"></span> Logging in...
+              </span>
             ) : (
               <>
                 <FaSignInAlt /> Login to Dashboard
@@ -109,7 +139,14 @@ const AdminLogin = () => {
           </button>
         </form>
 
-        {/* Debug Info (Remove in production) */}
+        {/* Debug Info (Only in development) */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="debug-info">
+            <p><strong>Debug Info:</strong></p>
+            <p>API URL: {process.env.REACT_APP_API_URL || 'Using default'}</p>
+            <p>Environment: {process.env.NODE_ENV}</p>
+          </div>
+        )}
       </div>
     </div>
   );
