@@ -1,11 +1,11 @@
-// frontend/src/pages/FestivalDetailPage.jsx - PRODUCTION READY (FIXED)
+// frontend/src/pages/FestivalDetailPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../api/axiosConfig';
 
 // Helper function to get absolute image URLs
 const getAbsoluteImageUrl = (url) => {
-  if (!url) return null;
+  if (!url) return 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
   
   // If URL already has http:// or https://, return as is
   if (url.startsWith('http://') || url.startsWith('https://')) {
@@ -13,7 +13,7 @@ const getAbsoluteImageUrl = (url) => {
   }
   
   // Get backend URL from axios config
-  const backendUrl = axios.defaults.baseURL.replace('/api', '');
+  const backendUrl = axios.defaults.baseURL?.replace('/api', '') || 'http://localhost:10000';
   
   // If it's a local path starting with /uploads, prepend the backend URL
   if (url.startsWith('/uploads')) {
@@ -24,12 +24,16 @@ const getAbsoluteImageUrl = (url) => {
   return `${backendUrl}/${url.replace(/^\//, '')}`;
 };
 
+// Image error handler
+const handleImageError = (e, fallbackUrl = 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80') => {
+  console.warn('⚠️ Image failed to load:', e.target.src);
+  e.target.src = fallbackUrl;
+  e.target.onerror = null; // Prevent infinite loop
+};
+
 // Menu Gallery Component
 const MenuGallery = ({ festival }) => {
-  console.log('🖼️ MenuGallery rendering with festival:', festival?.name || 'No festival');
-  
   if (!festival?.menuImages || festival.menuImages.length === 0) {
-    console.log('⚠️ No menu images found');
     return (
       <div className="menu-gallery mb-12">
         <h3 className="text-3xl font-bold mb-6 text-gray-800">
@@ -44,8 +48,6 @@ const MenuGallery = ({ festival }) => {
     );
   }
   
-  console.log(`✅ Rendering ${festival.menuImages.length} menu images`);
-  
   return (
     <div className="menu-gallery mb-12">
       <h3 className="text-3xl font-bold mb-6 text-gray-800">
@@ -57,12 +59,6 @@ const MenuGallery = ({ festival }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {festival.menuImages.map((menuImage, index) => {
           const absoluteUrl = getAbsoluteImageUrl(menuImage.imageUrl);
-          
-          console.log(`🔗 Image ${index + 1}:`, {
-            original: menuImage.imageUrl,
-            absolute: absoluteUrl,
-            caption: menuImage.caption
-          });
           
           return (
             <div 
@@ -77,12 +73,9 @@ const MenuGallery = ({ festival }) => {
                   src={absoluteUrl} 
                   alt={menuImage.caption || `${festival.name} menu ${index + 1}`}
                   className="w-full h-full object-cover"
-                  onError={(e) => {
-                    console.error('❌ Failed to load menu image:', menuImage.imageUrl);
-                    e.target.src = 'https://via.placeholder.com/600x400/FF6B35/FFFFFF?text=Menu+Image';
-                  }}
+                  onError={(e) => handleImageError(e)}
                   onLoad={() => {
-                    console.log('✅ Menu image loaded successfully:', absoluteUrl);
+                    console.log('✅ Menu image loaded successfully');
                   }}
                 />
                 <div className="absolute top-4 left-4 bg-orange-500 text-white px-4 py-2 rounded-full font-bold shadow-lg">
@@ -128,33 +121,54 @@ const FestivalDetailPage = () => {
         setError(null);
         
         console.log(`🔍 Fetching festival data for slug: ${slug}`);
-        console.log('📡 API Base URL:', axios.defaults.baseURL);
         
-        // ✅ FIXED: Use axios instance with proper error handling
-        const response = await axios.get(`/festival/${slug}`, {
-          timeout: 60000, // 60 seconds for Render cold start
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
+        // Enhanced retry logic for Render cold starts
+        let retries = 0;
+        const maxRetries = 3;
+        
+        const makeRequest = async () => {
+          try {
+            const response = await axios.get(`/festival/${slug}`, {
+              timeout: 45000,
+              headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+              }
+            });
+            
+            return response;
+          } catch (err) {
+            if ((err.code === 'ECONNABORTED' || err.message === 'Network Error') && retries < maxRetries) {
+              retries++;
+              console.log(`🔄 Backend cold start detected. Retry ${retries}/${maxRetries}...`);
+              await new Promise(resolve => setTimeout(resolve, 5000 * retries));
+              return makeRequest();
+            }
+            throw err;
           }
-        });
+        };
         
-        console.log('📦 API Response:', response.data);
+        const response = await makeRequest();
         
         if (response.data.success) {
-          console.log('✅ Festival loaded:', response.data.festival?.name || 'No name');
-          console.log('📸 Menu images in festival:', response.data.festival?.menuImages?.length || 0);
-          setFestival(response.data.festival);
+          // Ensure menuImages is always an array
+          const festivalData = {
+            ...response.data.festival,
+            menuImages: response.data.festival?.menuImages || []
+          };
+          
+          setFestival(festivalData);
         } else {
-          console.error('❌ API returned error:', response.data.error);
           setError(response.data.error || 'Festival not found');
         }
         
       } catch (err) {
         console.error('❌ Error fetching festival:', err);
         
-        if (err.code === 'ECONNABORTED' || err.message === 'Network Error') {
-          setError('Backend is waking up... Please wait 30 seconds and try again.');
+        if (err.code === 'ECONNABORTED') {
+          setError('Backend is starting up. This may take up to 50 seconds. Please wait and try again.');
+        } else if (err.message === 'Network Error') {
+          setError('Cannot connect to server. The backend might be sleeping. Try refreshing in 30 seconds.');
         } else if (err.response?.status === 404) {
           setError('Festival not found. It may have been removed or the URL is incorrect.');
         } else if (err.response?.status === 500) {
