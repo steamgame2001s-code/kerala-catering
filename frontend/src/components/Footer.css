@@ -1,4 +1,4 @@
-/* Footer.css - Updated with orange theme */
+/* Footer.css - Fixed version with orange theme */
 .footer {
   background: #1a1a1a;
   color: white;
@@ -26,7 +26,7 @@
 .footer-logo h3 {
   font-size: 1.8rem;
   margin-bottom: 0.5rem;
-  color: #FF6B35; /* Orange color */
+  color: #FF6B35;
 }
 
 .footer-logo p {
@@ -44,7 +44,7 @@
 .footer-contact h4 {
   font-size: 1.2rem;
   margin-bottom: 1.5rem;
-  color: #FF6B35; /* Orange color */
+  color: #FF6B35;
 }
 
 .footer-links ul {
@@ -78,9 +78,21 @@
 }
 
 .footer-contact i {
-  color: #FF6B35; /* Orange color */
+  color: #FF6B35;
   width: 20px;
   text-align: center;
+  flex-shrink: 0;
+}
+
+/* Ensure Font Awesome icons are loaded */
+.footer-contact .fas,
+.footer-contact .fab,
+.footer-links .fas,
+.social-icons .fab {
+  font-family: 'Font Awesome 5 Free', 'Font Awesome 5 Brands';
+  font-weight: 900;
+  font-style: normal;
+  display: inline-block;
 }
 
 .social-icons {
@@ -102,7 +114,11 @@
   transition: all 0.3s ease;
   border: none;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 1.2rem;
+}
+
+.social-icon i {
+  line-height: 1;
 }
 
 .social-icon:hover {
@@ -197,6 +213,6 @@
   .social-icon {
     width: 36px;
     height: 36px;
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
 }

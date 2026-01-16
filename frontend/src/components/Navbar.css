@@ -17,6 +17,19 @@
   box-sizing: border-box;
 }
 
+/* Ensure Font Awesome icons are loaded globally */
+.fas, .fab {
+  font-family: 'Font Awesome 5 Free', 'Font Awesome 5 Brands';
+  font-weight: 900;
+  font-style: normal;
+  display: inline-block;
+}
+
+.fab {
+  font-family: 'Font Awesome 5 Brands';
+  font-weight: 400;
+}
+
 /* Navbar Container */
 .navbar-professional {
   position: fixed;
@@ -372,6 +385,10 @@
   background: var(--light-gray);
 }
 
+.mobile-close i {
+  line-height: 1;
+}
+
 /* Mobile Search */
 .mobile-search-form {
   display: flex;
@@ -432,6 +449,7 @@
   color: var(--orange);
   width: 20px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .mobile-nav-item:hover {
@@ -478,6 +496,11 @@
 .mobile-btn-whatsapp:hover,
 .mobile-btn-call:hover {
   transform: translateY(-2px);
+}
+
+.mobile-btn-whatsapp i,
+.mobile-btn-call i {
+  font-size: 18px;
 }
 
 /* Spacer */
@@ -587,43 +610,5 @@
   .mobile-menu {
     height: auto;
     max-height: 100vh;
-  }
-}
-
-/* Dark Mode Support (Optional) */
-@media (prefers-color-scheme: dark) {
-  .navbar-professional {
-    background: #1a202c;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  }
-  
-  .nav-link {
-    color: #e2e8f0;
-  }
-  
-  .nav-link:hover {
-    background: rgba(255, 107, 53, 0.1);
-  }
-  
-  .mobile-menu {
-    background: #1a202c;
-  }
-  
-  .mobile-nav-item {
-    color: #e2e8f0;
-  }
-  
-  .search-form {
-    background: #2d3748;
-    border-color: #4a5568;
-  }
-  
-  .search-input {
-    color: #e2e8f0;
-    background: transparent;
-  }
-  
-  .search-input::placeholder {
-    color: #a0aec0;
   }
 }

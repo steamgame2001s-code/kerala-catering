@@ -1,10 +1,11 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from '../api/axiosConfig';
 import './Footer.css';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const navigate = useNavigate();
 
   // Track user actions
   const trackAction = async (type, additionalData = {}) => {
@@ -16,12 +17,24 @@ const Footer = () => {
       });
     } catch (error) {
       console.error('Error tracking action:', error);
-      // Fail silently - don't disrupt user experience
     }
   };
 
+  // Scroll to top function
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Navigate and scroll to top
+  const handleNavigation = (path) => {
+    navigate(path);
+    // Use setTimeout to ensure navigation completes first
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }, 0);
+  };
+
   const handleWhatsAppClick = () => {
-    // Track WhatsApp click
     trackAction('whatsapp', {
       userInfo: 'Footer WhatsApp Button'
     });
@@ -39,7 +52,6 @@ const Footer = () => {
   };
 
   const handlePhoneClick = () => {
-    // Track Call click
     trackAction('call', {
       userInfo: 'Footer Phone Number'
     });
@@ -51,16 +63,6 @@ const Footer = () => {
     window.location.href = 'mailto:upasanacatering@gmail.com';
   };
 
-  const handleFacebookClick = () => {
-    // You can add Facebook link if available
-    window.open('#', '_blank');
-  };
-
-  const handleTwitterClick = () => {
-    // You can add Twitter link if available
-    window.open('#', '_blank');
-  };
-
   return (
     <footer className="footer">
       <div className="footer-container">
@@ -68,10 +70,9 @@ const Footer = () => {
           {/* Logo Section */}
           <div className="footer-logo">
             <h3>UPASANA</h3>
-            
             <p>CATERING, SERVICE AND EVENTS</p>
             <p>Authentic Kerala cuisine delivered to your doorstep.</p>
-             <br></br>
+            <br />
             <p>Serving customers across Alappuzha and Ernakulam districts</p>
           </div>
 
@@ -79,18 +80,56 @@ const Footer = () => {
           <div className="footer-links">
             <h4>Quick Links</h4>
             <ul>
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/menu">Menu</Link></li>
-              <li><Link to="/festivals">Festivals</Link></li>
-              <li><Link to="/gallery">Gallery</Link></li>
-              <li><Link to="/about">About</Link></li>
+              <li>
+                <button 
+                  onClick={() => handleNavigation('/')} 
+                  style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', textDecoration: 'none', padding: 0, font: 'inherit', textAlign: 'left', width: '100%' }}
+                >
+                  Home
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleNavigation('/menu')} 
+                  style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', textDecoration: 'none', padding: 0, font: 'inherit', textAlign: 'left', width: '100%' }}
+                >
+                  Menu
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleNavigation('/festivals')} 
+                  style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', textDecoration: 'none', padding: 0, font: 'inherit', textAlign: 'left', width: '100%' }}
+                >
+                  Festivals
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleNavigation('/gallery')} 
+                  style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', textDecoration: 'none', padding: 0, font: 'inherit', textAlign: 'left', width: '100%' }}
+                >
+                  Gallery
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleNavigation('/about')} 
+                  style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', textDecoration: 'none', padding: 0, font: 'inherit', textAlign: 'left', width: '100%' }}
+                >
+                  About
+                </button>
+              </li>
             </ul>
           </div>
 
           {/* Contact Info */}
           <div className="footer-contact">
             <h4>Contact Us</h4>
-            <p><i className="fas fa-map-marker-alt"></i> Upasana Caterings, Kuthiathodu, Cherthala, Alappuzha, Kerala, India</p>
+            <p>
+              <i className="fas fa-map-marker-alt"></i> 
+              Upasana Caterings, Kuthiathodu, Cherthala, Alappuzha, Kerala, India
+            </p>
             <p>
               <i className="fas fa-phone"></i> 
               <button 
@@ -128,7 +167,6 @@ const Footer = () => {
             
             {/* Social Media */}
             <div className="social-icons">
-              
               <button 
                 className="social-icon instagram"
                 onClick={handleInstagramClick}
