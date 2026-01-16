@@ -22,16 +22,16 @@ const axiosInstance = axios.create({
 // Request interceptor - ATTACHES TOKEN
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Only attach token if we're on an admin route
-    const isAdminRoute = config.url.includes('/admin/') || 
-                        config.url === '/admin/login' ||
-                        config.url === '/admin/verify-otp';
+    // Get admin token from localStorage
+    const adminToken = localStorage.getItem('adminToken');
     
-    if (isAdminRoute) {
-      const adminToken = localStorage.getItem('adminToken');
-      if (adminToken) {
-        config.headers.Authorization = `Bearer ${adminToken}`;
-      }
+    // Add Authorization header if token exists AND it's not a login/forgot-password request
+    if (adminToken && 
+        !config.url.includes('/admin/login') &&
+        !config.url.includes('/admin/forgot-password') &&
+        !config.url.includes('/admin/verify-otp') &&
+        !config.url.includes('/admin/reset-password')) {
+      config.headers.Authorization = `Bearer ${adminToken}`;
     }
     
     return config;
@@ -51,15 +51,19 @@ axiosInstance.interceptors.response.use(
     console.error('❌ API Error:', {
       url: error.config?.url,
       status: error.response?.status,
-      message: error.message
+      message: error.message,
+      config: error.config
     });
     
     // Handle 401 Unauthorized for admin routes only
-    if (error.response?.status === 401 && 
-        error.config?.url.includes('/admin/')) {
+    if (error.response?.status === 401) {
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminData');
-      window.location.href = '/admin/login';
+      // Only redirect if we're on an admin page
+      if (window.location.pathname.includes('/admin') && 
+          !window.location.pathname.includes('/admin/login')) {
+        window.location.href = '/admin/login';
+      }
     }
     
     return Promise.reject(error);
