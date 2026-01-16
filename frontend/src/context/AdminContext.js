@@ -1,4 +1,4 @@
-// frontend/src/context/AdminContext.js - FIXED FOR VERCEL + RENDER
+// frontend/src/context/AdminContext.js - FINAL PRODUCTION FIX
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from '../api/axiosConfig'; // USE YOUR AXIOS CONFIG
 import { useNavigate } from 'react-router-dom';
@@ -27,28 +27,39 @@ export const AdminProvider = ({ children }) => {
           // Set axios default auth header
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           
-          // Validate token with backend
-          const response = await axios.get('/admin/profile');
+          // ✅ FIX: Don't validate token on page load - trust localStorage
+          // Just restore the admin state from localStorage
+          const storedAdmin = JSON.parse(adminData);
+          console.log('✅ Restored admin session from localStorage');
+          setAdmin(storedAdmin);
           
-          if (response.data.success) {
-            console.log('✅ Admin session valid');
-            setAdmin(JSON.parse(adminData));
-          } else {
-            console.log('❌ Admin session invalid');
-            localStorage.removeItem('adminToken');
-            localStorage.removeItem('adminData');
-          }
+          // Optional: Validate in background without blocking
+          axios.get('/admin/profile')
+            .then(response => {
+              if (!response.data.success) {
+                console.log('⚠️ Token invalid, clearing session');
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('adminData');
+                delete axios.defaults.headers.common['Authorization'];
+                setAdmin(null);
+              }
+            })
+            .catch(error => {
+              if (error.response?.status === 401 || error.response?.status === 403) {
+                console.log('🔄 Token expired, clearing session');
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('adminData');
+                delete axios.defaults.headers.common['Authorization'];
+                setAdmin(null);
+              }
+            });
         } catch (error) {
-          console.error('❌ Token validation failed:', error.message);
-          
-          // If it's a 401 error (token expired/invalid), clear storage
-          if (error.response?.status === 401 || error.response?.status === 403) {
-            console.log('🔄 Clearing invalid session');
-            localStorage.removeItem('adminToken');
-            localStorage.removeItem('adminData');
-            delete axios.defaults.headers.common['Authorization'];
-          }
+          console.error('❌ Error restoring session:', error);
+          localStorage.removeItem('adminToken');
+          localStorage.removeItem('adminData');
         }
+      } else {
+        console.log('ℹ️ No stored session found');
       }
       setLoading(false);
     };

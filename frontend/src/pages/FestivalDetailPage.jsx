@@ -1,4 +1,4 @@
-// frontend/src/pages/FestivalDetailPage.jsx - PRODUCTION READY
+// frontend/src/pages/FestivalDetailPage.jsx - PRODUCTION READY (FIXED)
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../api/axiosConfig';
@@ -26,10 +26,9 @@ const getAbsoluteImageUrl = (url) => {
 
 // Menu Gallery Component
 const MenuGallery = ({ festival }) => {
-  console.log('🖼️ MenuGallery rendering with festival:', festival.name);
-  console.log('📸 Menu images:', festival.menuImages);
+  console.log('🖼️ MenuGallery rendering with festival:', festival?.name || 'No festival');
   
-  if (!festival.menuImages || festival.menuImages.length === 0) {
+  if (!festival?.menuImages || festival.menuImages.length === 0) {
     console.log('⚠️ No menu images found');
     return (
       <div className="menu-gallery mb-12">
@@ -131,30 +130,37 @@ const FestivalDetailPage = () => {
         console.log(`🔍 Fetching festival data for slug: ${slug}`);
         console.log('📡 API Base URL:', axios.defaults.baseURL);
         
-        // Use axios config (already has correct URL)
+        // ✅ FIXED: Use axios instance with proper error handling
         const response = await axios.get(`/festival/${slug}`, {
-          timeout: 60000 // 60 seconds for Render cold start
+          timeout: 60000, // 60 seconds for Render cold start
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
         });
         
         console.log('📦 API Response:', response.data);
         
         if (response.data.success) {
-          console.log('✅ Festival loaded:', response.data.festival.name);
-          console.log('📸 Menu images in festival:', response.data.festival.menuImages);
+          console.log('✅ Festival loaded:', response.data.festival?.name || 'No name');
+          console.log('📸 Menu images in festival:', response.data.festival?.menuImages?.length || 0);
           setFestival(response.data.festival);
         } else {
+          console.error('❌ API returned error:', response.data.error);
           setError(response.data.error || 'Festival not found');
         }
         
       } catch (err) {
         console.error('❌ Error fetching festival:', err);
         
-        if (err.code === 'ECONNABORTED') {
-          setError('Backend is waking up... Please wait and try again.');
+        if (err.code === 'ECONNABORTED' || err.message === 'Network Error') {
+          setError('Backend is waking up... Please wait 30 seconds and try again.');
         } else if (err.response?.status === 404) {
           setError('Festival not found. It may have been removed or the URL is incorrect.');
+        } else if (err.response?.status === 500) {
+          setError('Server error. Please try again later.');
         } else {
-          setError(err.response?.data?.error || 'Failed to load festival details');
+          setError(err.response?.data?.error || err.message || 'Failed to load festival details');
         }
       } finally {
         setLoading(false);
