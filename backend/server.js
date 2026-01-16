@@ -33,46 +33,58 @@ const UserAction = require('./models/UserAction'); // ADDED: User Action model
 const app = express();
 
 // ========== MIDDLEWARE ==========
-// UPDATED CORS CONFIGURATION FOR VERCEl
+// UPDATED CORS CONFIGURATION FOR VERCEl - FIXED VERSION
 const allowedOrigins = [
   'http://localhost:3000',
+  'http://localhost:10000',
   'https://kerala-catering.vercel.app',
-  'https://kerala-catering-*.vercel.app',  // For Vercel preview deployments
-  'https://*.vercel.app'  // All Vercel subdomains
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+    console.log('🌍 Request from origin:', origin);
     
-    // Check exact matches
-    if (allowedOrigins.some(allowedOrigin => {
-      if (allowedOrigin.includes('*')) {
-        // Handle wildcard patterns
-        const pattern = allowedOrigin.replace('*', '.*');
-        const regex = new RegExp(`^${pattern}$`);
-        return regex.test(origin);
-      }
-      return allowedOrigin === origin;
-    })) {
+    // Allow requests with no origin (like mobile apps, Postman, curl)
+    if (!origin) {
+      console.log('✅ No origin (allowed)');
       return callback(null, true);
     }
     
-    // Special check for Vercel preview URLs
+    // Check if origin matches allowed list
+    if (allowedOrigins.includes(origin)) {
+      console.log('✅ Origin in whitelist');
+      return callback(null, true);
+    }
+    
+    // Allow ALL Vercel preview deployments (*.vercel.app)
     if (origin.endsWith('.vercel.app')) {
+      console.log('✅ Vercel deployment domain (allowed)');
       return callback(null, true);
     }
     
+    // Allow localhost with any port
+    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+      console.log('✅ Localhost (allowed)');
+      return callback(null, true);
+    }
+    
+    // Block everything else
     console.log('❌ CORS blocked origin:', origin);
-    console.log('✅ Allowed origins:', allowedOrigins);
+    console.log('Allowed origins:', allowedOrigins);
     return callback(new Error('Not allowed by CORS'), false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range']
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 }));
+
+// Log CORS config
+console.log('\n🔒 CORS Configuration:');
+console.log('Allowed origins:', allowedOrigins);
+console.log('+ All *.vercel.app domains');
+console.log('+ All localhost ports');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -2355,6 +2367,8 @@ app.listen(PORT, () => {
   console.log(`   TO: ${process.env.BUSINESS_EMAIL || 'Not set'}`);
   console.log(`\n🌐 CORS Configuration:`);
   console.log(`   Allowed origins: ${JSON.stringify(allowedOrigins)}`);
+  console.log(`   + All *.vercel.app domains`);
+  console.log(`   + All localhost ports`);
   console.log(`\n✨ Admin routes available:`);
   console.log(`   GET  /api/admin/festivals`);
   console.log(`   POST /api/admin/festivals (with image upload & debug)`);
