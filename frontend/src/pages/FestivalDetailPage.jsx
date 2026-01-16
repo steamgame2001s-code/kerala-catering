@@ -1,6 +1,7 @@
-// frontend/src/pages/FestivalDetailPage.jsx - FIXED VERSION
+// frontend/src/pages/FestivalDetailPage.jsx - PRODUCTION READY
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import axios from '../api/axiosConfig';
 
 // Helper function to get absolute image URLs
 const getAbsoluteImageUrl = (url) => {
@@ -11,16 +12,19 @@ const getAbsoluteImageUrl = (url) => {
     return url;
   }
   
+  // Get backend URL from axios config
+  const backendUrl = axios.defaults.baseURL.replace('/api', '');
+  
   // If it's a local path starting with /uploads, prepend the backend URL
   if (url.startsWith('/uploads')) {
-    return `http://localhost:5000${url}`;
+    return `${backendUrl}${url}`;
   }
   
   // For relative paths, prepend the backend URL
-  return `http://localhost:5000/${url.replace(/^\//, '')}`;
+  return `${backendUrl}/${url.replace(/^\//, '')}`;
 };
 
-// Menu Gallery Component - FIXED
+// Menu Gallery Component
 const MenuGallery = ({ festival }) => {
   console.log('🖼️ MenuGallery rendering with festival:', festival.name);
   console.log('📸 Menu images:', festival.menuImages);
@@ -66,7 +70,6 @@ const MenuGallery = ({ festival }) => {
               key={menuImage._id || index} 
               className="group cursor-pointer rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-4 border-orange-500 bg-white"
               onClick={() => {
-                // Open image in new tab
                 window.open(absoluteUrl, '_blank');
               }}
             >
@@ -126,28 +129,33 @@ const FestivalDetailPage = () => {
         setError(null);
         
         console.log(`🔍 Fetching festival data for slug: ${slug}`);
+        console.log('📡 API Base URL:', axios.defaults.baseURL);
         
-        const response = await fetch(`http://localhost:5000/api/festival/${slug}`);
+        // Use axios config (already has correct URL)
+        const response = await axios.get(`/festival/${slug}`, {
+          timeout: 60000 // 60 seconds for Render cold start
+        });
         
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
+        console.log('📦 API Response:', response.data);
         
-        const data = await response.json();
-        
-        console.log('📦 API Response:', data);
-        
-        if (data.success) {
-          console.log('✅ Festival loaded:', data.festival.name);
-          console.log('📸 Menu images in festival:', data.festival.menuImages);
-          setFestival(data.festival);
+        if (response.data.success) {
+          console.log('✅ Festival loaded:', response.data.festival.name);
+          console.log('📸 Menu images in festival:', response.data.festival.menuImages);
+          setFestival(response.data.festival);
         } else {
-          setError(data.error || 'Festival not found');
+          setError(response.data.error || 'Festival not found');
         }
         
       } catch (err) {
         console.error('❌ Error fetching festival:', err);
-        setError(err.message || 'Failed to load festival details');
+        
+        if (err.code === 'ECONNABORTED') {
+          setError('Backend is waking up... Please wait and try again.');
+        } else if (err.response?.status === 404) {
+          setError('Festival not found. It may have been removed or the URL is incorrect.');
+        } else {
+          setError(err.response?.data?.error || 'Failed to load festival details');
+        }
       } finally {
         setLoading(false);
       }
@@ -167,6 +175,9 @@ const FestivalDetailPage = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading festival details...</p>
+          <p className="mt-2 text-gray-500 text-sm italic">
+            First load may take 30-60 seconds
+          </p>
         </div>
       </div>
     );
@@ -216,13 +227,11 @@ const FestivalDetailPage = () => {
     );
   }
 
-  // WhatsApp contact info - HARDCODED TO +91 9447975836
-  const whatsappNumber = '9447975836'; // Always use this number
+  // WhatsApp contact info
+  const whatsappNumber = '919447975836';
   const whatsappMessage = `Hello! I'm interested in the ${festival.name} festival menu.`;
   const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
-
-  // Call number - HARDCODED TO +91 9447975836
-  const callNumber = '+919447975836'; // Always use this number for calls
+  const callNumber = '+919447975836';
 
   return (
     <div className="festival-detail-page">
@@ -277,12 +286,10 @@ const FestivalDetailPage = () => {
               </div>
             </div>
 
-            {/* Menu Items Tab */}
+            {/* Menu Tab */}
             {activeTab === 'menu' && (
               <>
-                {/* Menu Gallery */}
                 <MenuGallery festival={festival} />
-
                 <div className="mt-8 text-gray-500 text-sm">
                   <p>We respond within 15 minutes during business hours (9 AM - 9 PM)</p>
                 </div>
@@ -310,30 +317,11 @@ const FestivalDetailPage = () => {
                       </div>
                     </div>
                   )}
-
-                  {/* Traditional Significance */}
-                  <div className="mt-10 p-6 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl border-l-4 border-orange-500">
-                    <h4 className="text-2xl font-bold text-gray-800 mb-4">Traditional Significance</h4>
-                    <p className="text-gray-700 mb-4">
-                      {festival.name} is celebrated with traditional dishes that have been passed down through generations. 
-                      Each dish holds cultural significance and is prepared with authentic ingredients and methods.
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                      <div className="bg-white p-4 rounded-lg">
-                        <h5 className="font-bold text-gray-800 mb-2">Traditional Preparation</h5>
-                        <p className="text-gray-600">Prepared using age-old family recipes</p>
-                      </div>
-                      <div className="bg-white p-4 rounded-lg">
-                        <h5 className="font-bold text-gray-800 mb-2">Authentic Ingredients</h5>
-                        <p className="text-gray-600">Sourced from trusted local vendors</p>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
 
-            {/* Information Tab */}
+            {/* Info Tab */}
             {activeTab === 'info' && (
               <div className="festival-info bg-gray-50 rounded-lg p-8">
                 <h3 className="text-3xl font-bold mb-6">Festival Information</h3>
@@ -351,23 +339,9 @@ const FestivalDetailPage = () => {
                     </div>
                     
                     <div className="bg-white p-6 rounded-xl shadow-sm">
-                      <h4 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
-                        <svg className="w-5 h-5 mr-2 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-                          <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-1h4v1a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H20a1 1 0 001-1v-2.5h-2A3.5 3.5 0 0114.5 9V7.5h-2A3.5 3.5 0 019 4H3z"/>
-                          <path d="M14 7h4a1 1 0 011 1v2.5a1.5 1.5 0 01-1.5 1.5h-3.5V7z"/>
-                        </svg>
-                        Service Type
-                      </h4>
+                      <h4 className="text-xl font-semibold text-gray-800 mb-3">Service Type</h4>
                       <p className="text-gray-600 text-lg">Takeaway Only</p>
                     </div>
-                    
-                    {festival.specialNote && (
-                      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-r-xl">
-                        <h4 className="text-xl font-semibold text-yellow-800 mb-3">Important Note</h4>
-                        <p className="text-yellow-700 text-lg">{festival.specialNote}</p>
-                      </div>
-                    )}
                   </div>
                   
                   <div className="space-y-6">
@@ -383,21 +357,7 @@ const FestivalDetailPage = () => {
                         </div>
                       </div>
                     )}
-                    
-                    {festival.tags && festival.tags.length > 0 && (
-                      <div className="bg-white p-6 rounded-xl shadow-sm">
-                        <h4 className="text-xl font-semibold text-gray-800 mb-4">Menu Tags</h4>
-                        <div className="flex flex-wrap gap-3">
-                          {festival.tags.map((tag, idx) => (
-                            <span key={idx} className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
 
-                    {/* Contact Information */}
                     <div className="bg-gradient-to-r from-orange-50 to-yellow-50 p-6 rounded-xl border border-orange-200">
                       <h4 className="text-xl font-semibold text-gray-800 mb-4">Contact Information</h4>
                       <div className="space-y-4">
@@ -417,102 +377,33 @@ const FestivalDetailPage = () => {
             )}
           </div>
           
-          {/* Right Column - Festival Details */}
+          {/* Right Column - Contact Card */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-lg p-6 sticky top-6">
-              <h3 className="text-2xl font-bold text-gray-800 mb-6">Festival Details</h3>
+              <h3 className="text-2xl font-bold text-gray-800 mb-6">Contact Us</h3>
               
-              <div className="space-y-6">
-                {/* Quick Info */}
-                <div className="space-y-4">
-                  <div className="flex items-center text-gray-600">
-                    <svg className="w-5 h-5 mr-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"/>
-                    </svg>
-                    <span className="font-medium">Preparation Time: {festival.prepTime || '2-3 hours'}</span>
-                  </div>
-                  
-                  <div className="flex items-center text-gray-600">
-                    <svg className="w-5 h-5 mr-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd"/>
-                    </svg>
-                    <span className="font-medium">Serves: {festival.serves || '5-10 people'}</span>
-                  </div>
-                  
-                  <div className="flex items-center text-gray-600">
-                    <svg className="w-5 h-5 mr-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
-                    </svg>
-                    <span className="font-medium">Takeaway:</span>
-                    <a 
-                      href="https://www.google.com/maps?q=9.810390387387123,76.31189614366284"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-orange-500 hover:text-orange-600 text-sm font-medium mt-1 inline-flex items-center ml-2"
-                    >
-                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
-                      </svg>
-                      Location
-                    </a>
-                  </div>
-                </div>
+              <div className="space-y-3">
+                <a 
+                  href={whatsappURL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-green-600 text-white font-semibold py-3 rounded-lg hover:bg-green-700 transition-colors duration-300 flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.76.982.998-3.675-.236-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.9 6.994c-.004 5.45-4.438 9.88-9.888 9.88m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.333.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.333 11.893-11.893 0-3.18-1.24-6.162-3.495-8.411"/>
+                  </svg>
+                  WhatsApp Inquiry
+                </a>
                 
-                {/* Pricing Info */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex justify-between items-center mb-2">
-                  </div>
-                  <p className="text-sm text-gray-500">Prices may vary based on customization and quantity</p>
-                  <br />
-                  <p className="text-sm text-gray-500">🚚 Delivery not included unless pre-agreed</p>
-                </div>
-                
-                {/* Quick Contact Buttons */}
-                <div className="space-y-3">
-                  <a 
-                    href={whatsappURL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full bg-green-600 text-white font-semibold py-3 rounded-lg hover:bg-green-700 transition-colors duration-300 flex items-center justify-center gap-2"
-                  >
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.76.982.998-3.675-.236-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.9 6.994c-.004 5.45-4.438 9.88-9.888 9.88m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.333.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.333 11.893-11.893 0-3.18-1.24-6.162-3.495-8.411"/>
-                    </svg>
-                    WhatsApp Inquiry
-                  </a>
-                  
-                  <a 
-                    href={`tel:${callNumber}`}
-                    className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center gap-2"
-                  >
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
-                    </svg>
-                    Call for Details
-                  </a>
-                </div>
-                
-                {/* Additional Information */}
-                <div className="text-sm text-gray-500 space-y-3 pt-6 border-t">
-                  <p className="flex items-start">
-                    <svg className="w-4 h-4 text-green-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                    </svg>
-                    <span>Authentic traditional preparation</span>
-                  </p>
-                  <p className="flex items-start">
-                    <svg className="w-4 h-4 text-green-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                    </svg>
-                    <span>Fresh ingredients daily</span>
-                  </p>
-                  <p className="flex items-start">
-                    <svg className="w-4 h-4 text-green-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                    </svg>
-                    <span>Hygienic preparation & packaging</span>
-                  </p>
-                </div>
+                <a 
+                  href={`tel:${callNumber}`}
+                  className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                  </svg>
+                  Call for Details
+                </a>
               </div>
             </div>
           </div>
