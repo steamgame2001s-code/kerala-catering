@@ -9,20 +9,29 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaHome,
-  FaFileImage
+  FaFileImage,
+  FaBars,
+  FaTimes
 } from 'react-icons/fa';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import './AdminPages.css';
 
 const AdminSidebar = ({ isCollapsed, toggleCollapse }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   // Detect if mobile
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 992);
+      const mobile = window.innerWidth <= 992;
+      setIsMobile(mobile);
+      
+      // Close mobile menu if window is resized to desktop
+      if (!mobile) {
+        setIsMobileOpen(false);
+      }
     };
     
     checkMobile();
@@ -34,7 +43,20 @@ const AdminSidebar = ({ isCollapsed, toggleCollapse }) => {
   // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileOpen(false);
-  }, [navigate]);
+  }, [location]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobile && isMobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobile, isMobileOpen]);
 
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
@@ -53,6 +75,14 @@ const AdminSidebar = ({ isCollapsed, toggleCollapse }) => {
     }
   };
 
+  const handleOverlayClick = () => {
+    setIsMobileOpen(false);
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileOpen(!isMobileOpen);
+  };
+
   const menuItems = [
     { path: '/admin/dashboard', icon: <FaTachometerAlt />, label: 'Dashboard' },
     { path: '/admin/dashboard/festivals', icon: <FaCalendarAlt />, label: 'Festivals' },
@@ -67,18 +97,18 @@ const AdminSidebar = ({ isCollapsed, toggleCollapse }) => {
       {isMobile && (
         <button 
           className="mobile-sidebar-toggle"
-          onClick={() => setIsMobileOpen(!isMobileOpen)}
-          aria-label="Toggle sidebar"
+          onClick={toggleMobileMenu}
+          aria-label={isMobileOpen ? "Close menu" : "Open menu"}
         >
-          <FaTachometerAlt />
+          {isMobileOpen ? <FaTimes /> : <FaBars />}
         </button>
       )}
 
       {/* Overlay for mobile */}
-      {isMobile && isMobileOpen && (
+      {isMobile && (
         <div 
-          className="sidebar-overlay active"
-          onClick={() => setIsMobileOpen(false)}
+          className={`sidebar-overlay ${isMobileOpen ? 'active' : ''}`}
+          onClick={handleOverlayClick}
         />
       )}
 
@@ -92,7 +122,11 @@ const AdminSidebar = ({ isCollapsed, toggleCollapse }) => {
             </div>
           )}
           {!isMobile && (
-            <button className="sidebar-collapse-btn" onClick={toggleCollapse}>
+            <button 
+              className="sidebar-collapse-btn" 
+              onClick={toggleCollapse}
+              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
               {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
             </button>
           )}

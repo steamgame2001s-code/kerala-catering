@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from '../../api/axiosConfig'; // FIXED: Updated path for admin folder
+import axios from '../../api/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 
 const DashboardHome = () => {
@@ -149,22 +149,22 @@ const DashboardHome = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
-        <p className="ml-4 text-gray-600">Loading dashboard...</p>
+      <div className="flex flex-col items-center justify-center min-h-[300px] gap-4 px-4 sm:px-6">
+        <div className="w-12 h-12 border-4 border-gray-200 border-t-orange-500 rounded-full animate-spin"></div>
+        <p className="text-gray-600">Loading dashboard...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h3 className="text-red-800 font-semibold mb-2">Error Loading Dashboard</h3>
-          <p className="text-red-600">{error}</p>
+      <div className="p-4 sm:p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 sm:p-6">
+          <h3 className="text-red-800 font-semibold mb-2 text-lg sm:text-xl">Error Loading Dashboard</h3>
+          <p className="text-red-600 mb-4">{error}</p>
           <button 
             onClick={fetchDashboardData}
-            className="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
             Retry
           </button>
@@ -174,25 +174,25 @@ const DashboardHome = () => {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">
+    <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6">
         {dashboardConfig.title}
       </h1>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {/* Stats Grid - Responsive */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* Festivals Card */}
         <div 
-          className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200 cursor-pointer hover:shadow-xl"
+          className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-4 sm:p-6 text-white transform hover:scale-105 transition-transform duration-200 cursor-pointer hover:shadow-xl min-h-[100px] sm:min-h-[140px]"
           onClick={() => handleQuickAccess('festivals')}
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-blue-100 text-sm font-medium">Festivals</p>
-              <p className="text-4xl font-bold mt-2">{stats.festivals || 0}</p>
+          <div className="flex items-center justify-between h-full">
+            <div className="flex-1">
+              <p className="text-blue-100 text-xs sm:text-sm font-medium mb-2 sm:mb-4">Festivals</p>
+              <p className="text-2xl sm:text-3xl lg:text-4xl font-bold">{stats.festivals || 0}</p>
             </div>
-            <div className="bg-white bg-opacity-20 p-3 rounded-full">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white bg-opacity-20 p-2 sm:p-3 rounded-full w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 flex-shrink-0 flex items-center justify-center">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
               </svg>
             </div>
@@ -201,16 +201,16 @@ const DashboardHome = () => {
 
         {/* Menu Card */}
         <div 
-          className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200 cursor-pointer hover:shadow-xl"
+          className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-4 sm:p-6 text-white transform hover:scale-105 transition-transform duration-200 cursor-pointer hover:shadow-xl min-h-[100px] sm:min-h-[140px]"
           onClick={() => handleQuickAccess('menu')}
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-green-100 text-sm font-medium">Menu Items</p>
-              <p className="text-4xl font-bold mt-2">{stats.foodItems || 0}</p>
+          <div className="flex items-center justify-between h-full">
+            <div className="flex-1">
+              <p className="text-green-100 text-xs sm:text-sm font-medium mb-2 sm:mb-4">Menu Items</p>
+              <p className="text-2xl sm:text-3xl lg:text-4xl font-bold">{stats.foodItems || 0}</p>
             </div>
-            <div className="bg-white bg-opacity-20 p-3 rounded-full">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white bg-opacity-20 p-2 sm:p-3 rounded-full w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 flex-shrink-0 flex items-center justify-center">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
             </div>
@@ -219,16 +219,16 @@ const DashboardHome = () => {
 
         {/* Gallery Card */}
         <div 
-          className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200 cursor-pointer hover:shadow-xl"
+          className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-4 sm:p-6 text-white transform hover:scale-105 transition-transform duration-200 cursor-pointer hover:shadow-xl min-h-[100px] sm:min-h-[140px]"
           onClick={() => handleQuickAccess('gallery')}
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-purple-100 text-sm font-medium">Gallery Items</p>
-              <p className="text-4xl font-bold mt-2">{stats.gallery || 0}</p>
+          <div className="flex items-center justify-between h-full">
+            <div className="flex-1">
+              <p className="text-purple-100 text-xs sm:text-sm font-medium mb-2 sm:mb-4">Gallery Items</p>
+              <p className="text-2xl sm:text-3xl lg:text-4xl font-bold">{stats.gallery || 0}</p>
             </div>
-            <div className="bg-white bg-opacity-20 p-3 rounded-full">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white bg-opacity-20 p-2 sm:p-3 rounded-full w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 flex-shrink-0 flex items-center justify-center">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
@@ -237,16 +237,16 @@ const DashboardHome = () => {
 
         {/* Festival Menu Card */}
         <div 
-          className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200 cursor-pointer hover:shadow-xl"
+          className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-4 sm:p-6 text-white transform hover:scale-105 transition-transform duration-200 cursor-pointer hover:shadow-xl min-h-[100px] sm:min-h-[140px]"
           onClick={() => handleQuickAccess('festival-menu')}
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-orange-100 text-sm font-medium">Festival Menu</p>
-              <p className="text-4xl font-bold mt-2">{stats.festivalMenu || 0}</p>
+          <div className="flex items-center justify-between h-full">
+            <div className="flex-1">
+              <p className="text-orange-100 text-xs sm:text-sm font-medium mb-2 sm:mb-4">Festival Menu</p>
+              <p className="text-2xl sm:text-3xl lg:text-4xl font-bold">{stats.festivalMenu || 0}</p>
             </div>
-            <div className="bg-white bg-opacity-20 p-3 rounded-full">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white bg-opacity-20 p-2 sm:p-3 rounded-full w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 flex-shrink-0 flex items-center justify-center">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
@@ -254,23 +254,23 @@ const DashboardHome = () => {
         </div>
       </div>
 
-      {/* Recent Activity Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Recent Activity Section - Responsive */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Recent Activities */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-800">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 min-h-[300px] sm:min-h-[400px] flex flex-col">
+          <div className="flex items-center justify-between mb-4 sm:mb-6 flex-wrap gap-2 sm:gap-0">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">
               {dashboardConfig.sections.recentActivities}
             </h2>
-            <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-sm font-semibold">
+            <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap">
               {stats.recentActivities?.length || 0} activities
             </span>
           </div>
           
           {stats.recentActivities && stats.recentActivities.length > 0 ? (
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="space-y-3 flex-1 overflow-y-auto pr-2 max-h-[350px] sm:max-h-[400px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
               {stats.recentActivities.map((activity, index) => (
-                <div key={index} className="flex items-start space-x-3 p-3 bg-gradient-to-r from-orange-50 to-white rounded-lg border border-orange-100 hover:shadow-md transition-shadow">
+                <div key={index} className="flex items-start gap-3 p-3 bg-gradient-to-r from-orange-50 to-white rounded-lg border border-orange-100 hover:shadow-md transition-all duration-200 hover:translate-x-1">
                   {getActionIcon(activity.type)}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-800 truncate">
@@ -289,13 +289,13 @@ const DashboardHome = () => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex-1 flex flex-col items-center justify-center py-8 sm:py-12 px-4">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 sm:w-8 sm:h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                 </svg>
               </div>
-              <p className="text-gray-500">
+              <p className="text-gray-500 text-center text-sm sm:text-base">
                 {dashboardConfig.emptyStates.activities}
               </p>
             </div>
@@ -303,26 +303,26 @@ const DashboardHome = () => {
         </div>
 
         {/* Recent Inquiries */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-800">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 min-h-[300px] sm:min-h-[400px] flex flex-col">
+          <div className="flex items-center justify-between mb-4 sm:mb-6 flex-wrap gap-2 sm:gap-0">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">
               {dashboardConfig.sections.recentInquiries}
             </h2>
-            <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-sm font-semibold">
+            <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap">
               {stats.recentInquiries?.length || 0} inquiries
             </span>
           </div>
           
           {stats.recentInquiries && stats.recentInquiries.length > 0 ? (
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="space-y-3 flex-1 overflow-y-auto pr-2 max-h-[350px] sm:max-h-[400px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
               {stats.recentInquiries.map((inquiry) => (
-                <div key={inquiry._id} className="p-4 bg-gradient-to-r from-orange-50 to-white rounded-lg border border-orange-100 hover:shadow-md transition-shadow">
-                  <div className="flex justify-between items-start mb-2">
+                <div key={inquiry._id} className="p-3 sm:p-4 bg-gradient-to-r from-orange-50 to-white rounded-lg border border-orange-100 hover:shadow-md transition-all duration-200">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-800">{inquiry.name}</p>
-                      <p className="text-sm text-gray-600">{inquiry.email || inquiry.phone}</p>
+                      <p className="font-semibold text-gray-800 text-sm sm:text-base">{inquiry.name}</p>
+                      <p className="text-xs sm:text-sm text-gray-600">{inquiry.email || inquiry.phone}</p>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ml-2 font-semibold ${
+                    <span className={`text-xs px-2 py-1 rounded-full font-semibold w-fit ${
                       inquiry.status === 'responded' 
                         ? 'bg-green-100 text-green-700' 
                         : 'bg-yellow-100 text-yellow-700'
@@ -330,19 +330,19 @@ const DashboardHome = () => {
                       {inquiry.status}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 line-clamp-2 mb-2">{inquiry.message || inquiry.comments}</p>
+                  <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mb-2">{inquiry.message || inquiry.comments}</p>
                   <p className="text-xs text-gray-400">{formatTime(inquiry.createdAt)}</p>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex-1 flex flex-col items-center justify-center py-8 sm:py-12 px-4">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 sm:w-8 sm:h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                 </svg>
               </div>
-              <p className="text-gray-500">
+              <p className="text-gray-500 text-center text-sm sm:text-base">
                 {dashboardConfig.emptyStates.inquiries}
               </p>
             </div>
