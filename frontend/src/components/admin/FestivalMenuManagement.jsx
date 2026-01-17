@@ -1,4 +1,4 @@
-// frontend/src/components/admin/FestivalMenuManagement.jsx - VERCEL VERSION
+// frontend/src/components/admin/FestivalMenuManagement.jsx - FIXED VERSION
 import React, { useState, useEffect } from 'react';
 import { FaUpload, FaTrash, FaImage, FaSpinner } from 'react-icons/fa';
 import '../../components/admin/AdminPages.css';
@@ -12,26 +12,22 @@ const FestivalMenuManagement = () => {
   const [imagePreview, setImagePreview] = useState('');
   const [caption, setCaption] = useState('');
 
-  // Get API URL from environment variable
-  const API_URL = process.env.REACT_APP_API_URL || '';
+  // FIXED: Get API URL from environment variable with fallback
+  const API_URL = process.env.REACT_APP_API_URL || 'https://your-backend-url.onrender.com';
 
   useEffect(() => {
+    console.log('🌐 API_URL:', API_URL);
     fetchFestivals();
   }, []);
 
   const getAbsoluteImageUrl = (url) => {
     if (!url) return '';
-    
-    // If URL already has http:// or https://, return as is
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
-    
-    // For relative paths
     if (url.startsWith('/')) {
       return `${API_URL}${url}`;
     }
-    
     return `${API_URL}/${url}`;
   };
 
@@ -39,7 +35,6 @@ const FestivalMenuManagement = () => {
     try {
       setLoading(true);
       
-      // Get token from localStorage
       const token = localStorage.getItem('adminToken');
       console.log('Token:', token ? 'Present' : 'Missing');
       
@@ -49,16 +44,46 @@ const FestivalMenuManagement = () => {
         return;
       }
       
-      // Use the CORRECT route that exists in your backend
-      const response = await fetch(`${API_URL}/api/admin/festivals/menu-management`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      // FIXED: Try multiple possible routes
+      const possibleRoutes = [
+        '/api/admin/festivals',
+        '/api/festivals', 
+        '/admin/festivals'
+      ];
       
-      console.log('Response status:', response.status);
+      let response = null;
+      let successRoute = null;
+      
+      for (const route of possibleRoutes) {
+        try {
+          console.log(`🌐 Trying route: ${API_URL}${route}`);
+          
+          const testResponse = await fetch(`${API_URL}${route}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          console.log(`📡 Response for ${route}: ${testResponse.status}`);
+          
+          if (testResponse.ok) {
+            response = testResponse;
+            successRoute = route;
+            break;
+          }
+        } catch (err) {
+          console.log(`❌ Route ${route} failed:`, err.message);
+          continue;
+        }
+      }
+      
+      if (!response) {
+        throw new Error('Could not connect to any backend route');
+      }
+      
+      console.log(`✅ Successfully connected using route: ${successRoute}`);
       
       if (response.status === 401) {
         console.error('Token invalid, redirecting to login');
@@ -83,7 +108,7 @@ const FestivalMenuManagement = () => {
       }
     } catch (error) {
       console.error('Error fetching festivals:', error);
-      alert('Failed to load festivals. Please check your connection.');
+      alert('Failed to load festivals: ' + error.message + '\n\nPlease check:\n1. Backend is running\n2. REACT_APP_API_URL is set correctly\n3. Network connection');
     } finally {
       setLoading(false);
     }
@@ -92,13 +117,11 @@ const FestivalMenuManagement = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
         alert('Image size should be less than 5MB');
         return;
       }
       
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         alert('Please select a valid image file (JPG, PNG, GIF, etc.)');
         return;
@@ -149,12 +172,10 @@ const FestivalMenuManagement = () => {
       if (data.success) {
         alert('Menu image uploaded successfully!');
         
-        // Reset form
         setImageFile(null);
         setImagePreview('');
         setCaption('');
         
-        // Refresh festivals
         fetchFestivals();
       } else {
         alert(data.error || 'Failed to upload image');

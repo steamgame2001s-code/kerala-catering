@@ -1,19 +1,50 @@
-// COMPLETE SECTION TO ADD/REPLACE IN backend/routes/admin.js
+// backend/routes/admin.js - ADD THESE ROUTES
 
+const express = require('express');
+const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const Festival = require('../models/Festival');
+const { verifyAdmin } = require('../middleware/authMiddleware'); // Adjust based on your auth
 
-// ========== FESTIVAL MENU IMAGES MULTER CONFIG ==========
-const menuStorage = multer.diskStorage({
+// ========== FESTIVAL MULTER CONFIG ==========
+const festivalStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = path.join(__dirname, '../uploads/festival-menus/');
-    
-    // Create directory if it doesn't exist
+    const uploadPath = path.join(__dirname, '../uploads/festivals/');
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
-    
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, `festival-${uniqueSuffix}${ext}`);
+  }
+});
+
+const uploadFestival = multer({
+  storage: festivalStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb(new Error('Only image files are allowed!'));
+  }
+});
+
+// ========== MENU IMAGES MULTER CONFIG ==========
+const menuStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(__dirname, '../uploads/festival-menus/');
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
@@ -25,25 +56,269 @@ const menuStorage = multer.diskStorage({
 
 const uploadMenuImage = multer({
   storage: menuStorage,
-  limits: { 
-    fileSize: 5 * 1024 * 1024 // 5MB limit
-  },
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif/;
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
-    
     if (mimetype && extname) {
-      console.log('✅ File type valid:', file.mimetype);
       return cb(null, true);
-    } else {
-      console.log('❌ Invalid file type:', file.mimetype);
-      cb(new Error('Only image files (JPG, PNG, GIF) are allowed!'));
     }
+    cb(new Error('Only image files are allowed!'));
   }
 });
 
-// ========== UPLOAD MENU IMAGE ROUTE (FILE UPLOAD) ==========
+// ========== GET ALL FESTIVALS (ADMIN) ==========
+router.get('/festivals', verifyAdmin, async (req, res) => {
+  try {
+    console.log('📋 Fetching all festivals for admin');
+    
+    const festivals = await Festival.find().sort({ createdAt: -1 });
+    
+    console.log(`✅ Found ${festivals.length} festivals`);
+    
+    res.json({
+      success: true,
+      festivals: festivals
+    });
+  } catch (error) {
+    console.error('❌ Error fetching festivals:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch festivals',
+      message: error.message
+    });
+  }
+});
+
+// ========== GET SINGLE FESTIVAL BY ID (ADMIN) ==========
+router.get('/festivals/:id', verifyAdmin, async (req, res) => {
+  try {
+    console.log('🔍 Fetching festival:', req.params.id);
+    
+    const festival = await Festival.findById(req.params.id);
+    
+    if (!festival) {
+      return res.status(404).json({
+        success: false,
+        error: 'Festival not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      festival: festival
+    });
+  } catch (error) {
+    console.error('❌ Error fetching festival:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch festival',
+      message: error.message
+    });
+  }
+});
+
+// ========== CREATE FESTIVAL ==========
+router.post('/festivals', 
+  verifyAdmin, 
+  uploadFestival.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'bannerImage', maxCount: 1 }
+  ]), 
+  async (req, res) => {
+    try {
+      console.log('➕ Creating new festival');
+      console.log('Body:', req.body);
+      console.log('Files:', req.files);
+      
+      const festivalData = {
+        name: req.body.name,
+        slug: req.body.slug || req.body.name.toLowerCase().replace(/\s+/g, '-'),
+        description: req.body.description,
+        rating: req.body.rating || 4.5,
+        reviewCount: req.body.reviewCount || 0,
+        isFeatured: req.body.isFeatured === 'true',
+        isActive: req.body.isActive === 'true'
+      };
+      
+      // Handle main image
+      if (req.files && req.files.image && req.files.image[0]) {
+        festivalData.image = `/uploads/festivals/${req.files.image[0].filename}`;
+      } else if (req.body.imageUrl) {
+        festivalData.image = req.body.imageUrl;
+      } else {
+        return res.status(400).json({
+          success: false,
+          error: 'Main image is required'
+        });
+      }
+      
+      // Handle banner image
+      if (req.files && req.files.bannerImage && req.files.bannerImage[0]) {
+        festivalData.bannerImage = `/uploads/festivals/${req.files.bannerImage[0].filename}`;
+      } else if (req.body.bannerImageUrl) {
+        festivalData.bannerImage = req.body.bannerImageUrl;
+      }
+      
+      // Handle arrays
+      if (req.body.categories) {
+        festivalData.categories = req.body.categories.split(',').map(c => c.trim()).filter(Boolean);
+      }
+      if (req.body.popularItems) {
+        festivalData.popularItems = req.body.popularItems.split(',').map(p => p.trim()).filter(Boolean);
+      }
+      if (req.body.highlights) {
+        festivalData.highlights = req.body.highlights.split(',').map(h => h.trim()).filter(Boolean);
+      }
+      if (req.body.tags) {
+        festivalData.tags = req.body.tags.split(',').map(t => t.trim()).filter(Boolean);
+      }
+      
+      // Handle optional fields
+      if (req.body.festivalDates) festivalData.festivalDates = req.body.festivalDates;
+      if (req.body.deliveryInfo) festivalData.deliveryInfo = req.body.deliveryInfo;
+      if (req.body.specialNote) festivalData.specialNote = req.body.specialNote;
+      
+      const festival = new Festival(festivalData);
+      await festival.save();
+      
+      console.log('✅ Festival created:', festival.name);
+      
+      res.status(201).json({
+        success: true,
+        message: 'Festival created successfully',
+        festival: festival
+      });
+      
+    } catch (error) {
+      console.error('❌ Error creating festival:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to create festival',
+        message: error.message
+      });
+    }
+  }
+);
+
+// ========== UPDATE FESTIVAL ==========
+router.put('/festivals/:id', 
+  verifyAdmin, 
+  uploadFestival.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'bannerImage', maxCount: 1 }
+  ]), 
+  async (req, res) => {
+    try {
+      console.log('✏️ Updating festival:', req.params.id);
+      
+      const festival = await Festival.findById(req.params.id);
+      
+      if (!festival) {
+        return res.status(404).json({
+          success: false,
+          error: 'Festival not found'
+        });
+      }
+      
+      // Update basic fields
+      festival.name = req.body.name || festival.name;
+      festival.slug = req.body.slug || festival.slug;
+      festival.description = req.body.description || festival.description;
+      festival.rating = req.body.rating || festival.rating;
+      festival.reviewCount = req.body.reviewCount || festival.reviewCount;
+      festival.isFeatured = req.body.isFeatured === 'true';
+      festival.isActive = req.body.isActive === 'true';
+      
+      // Update main image
+      if (req.files && req.files.image && req.files.image[0]) {
+        festival.image = `/uploads/festivals/${req.files.image[0].filename}`;
+      } else if (req.body.imageUrl) {
+        festival.image = req.body.imageUrl;
+      }
+      
+      // Update banner image
+      if (req.files && req.files.bannerImage && req.files.bannerImage[0]) {
+        festival.bannerImage = `/uploads/festivals/${req.files.bannerImage[0].filename}`;
+      } else if (req.body.bannerImageUrl) {
+        festival.bannerImage = req.body.bannerImageUrl;
+      }
+      
+      // Update arrays
+      if (req.body.categories) {
+        festival.categories = req.body.categories.split(',').map(c => c.trim()).filter(Boolean);
+      }
+      if (req.body.popularItems) {
+        festival.popularItems = req.body.popularItems.split(',').map(p => p.trim()).filter(Boolean);
+      }
+      if (req.body.highlights) {
+        festival.highlights = req.body.highlights.split(',').map(h => h.trim()).filter(Boolean);
+      }
+      if (req.body.tags) {
+        festival.tags = req.body.tags.split(',').map(t => t.trim()).filter(Boolean);
+      }
+      
+      // Update optional fields
+      if (req.body.festivalDates) festival.festivalDates = req.body.festivalDates;
+      if (req.body.deliveryInfo) festival.deliveryInfo = req.body.deliveryInfo;
+      if (req.body.specialNote) festival.specialNote = req.body.specialNote;
+      
+      await festival.save();
+      
+      console.log('✅ Festival updated:', festival.name);
+      
+      res.json({
+        success: true,
+        message: 'Festival updated successfully',
+        festival: festival
+      });
+      
+    } catch (error) {
+      console.error('❌ Error updating festival:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to update festival',
+        message: error.message
+      });
+    }
+  }
+);
+
+// ========== DELETE FESTIVAL ==========
+router.delete('/festivals/:id', verifyAdmin, async (req, res) => {
+  try {
+    console.log('🗑️ Deleting festival:', req.params.id);
+    
+    const festival = await Festival.findById(req.params.id);
+    
+    if (!festival) {
+      return res.status(404).json({
+        success: false,
+        error: 'Festival not found'
+      });
+    }
+    
+    await Festival.findByIdAndDelete(req.params.id);
+    
+    console.log('✅ Festival deleted:', festival.name);
+    
+    res.json({
+      success: true,
+      message: 'Festival deleted successfully'
+    });
+    
+  } catch (error) {
+    console.error('❌ Error deleting festival:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete festival',
+      message: error.message
+    });
+  }
+});
+
+// ========== UPLOAD MENU IMAGE ==========
 router.post('/festivals/:id/menu-images', 
   verifyAdmin, 
   uploadMenuImage.single('image'), 
@@ -95,7 +370,7 @@ router.post('/festivals/:id/menu-images',
         imageUrl = `/uploads/festival-menus/${req.file.filename}`;
         console.log('✅ Using uploaded file:', imageUrl);
       } 
-      // Priority 2: Check for URL in body (fallback for URL-based uploads)
+      // Priority 2: Check for URL in body
       else if (req.body.imageUrl) {
         imageUrl = req.body.imageUrl;
         console.log('✅ Using provided URL:', imageUrl);
@@ -143,7 +418,7 @@ router.post('/festivals/:id/menu-images',
   }
 );
 
-// ========== DELETE MENU IMAGE ROUTE ==========
+// ========== DELETE MENU IMAGE ==========
 router.delete('/festivals/:festivalId/menu-images/:imageId', 
   verifyAdmin, 
   async (req, res) => {
@@ -223,3 +498,33 @@ router.delete('/festivals/:festivalId/menu-images/:imageId',
     }
   }
 );
+
+// ========== GET FESTIVAL WITH MENU (ADMIN) ==========
+router.get('/festivals/:id/menu', verifyAdmin, async (req, res) => {
+  try {
+    console.log('📋 Fetching festival with menu:', req.params.id);
+    
+    const festival = await Festival.findById(req.params.id);
+    
+    if (!festival) {
+      return res.status(404).json({
+        success: false,
+        error: 'Festival not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      festival: festival
+    });
+  } catch (error) {
+    console.error('❌ Error fetching festival:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch festival',
+      message: error.message
+    });
+  }
+});
+
+module.exports = router;

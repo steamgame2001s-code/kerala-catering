@@ -1,4 +1,4 @@
-// frontend/src/components/admin/FestivalManagement.jsx - VERCEL VERSION
+// frontend/src/components/admin/FestivalManagement.jsx - FIXED VERSION
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaEye, FaSpinner, FaUpload } from 'react-icons/fa';
 import FestivalCard from '../FestivalCard';
@@ -29,38 +29,31 @@ const FestivalManagement = () => {
     isActive: true
   });
 
-  // ADD THESE STATES FOR FILE UPLOAD
   const [imageFile, setImageFile] = useState(null);
   const [bannerImageFile, setBannerImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [bannerImagePreview, setBannerImagePreview] = useState('');
 
-  // Get API URL from environment variable
-  const API_URL = process.env.REACT_APP_API_URL || '';
+  // FIXED: Get API URL from environment variable with fallback
+  const API_URL = process.env.REACT_APP_API_URL || 'https://your-backend-url.onrender.com';
 
   useEffect(() => {
     console.log('🎬 FestivalManagement component mounted');
+    console.log('🌐 API_URL:', API_URL);
     fetchFestivals();
   }, []);
 
-  // Helper function to get absolute image URLs
   const getAbsoluteImageUrl = (url) => {
     if (!url) return '';
-    
-    // If URL already has http:// or https://, return as is
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
-    
-    // For relative paths
     if (url.startsWith('/')) {
       return `${API_URL}${url}`;
     }
-    
     return `${API_URL}/${url}`;
   };
 
-  // FIXED: Using direct fetch instead of axiosInstance
   const fetchFestivals = async () => {
     console.log('🚀 fetchFestivals called');
     
@@ -68,7 +61,6 @@ const FestivalManagement = () => {
       setLoading(true);
       setError('');
       
-      // Get token from localStorage
       const token = localStorage.getItem('adminToken');
       console.log('📊 Token exists:', !!token);
       
@@ -79,52 +71,76 @@ const FestivalManagement = () => {
         return;
       }
       
-      console.log('🌐 Making API request to /admin/festivals...');
+      // FIXED: Try multiple possible route patterns
+      const possibleRoutes = [
+        '/api/admin/festivals',
+        '/api/festivals',
+        '/admin/festivals'
+      ];
       
-      // USE DIRECT FETCH WITH ENVIRONMENT VARIABLE
-      const response = await fetch(`${API_URL}/api/admin/festivals`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      let response = null;
+      let successRoute = null;
+      
+      for (const route of possibleRoutes) {
+        try {
+          console.log(`🌐 Trying route: ${API_URL}${route}`);
+          
+          const testResponse = await fetch(`${API_URL}${route}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          console.log(`📡 Response for ${route}: ${testResponse.status}`);
+          
+          if (testResponse.ok) {
+            response = testResponse;
+            successRoute = route;
+            break;
+          }
+        } catch (err) {
+          console.log(`❌ Route ${route} failed:`, err.message);
+          continue;
         }
-      });
-      
-      console.log('📡 Response status:', response.status);
-      
-      // Handle unauthorized
-      if (response.status === 401) {
-        console.error('❌ 401 Unauthorized');
-        localStorage.removeItem('adminToken');
-        setError('Session expired. Please login again.');
-        setTimeout(() => {
-          window.location.href = '/admin/login';
-        }, 2000);
-        return;
       }
       
-      // Handle other errors
-      if (!response.ok) {
+      if (!response || !response.ok) {
+        if (!response) {
+          throw new Error('Could not connect to server. All routes failed.');
+        }
+        
+        if (response.status === 401) {
+          console.error('❌ 401 Unauthorized');
+          localStorage.removeItem('adminToken');
+          setError('Session expired. Please login again.');
+          setTimeout(() => {
+            window.location.href = '/admin/login';
+          }, 2000);
+          return;
+        }
+        
         const errorText = await response.text();
         console.error('❌ HTTP error:', response.status, errorText);
-        setError(`Server error: ${response.status}`);
-        return;
+        throw new Error(`Server error: ${response.status}`);
       }
       
-      // Parse successful response
+      console.log(`✅ Successfully connected using route: ${successRoute}`);
+      
       const data = await response.json();
       console.log('✅ API response success:', data.success);
       console.log('🎉 Festivals count:', data.festivals?.length || 0);
       
       if (data.success) {
-        setFestivals(data.festivals);
+        setFestivals(data.festivals || []);
       } else {
         setError(data.error || 'Failed to load festivals');
       }
       
     } catch (error) {
       console.error('💥 Network error:', error);
-      setError('Network error: ' + error.message);
+      setError('Error: ' + error.message + '. Please check your backend URL in .env file.');
     } finally {
       console.log('🏁 Loading complete');
       setLoading(false);
@@ -151,7 +167,6 @@ const FestivalManagement = () => {
       isActive: festival.isActive !== false
     });
     
-    // Set image previews if images exist
     if (festival.image) {
       setImagePreview(getAbsoluteImageUrl(festival.image));
     }
@@ -159,10 +174,8 @@ const FestivalManagement = () => {
       setBannerImagePreview(getAbsoluteImageUrl(festival.bannerImage));
     }
     
-    // Clear file states
     setImageFile(null);
     setBannerImageFile(null);
-    
     setShowForm(true);
   };
 
@@ -194,7 +207,6 @@ const FestivalManagement = () => {
     }
   };
 
-  // ADD FILE HANDLING FUNCTIONS
   const handleImageChange = (e, type) => {
     const file = e.target.files[0];
     if (file) {
@@ -215,7 +227,6 @@ const FestivalManagement = () => {
     try {
       const token = localStorage.getItem('adminToken');
       
-      // Prepare FormData for file upload
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
       formDataToSend.append('description', formData.description);
@@ -232,18 +243,15 @@ const FestivalManagement = () => {
       formDataToSend.append('isFeatured', formData.isFeatured);
       formDataToSend.append('isActive', formData.isActive);
       
-      // Add image files if selected
       if (imageFile) {
         formDataToSend.append('image', imageFile);
       } else if (editingFestival && editingFestival.image && !imageFile) {
-        // If editing and no new file, keep existing image URL
         formDataToSend.append('imageUrl', editingFestival.image);
       }
       
       if (bannerImageFile) {
         formDataToSend.append('bannerImage', bannerImageFile);
       } else if (editingFestival && editingFestival.bannerImage && !bannerImageFile) {
-        // If editing and no new file, keep existing banner image URL
         formDataToSend.append('bannerImageUrl', editingFestival.bannerImage);
       }
 
@@ -260,7 +268,6 @@ const FestivalManagement = () => {
         method: method,
         headers: {
           'Authorization': `Bearer ${token}`
-          // Don't set Content-Type for FormData, browser will set it with boundary
         },
         body: formDataToSend
       });
@@ -307,20 +314,27 @@ const FestivalManagement = () => {
     setBannerImagePreview('');
   };
 
-  // ADD ERROR DISPLAY
   if (error) {
     return (
       <div className="admin-page">
         <div className="error-container">
           <h2>Error Loading Festivals</h2>
           <p>{error}</p>
-          <button className="btn-primary" onClick={fetchFestivals}>
+          <div style={{ marginTop: '20px', padding: '15px', background: '#fff3cd', borderRadius: '8px' }}>
+            <p style={{ margin: 0, fontSize: '14px' }}>
+              <strong>Troubleshooting:</strong><br/>
+              1. Check your .env file has REACT_APP_API_URL={API_URL}<br/>
+              2. Verify your backend is running<br/>
+              3. Make sure the route exists in backend/routes/admin.js
+            </p>
+          </div>
+          <button className="btn-primary" onClick={fetchFestivals} style={{ marginTop: '15px' }}>
             Try Again
           </button>
           <button 
             className="btn-secondary" 
             onClick={() => window.location.href = '/admin/login'}
-            style={{ marginLeft: '10px' }}
+            style={{ marginLeft: '10px', marginTop: '15px' }}
           >
             Go to Login
           </button>
@@ -354,7 +368,6 @@ const FestivalManagement = () => {
         </button>
       </div>
 
-      {/* Stats Bar */}
       <div className="stats-bar">
         <div className="stat-item">
           <span className="stat-number">{festivals.length}</span>
@@ -374,7 +387,6 @@ const FestivalManagement = () => {
         </div>
       </div>
 
-      {/* Festivals Grid */}
       <div className="festivals-grid">
         {festivals.length === 0 ? (
           <div className="empty-state">
@@ -403,7 +415,6 @@ const FestivalManagement = () => {
         )}
       </div>
 
-      {/* Add/Edit Form Modal */}
       {showForm && (
         <div className="modal-overlay" onClick={() => !formSubmitting && setShowForm(false)}>
           <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
@@ -458,7 +469,6 @@ const FestivalManagement = () => {
                   />
                 </div>
 
-                {/* UPDATED IMAGE UPLOAD SECTION */}
                 <div className="form-row">
                   <div className="form-group">
                     <label>Main Image *</label>
@@ -528,9 +538,7 @@ const FestivalManagement = () => {
                   </div>
                 </div>
 
-                {/* Rest of your form fields remain the same */}
                 <div className="form-row">
-                  
                   <div className="form-group">
                     <label>Rating</label>
                     <input
@@ -607,14 +615,14 @@ const FestivalManagement = () => {
 
                 <div className="form-group">
                   <label>Special Note</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.specialNote}
-                      onChange={(e) => setFormData({...formData, specialNote: e.target.value})}
-                      placeholder="Order before Dec 20th for guaranteed delivery"
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={formData.specialNote}
+                    onChange={(e) => setFormData({...formData, specialNote: e.target.value})}
+                    placeholder="Order before Dec 20th for guaranteed delivery"
+                  />
+                </div>
 
                 <div className="form-group">
                   <label>Highlights (comma separated)</label>

@@ -2338,6 +2338,98 @@ app.get('/api/debug/check-menu-images/:slug', async (req, res) => {
   }
 });
 
+// =================== ROOT ROUTE ===================
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Kerala Catering API Server',
+    version: '1.0.0',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/api/health',
+      ping: '/api/ping',
+      corsTest: '/api/cors-test',
+      festivals: '/api/festivals',
+      gallery: '/api/gallery',
+      admin: {
+        login: 'POST /api/admin/login',
+        dashboard: 'GET /api/admin/dashboard/stats',
+        festivals: 'GET /api/admin/festivals',
+        foodItems: 'GET /api/admin/food-items',
+        gallery: 'GET /api/admin/gallery'
+      },
+      public: {
+        festivals: 'GET /api/festivals',
+        festival: 'GET /api/festival/:slug',
+        food: 'GET /api/food',
+        gallery: 'GET /api/gallery'
+      },
+      email: {
+        test: 'GET /api/email/test',
+        inquiry: 'POST /api/email/send-inquiry'
+      },
+      actions: {
+        log: 'POST /api/actions/log',
+        stats: 'GET /api/actions/stats'
+      }
+    }
+  });
+});
+
+// =================== GLOBAL ERROR HANDLER ===================
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error('❌ Global Error Handler:', err);
+  
+  // Multer file upload errors
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({
+      success: false,
+      error: 'File too large. Maximum size is 10MB.'
+    });
+  }
+  
+  if (err.message && err.message.includes('Only image files')) {
+    return res.status(400).json({
+      success: false,
+      error: err.message
+    });
+  }
+  
+  // JWT errors
+  if (err.name === 'JsonWebTokenError') {
+    return res.status(401).json({
+      success: false,
+      error: 'Invalid token',
+      message: 'Please login again'
+    });
+  }
+  
+  if (err.name === 'TokenExpiredError') {
+    return res.status(401).json({
+      success: false,
+      error: 'Token expired',
+      message: 'Please login again'
+    });
+  }
+  
+  // MongoDB errors
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({
+      success: false,
+      error: 'Validation Error',
+      details: Object.values(err.errors).map(e => e.message)
+    });
+  }
+  
+  // Default error response
+  res.status(err.status || 500).json({
+    success: false,
+    error: err.message || 'Internal server error',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
+});
+
 // =================== 404 HANDLER ===================
 app.use('*', (req, res) => {
   console.log(`❌ Route not found: ${req.method} ${req.originalUrl}`);
@@ -2345,18 +2437,21 @@ app.use('*', (req, res) => {
     success: false,
     error: 'Route not found',
     message: `Route ${req.originalUrl} not found`,
-    path: req.originalUrl
+    path: req.originalUrl,
+    method: req.method
   });
 });
 
 // =================== SERVER START ===================
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`\n🚀 Server running on port ${PORT}`);
+  console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`📅 Started at: ${new Date().toLocaleString()}`);
   console.log(`📡 Test endpoints:`);
   console.log(`   http://localhost:${PORT}/api/ping`);
   console.log(`   http://localhost:${PORT}/api/health`);
-  console.log(`   http://localhost:${PORT}/api/cors-test`); // ADDED
+  console.log(`   http://localhost:${PORT}/api/cors-test`);
   console.log(`   http://localhost:${PORT}/api/festivals`);
   console.log(`   http://localhost:${PORT}/api/email/test`);
   console.log(`\n🔑 Admin login: POST http://localhost:${PORT}/api/admin/login`);
@@ -2386,3 +2481,30 @@ app.listen(PORT, () => {
   console.log(`   ${galleryDir}`);
   console.log(`\n🔍 Debug middleware active for POST routes`);
 });
+
+// =================== GRACEFUL SHUTDOWN ===================
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('⚠️ SIGTERM signal received: closing HTTP server');
+  mongoose.connection.close(false, () => {
+    console.log('✅ MongoDB connection closed');
+    server.close(() => {
+      console.log('✅ HTTP server closed');
+      process.exit(0);
+    });
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('⚠️ SIGINT signal received: closing HTTP server');
+  mongoose.connection.close(false, () => {
+    console.log('✅ MongoDB connection closed');
+    server.close(() => {
+      console.log('✅ HTTP server closed');
+      process.exit(0);
+    });
+  });
+});
+
+// =================== MODULE EXPORT ===================
+module.exports = app;

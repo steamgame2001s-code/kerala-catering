@@ -1,4 +1,4 @@
-// frontend/src/pages/FestivalDetailPage.jsx - VERCEL VERSION
+// frontend/src/pages/FestivalDetailPage.jsx - FIXED VERSION
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
@@ -6,21 +6,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 const getAbsoluteImageUrl = (url) => {
   if (!url) return null;
   
-  // If URL already has http:// or https://, return as is
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
   }
   
-  // For Vercel: Use relative paths or environment variable
-  // If it's a local path starting with /uploads
+  const apiUrl = process.env.REACT_APP_API_URL || '';
+  
   if (url.startsWith('/uploads')) {
-    // Use environment variable or default to relative path
-    const apiUrl = process.env.REACT_APP_API_URL || '';
     return `${apiUrl}${url}`;
   }
   
-  // For relative paths
-  const apiUrl = process.env.REACT_APP_API_URL || '';
   return `${apiUrl}/${url.replace(/^\//, '')}`;
 };
 
@@ -70,7 +65,6 @@ const MenuGallery = ({ festival }) => {
               key={menuImage._id || index} 
               className="group cursor-pointer rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-4 border-orange-500 bg-white"
               onClick={() => {
-                // Open image in new tab
                 if (absoluteUrl) {
                   window.open(absoluteUrl, '_blank');
                 }
@@ -131,6 +125,9 @@ const FestivalDetailPage = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('menu');
 
+  // FIXED: Get API URL from environment variable with fallback
+  const API_URL = process.env.REACT_APP_API_URL || 'https://your-backend-url.onrender.com';
+
   useEffect(() => {
     const fetchFestivalData = async () => {
       try {
@@ -138,17 +135,48 @@ const FestivalDetailPage = () => {
         setError(null);
         
         console.log(`🔍 Fetching festival data for slug: ${slug}`);
+        console.log('🌐 API_URL:', API_URL);
         
-        // Use environment variable for API URL
-        const apiUrl = process.env.REACT_APP_API_URL || '';
-        const response = await fetch(`${apiUrl}/api/festival/${slug}`);
+        // FIXED: Try multiple possible routes
+        const possibleRoutes = [
+          `/api/festival/${slug}`,
+          `/api/festivals/${slug}`,
+          `/festival/${slug}`,
+          `/festivals/${slug}`
+        ];
         
-        if (!response.ok) {
+        let response = null;
+        let successRoute = null;
+        
+        for (const route of possibleRoutes) {
+          try {
+            console.log(`🌐 Trying route: ${API_URL}${route}`);
+            
+            const testResponse = await fetch(`${API_URL}${route}`);
+            
+            console.log(`📡 Response for ${route}: ${testResponse.status}`);
+            
+            if (testResponse.ok) {
+              response = testResponse;
+              successRoute = route;
+              break;
+            }
+          } catch (err) {
+            console.log(`❌ Route ${route} failed:`, err.message);
+            continue;
+          }
+        }
+        
+        if (!response || !response.ok) {
+          if (!response) {
+            throw new Error(`Could not connect to server. Please check:\n1. Backend is running\n2. REACT_APP_API_URL is set to: ${API_URL}\n3. Network connection`);
+          }
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
-        const data = await response.json();
+        console.log(`✅ Successfully connected using route: ${successRoute}`);
         
+        const data = await response.json();
         console.log('📦 API Response:', data);
         
         if (data.success) {
@@ -173,7 +201,7 @@ const FestivalDetailPage = () => {
       setError('No festival specified');
       setLoading(false);
     }
-  }, [slug]);
+  }, [slug, API_URL]);
 
   if (loading) {
     return (
@@ -189,10 +217,21 @@ const FestivalDetailPage = () => {
   if (error) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-center">
+        <div className="text-center max-w-2xl mx-auto p-8">
           <div className="text-red-500 text-5xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Something went wrong</h2>
           <p className="text-gray-600 mb-6">{error}</p>
+          
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 text-left">
+            <p className="text-sm text-yellow-800">
+              <strong>Troubleshooting:</strong><br/>
+              • Check if backend is running<br/>
+              • Verify REACT_APP_API_URL in .env: {API_URL}<br/>
+              • Ensure the festival route exists in backend<br/>
+              • Check network connection
+            </p>
+          </div>
+          
           <div className="space-x-4">
             <button 
               onClick={() => navigate('/festivals')}
@@ -230,13 +269,11 @@ const FestivalDetailPage = () => {
     );
   }
 
-  // WhatsApp contact info - HARDCODED TO +91 9447975836
-  const whatsappNumber = '9447975836'; // Always use this number
+  // WhatsApp contact info - HARDCODED
+  const whatsappNumber = '9447975836';
   const whatsappMessage = `Hello! I'm interested in the ${festival.name} festival menu.`;
   const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
-
-  // Call number - HARDCODED TO +91 9447975836
-  const callNumber = '+919447975836'; // Always use this number for calls
+  const callNumber = '+919447975836';
 
   return (
     <div className="festival-detail-page">
@@ -294,9 +331,7 @@ const FestivalDetailPage = () => {
             {/* Menu Items Tab */}
             {activeTab === 'menu' && (
               <>
-                {/* Menu Gallery */}
                 <MenuGallery festival={festival} />
-
                 <div className="mt-8 text-gray-500 text-sm">
                   <p>We respond within 15 minutes during business hours (9 AM - 9 PM)</p>
                 </div>
@@ -325,7 +360,6 @@ const FestivalDetailPage = () => {
                     </div>
                   )}
 
-                  {/* Traditional Significance */}
                   <div className="mt-10 p-6 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl border-l-4 border-orange-500">
                     <h4 className="text-2xl font-bold text-gray-800 mb-4">Traditional Significance</h4>
                     <p className="text-gray-700 mb-4">
@@ -411,7 +445,6 @@ const FestivalDetailPage = () => {
                       </div>
                     )}
 
-                    {/* Contact Information */}
                     <div className="bg-gradient-to-r from-orange-50 to-yellow-50 p-6 rounded-xl border border-orange-200">
                       <h4 className="text-xl font-semibold text-gray-800 mb-4">Contact Information</h4>
                       <div className="space-y-4">
@@ -437,7 +470,6 @@ const FestivalDetailPage = () => {
               <h3 className="text-2xl font-bold text-gray-800 mb-6">Festival Details</h3>
               
               <div className="space-y-6">
-                {/* Quick Info */}
                 <div className="space-y-4">
                   <div className="flex items-center text-gray-600">
                     <svg className="w-5 h-5 mr-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
@@ -472,7 +504,6 @@ const FestivalDetailPage = () => {
                   </div>
                 </div>
                 
-                {/* Pricing Info */}
                 <div className="bg-gray-50 rounded-lg p-4">
                   <div className="flex justify-between items-center mb-2">
                   </div>
@@ -481,7 +512,6 @@ const FestivalDetailPage = () => {
                   <p className="text-sm text-gray-500">🚚 Delivery not included unless pre-agreed</p>
                 </div>
                 
-                {/* Quick Contact Buttons */}
                 <div className="space-y-3">
                   <a 
                     href={whatsappURL}
@@ -506,7 +536,6 @@ const FestivalDetailPage = () => {
                   </a>
                 </div>
                 
-                {/* Additional Information */}
                 <div className="text-sm text-gray-500 space-y-3 pt-6 border-t">
                   <p className="flex items-start">
                     <svg className="w-4 h-4 text-green-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
