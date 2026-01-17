@@ -1,7 +1,7 @@
+// frontend/src/components/FestivalMenuImages.jsx - VERCEL VERSION
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaUpload, FaTrash, FaSpinner, FaImage, FaFileUpload } from 'react-icons/fa';
-import axiosInstance from '../../api/axiosConfig'; // ADD THIS IMPORT
 import './AdminPages.css';
 
 const FestivalMenuImages = () => {
@@ -16,20 +16,51 @@ const FestivalMenuImages = () => {
   const [caption, setCaption] = useState('');
   const [uploading, setUploading] = useState(false);
 
+  // Get API URL from environment variable
+  const API_URL = process.env.REACT_APP_API_URL || '';
+
   useEffect(() => {
     fetchFestival();
   }, [id]);
+
+  const getAbsoluteImageUrl = (url) => {
+    if (!url) return '';
+    
+    // If URL already has http:// or https://, return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    
+    // For relative paths
+    if (url.startsWith('/')) {
+      return `${API_URL}${url}`;
+    }
+    
+    return `${API_URL}/${url}`;
+  };
 
   const fetchFestival = async () => {
     try {
       setLoading(true);
       setError('');
       
+      const token = localStorage.getItem('adminToken');
+      
+      if (!token) {
+        navigate('/admin/login');
+        return;
+      }
+
       console.log('🔍 Fetching festival:', id);
       
-      const response = await axiosInstance.get(`/admin/festivals/${id}/menu`);
-      
-      const data = response.data;
+      const response = await fetch(`${API_URL}/api/admin/festivals/${id}/menu`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
       
       if (data.success && data.festival) {
         console.log('✅ Festival loaded:', data.festival.name);
@@ -56,18 +87,24 @@ const FestivalMenuImages = () => {
       return;
     }
     
-    const maxSize = 10 * 1024 * 1024;
+    const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
       alert('❌ File too large. Maximum 10MB');
       return;
     }
     
-    console.log('✅ File selected:', { name: file.name, type: file.type, size: `${(file.size / 1024).toFixed(2)} KB` });
+    console.log('✅ File selected:', {
+      name: file.name,
+      type: file.type,
+      size: `${(file.size / 1024).toFixed(2)} KB`
+    });
     
     setImageFile(file);
     
     const reader = new FileReader();
-    reader.onloadend = () => setImagePreview(reader.result);
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
     reader.readAsDataURL(file);
   };
 
@@ -91,33 +128,59 @@ const FestivalMenuImages = () => {
     try {
       setUploading(true);
       
-      const formData = new FormData();
-      formData.append('image', imageFile);
-      formData.append('caption', caption.trim());
+      const token = localStorage.getItem('adminToken');
+      
+      if (!token) {
+        alert('❌ Not authenticated. Please login.');
+        navigate('/admin/login');
+        return;
+      }
       
       console.log('📤 Preparing upload...');
+      console.log('Festival ID:', id);
+      console.log('File:', imageFile.name, imageFile.type, `${(imageFile.size / 1024).toFixed(2)} KB`);
       
-      const response = await axiosInstance.post(
-        `/admin/festivals/${id}/menu-images`,
-        formData,
+      // Create FormData
+      const formData = new FormData();
+      formData.append('image', imageFile); // Field name MUST be 'image'
+      formData.append('caption', caption.trim());
+      
+      console.log('📦 FormData created with fields:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}:`, value instanceof File ? `${value.name} (${value.type})` : value);
+      }
+      
+      console.log('🌐 Sending request to server...');
+      
+      // Make fetch request
+      const response = await fetch(
+        `${API_URL}/api/admin/festivals/${id}/menu-images`,
         {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+            // DO NOT set Content-Type - browser sets it automatically with boundary
+          },
+          body: formData
         }
       );
 
       console.log('📡 Response status:', response.status);
       
-      const data = response.data;
+      const data = await response.json();
+      console.log('📦 Response data:', data);
       
-      if (response.status === 201 && data.success) {
+      if (response.ok && data.success) {
         console.log('✅ Upload successful!');
         alert('✅ Menu image uploaded successfully!');
         
+        // Reset form
         setImageFile(null);
         setImagePreview(null);
         setCaption('');
         clearFileSelection();
         
+        // Refresh data
         fetchFestival();
       } else {
         console.error('❌ Upload failed:', data.error);
@@ -139,13 +202,22 @@ const FestivalMenuImages = () => {
     }
 
     try {
-      const response = await axiosInstance.delete(
-        `/admin/festivals/${id}/menu-images/${imageId}`
+      const token = localStorage.getItem('adminToken');
+      
+      const response = await fetch(
+        `${API_URL}/api/admin/festivals/${id}/menu-images/${imageId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
       );
 
-      const data = response.data;
+      const data = await response.json();
       
-      if (response.status === 200 && data.success) {
+      if (response.ok && data.success) {
         alert('✅ Image deleted!');
         fetchFestival();
       } else {
@@ -444,7 +516,7 @@ const FestivalMenuImages = () => {
                 }}>
                   <div style={{ height: '180px', position: 'relative' }}>
                     <img
-                      src={image.imageUrl}
+                      src={getAbsoluteImageUrl(image.imageUrl)}
                       alt={`Menu ${index + 1}`}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       onError={(e) => {
@@ -476,6 +548,9 @@ const FestivalMenuImages = () => {
                     <h4 style={{ margin: '0 0 5px 0' }}>
                       {image.caption || `Menu ${index + 1}`}
                     </h4>
+                    <p style={{ margin: 0, fontSize: '14px', color: '#718096' }}>
+                      {image.imageUrl}
+                    </p>
                   </div>
                 </div>
               ))}

@@ -13,6 +13,9 @@ const FestivalMenuManagement = () => {
   const [imagePreview, setImagePreview] = useState('');
   const [caption, setCaption] = useState('');
 
+  // Get API URL from environment variable
+  const API_URL = process.env.REACT_APP_API_URL || '';
+
   useEffect(() => {
     fetchFestivals();
   }, []);
@@ -22,8 +25,8 @@ const FestivalMenuManagement = () => {
       setLoading(true);
       const token = localStorage.getItem('adminToken');
       
-      // Use the correct route from admin.js
-      const response = await axios.get('http://localhost:5000/api/admin/festivals-menu-management', {
+      // Use environment variable for API URL
+      const response = await axios.get(`${API_URL}/api/admin/festivals-menu-management`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -37,6 +40,22 @@ const FestivalMenuManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getAbsoluteImageUrl = (url) => {
+    if (!url) return '';
+    
+    // If URL already has http:// or https://, return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    
+    // For relative paths
+    if (url.startsWith('/')) {
+      return `${API_URL}${url}`;
+    }
+    
+    return `${API_URL}/${url}`;
   };
 
   const handleImageChange = (e) => {
@@ -88,7 +107,7 @@ const FestivalMenuManagement = () => {
       formData.append('caption', caption);
 
       const response = await axios.post(
-        `http://localhost:5000/api/admin/festivals/${selectedFestival}/menu-images`,
+        `${API_URL}/api/admin/festivals/${selectedFestival}/menu-images`,
         formData,
         {
           headers: {
@@ -125,7 +144,7 @@ const FestivalMenuManagement = () => {
     try {
       const token = localStorage.getItem('adminToken');
       const response = await axios.delete(
-        `http://localhost:5000/api/admin/festivals/${festivalId}/menu-images/${imageId}`,
+        `${API_URL}/api/admin/festivals/${festivalId}/menu-images/${imageId}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -260,7 +279,7 @@ const FestivalMenuManagement = () => {
                       {selectedFestivalData.menuImages.map((image, index) => (
                         <div key={image._id} className="menu-image-card">
                           <img
-                            src={`http://localhost:5000${image.imageUrl}`}
+                            src={getAbsoluteImageUrl(image.imageUrl)}
                             alt={image.caption || `Menu ${index + 1}`}
                             className="menu-image"
                             onError={(e) => {
@@ -314,7 +333,7 @@ const FestivalMenuManagement = () => {
             >
               <div className="festival-overview-content">
                 <img
-                  src={`http://localhost:5000${festival.image}`}
+                  src={getAbsoluteImageUrl(festival.image)}
                   alt={festival.name}
                   className="festival-overview-image"
                   onError={(e) => {
