@@ -1,12 +1,20 @@
-// backend/routes/admin.js - ADD THESE ROUTES
+// backend/routes/admin.js - COMPLETE FILE
 
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+
+// Import models
 const Festival = require('../models/Festival');
-const { verifyAdmin } = require('../middleware/authMiddleware'); // Adjust based on your auth
+const FoodItem = require('../models/FoodItem');
+const Gallery = require('../models/Gallery');
+const Inquiry = require('../models/Inquiry');
+const UserAction = require('../models/UserAction');
+
+// Import middleware
+const { verifyAdmin } = require('../middleware/authMiddleware');
 
 // ========== FESTIVAL MULTER CONFIG ==========
 const festivalStorage = multer.diskStorage({
@@ -65,6 +73,173 @@ const uploadMenuImage = multer({
       return cb(null, true);
     }
     cb(new Error('Only image files are allowed!'));
+  }
+});
+
+// ========== DASHBOARD STATS ENDPOINT ==========
+router.get('/dashboard/stats', verifyAdmin, async (req, res) => {
+  try {
+    console.log('\n📊 === FETCHING DASHBOARD STATS ===');
+    
+    // Get counts in parallel for better performance
+    const [
+      festivalsCount,
+      foodItemsCount,
+      galleryCount,
+      totalInquiries,
+      pendingInquiries,
+      recentInquiries,
+      recentActions
+    ] = await Promise.all([
+      // Count festivals
+      Festival.countDocuments(),
+      
+      // Count food items
+      FoodItem.countDocuments(),
+      
+      // Count gallery items
+      Gallery.countDocuments(),
+      
+      // Count all inquiries
+      Inquiry.countDocuments(),
+      
+      // Count pending inquiries
+      Inquiry.countDocuments({ status: { $in: ['new', 'pending'] } }),
+      
+      // Get recent 10 inquiries
+      Inquiry.find()
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .lean(),
+      
+      // Get recent 10 user actions
+      UserAction.find()
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .lean()
+    ]);
+    
+    // Count festival menu images
+    const festivalsWithMenus = await Festival.find({ 
+      menuImages: { $exists: true, $ne: [] } 
+    });
+    const festivalMenuCount = festivalsWithMenus.reduce((total, festival) => {
+      return total + (festival.menuImages ? festival.menuImages.length : 0);
+    }, 0);
+    
+    // Format recent activities from user actions
+    const recentActivities = recentActions.map(action => ({
+      type: action.type,
+      action: `${action.type.charAt(0).toUpperCase() + action.type.slice(1)} action`,
+      details: action.userInfo || action.name || action.phone || 'User interaction',
+      timestamp: action.createdAt,
+      page: action.page
+    }));
+    
+    // Prepare stats object
+    const stats = {
+      festivals: festivalsCount,
+      foodItems: foodItemsCount,
+      totalMenuItems: foodItemsCount, // Alias
+      gallery: galleryCount,
+      festivalMenu: festivalMenuCount,
+      totalInquiries: totalInquiries,
+      pendingInquiries: pendingInquiries,
+      totalActions: recentActions.length,
+      recentActivities: recentActivities,
+      recentInquiries: recentInquiries.map(inq => ({
+        _id: inq._id,
+        name: inq.name,
+        email: inq.email,
+        phone: inq.phone,
+        message: inq.comments || inq.message,
+        status: inq.status || 'new',
+        createdAt: inq.createdAt
+      }))
+    };
+    
+    console.log('✅ Stats compiled:', {
+      festivals: stats.festivals,
+      foodItems: stats.foodItems,
+      gallery: stats.gallery,
+      festivalMenu: stats.festivalMenu,
+      inquiries: stats.totalInquiries,
+      activities: stats.recentActivities.length
+    });
+    console.log('=====================================\n');
+    
+    res.json({
+      success: true,
+      stats: stats
+    });
+    
+  } catch (error) {
+    console.error('❌ Error fetching dashboard stats:', error);
+    console.log('=====================================\n');
+    
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch dashboard stats',
+      message: error.message
+    });
+  }
+});
+
+// ========== RECENT ACTIVITIES ENDPOINT ==========
+router.get('/dashboard/activities', verifyAdmin, async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    
+    const actions = await UserAction.find()
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+    
+    const activities = actions.map(action => ({
+      type: action.type,
+      action: `${action.type.charAt(0).toUpperCase() + action.type.slice(1)} action`,
+      details: action.userInfo || action.name || action.phone || 'User interaction',
+      timestamp: action.createdAt,
+      page: action.page
+    }));
+    
+    res.json({
+      success: true,
+      activities: activities
+    });
+    
+  } catch (error) {
+    console.error('❌ Error fetching activities:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch activities',
+      message: error.message
+    });
+  }
+});
+
+// ========== RECENT INQUIRIES ENDPOINT ==========
+router.get('/dashboard/inquiries', verifyAdmin, async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    
+    const inquiries = await Inquiry.find()
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+    
+    res.json({
+      success: true,
+      inquiries: inquiries
+    });
+    
+  } catch (error) {
+    console.error('❌ Error fetching inquiries:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch inquiries',
+      message: error.message
+    });
   }
 });
 

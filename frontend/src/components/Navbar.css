@@ -43,14 +43,14 @@
 }
 
 .navbar-container {
-  max-width: 1200px;
+  max-width: 1400px; /* Increased from 1200px */
   margin: 0 auto;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2rem;
-  gap: 2rem;
+  padding: 0 1.5rem; /* Reduced from 2rem */
+  gap: 1rem; /* Reduced from 2rem */
 }
 
 /* Logo Section */
@@ -66,11 +66,11 @@
 .logo-wrapper {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px; /* Reduced from 12px */
 }
 
 .logo-image {
-  height: 50px;
+  height: 45px; /* Reduced from 50px */
   width: auto;
   object-fit: contain;
 }
@@ -81,7 +81,7 @@
 }
 
 .logo-main {
-  font-size: 22px;
+  font-size: 20px; /* Reduced from 22px */
   font-weight: 800;
   color: var(--orange);
   line-height: 1;
@@ -89,9 +89,9 @@
 }
 
 .logo-sub {
-  font-size: 11px;
+  font-size: 10px; /* Reduced from 11px */
   color: var(--gray);
-  letter-spacing: 1.2px;
+  letter-spacing: 1px; /* Reduced from 1.2px */
   text-transform: uppercase;
   margin-top: 2px;
   font-weight: 500;
@@ -102,12 +102,13 @@
   flex: 1;
   display: flex;
   justify-content: center;
+  min-width: 0; /* Allow flex item to shrink */
 }
 
 .nav-list {
   display: flex;
   list-style: none;
-  gap: 4px;
+  gap: 2px; /* Reduced from 4px */
 }
 
 .nav-item {
@@ -117,12 +118,12 @@
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px; /* Reduced from 8px */
   text-decoration: none;
   color: var(--dark);
   font-weight: 500;
-  font-size: 15px;
-  padding: 10px 18px;
+  font-size: 14px; /* Reduced from 15px */
+  padding: 8px 14px; /* Reduced from 10px 18px */
   border-radius: 8px;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -130,8 +131,8 @@
 
 .nav-link i {
   color: var(--orange);
-  font-size: 14px;
-  width: 16px;
+  font-size: 13px; /* Reduced from 14px */
+  width: 14px; /* Reduced from 16px */
   text-align: center;
 }
 
@@ -144,7 +145,7 @@
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 10px; /* Reduced from 15px */
   flex-shrink: 0;
 }
 
@@ -161,7 +162,7 @@
   border-radius: 30px;
   overflow: hidden;
   transition: all 0.3s ease;
-  width: 260px;
+  width: 200px; /* Reduced from 260px */
 }
 
 .search-form:focus-within {
@@ -172,8 +173,8 @@
 .search-input {
   flex: 1;
   border: none;
-  padding: 10px 18px;
-  font-size: 14px;
+  padding: 8px 14px; /* Reduced from 10px 18px */
+  font-size: 13px; /* Reduced from 14px */
   color: var(--dark);
   background: transparent;
   outline: none;
@@ -189,8 +190,8 @@
   background: var(--orange);
   border: none;
   color: white;
-  width: 42px;
-  height: 42px;
+  width: 38px; /* Reduced from 42px */
+  height: 38px; /* Reduced from 42px */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -205,7 +206,7 @@
 }
 
 .search-btn i {
-  font-size: 16px;
+  font-size: 14px; /* Reduced from 16px */
 }
 
 /* Login Icon Button */
@@ -213,16 +214,16 @@
   background: none;
   border: none;
   color: var(--orange);
-  font-size: 24px;
+  font-size: 22px; /* Reduced from 24px */
   cursor: pointer;
-  padding: 8px;
+  padding: 6px; /* Reduced from 8px */
   border-radius: 50%;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 38px; /* Reduced from 42px */
+  height: 38px; /* Reduced from 42px */
 }
 
 .login-icon-btn:hover {
@@ -241,18 +242,18 @@
 /* Action Buttons */
 .action-buttons {
   display: flex;
-  gap: 12px;
+  gap: 8px; /* Reduced from 12px */
 }
 
 .btn-whatsapp,
 .btn-call {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
+  gap: 6px; /* Reduced from 8px */
+  padding: 8px 16px; /* Reduced from 10px 20px */
   border: none;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px; /* Reduced from 14px */
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -282,7 +283,7 @@
 
 .btn-whatsapp i,
 .btn-call i {
-  font-size: 16px;
+  font-size: 14px; /* Reduced from 16px */
 }
 
 /* Mobile Toggle Button */
@@ -509,6 +510,43 @@
 }
 
 /* Responsive Design */
+
+/* Large Desktop - Add new breakpoint for better scaling */
+@media (min-width: 1441px) {
+  .navbar-container {
+    max-width: 1600px;
+    padding: 0 2rem;
+    gap: 1.5rem;
+  }
+  
+  .search-form {
+    width: 260px;
+  }
+  
+  .btn-whatsapp,
+  .btn-call {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
+
+/* Tablet Landscape & Small Desktop */
+@media (min-width: 993px) and (max-width: 1440px) {
+  .navbar-container {
+    padding: 0 1.25rem;
+  }
+  
+  .search-form {
+    width: 180px;
+  }
+  
+  .btn-whatsapp span,
+  .btn-call span {
+    display: inline; /* Keep text visible */
+  }
+}
+
+/* Tablets and below */
 @media (max-width: 992px) {
   .navbar-nav,
   .navbar-right {
@@ -556,29 +594,6 @@
   
   .logo-sub {
     font-size: 9px;
-  }
-}
-
-/* Tablet Landscape */
-@media (min-width: 993px) and (max-width: 1199px) {
-  .navbar-container {
-    padding: 0 1.5rem;
-  }
-  
-  .search-form {
-    width: 220px;
-  }
-  
-  .btn-whatsapp,
-  .btn-call {
-    padding: 10px 16px;
-  }
-}
-
-/* Large Desktop */
-@media (min-width: 1200px) {
-  .navbar-right {
-    gap: 20px;
   }
 }
 
