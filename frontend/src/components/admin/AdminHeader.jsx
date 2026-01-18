@@ -1,18 +1,28 @@
 // frontend/src/components/admin/AdminHeader.jsx - CLEAN VERSION (NO NOTIFICATIONS)
 import React from 'react';
 import { FaUserCircle, FaBars } from 'react-icons/fa';
-import './AdminPages.css';
 import './AdminPages.css';  // Single CSS file
 
-const AdminHeader = ({ toggleSidebar }) => {
+const AdminHeader = ({ toggleSidebar, isMobile }) => {
   const adminName = localStorage.getItem('adminName') || 'Admin';
 
   return (
     <header className="admin-header">
       <div className="header-left">
-        <button className="sidebar-toggle" onClick={toggleSidebar}>
-          <FaBars />
-        </button>
+        {/* Mobile toggle button - shown only on mobile */}
+        {isMobile && (
+          <button className="mobile-sidebar-toggle" onClick={toggleSidebar}>
+            <FaBars />
+          </button>
+        )}
+        
+        {/* Desktop toggle button - shown only on desktop */}
+        {!isMobile && (
+          <button className="desktop-sidebar-toggle" onClick={toggleSidebar}>
+            <FaBars />
+          </button>
+        )}
+        
         <div className="header-brand">
           <h1>Kerala Catering</h1>
           <span className="header-subtitle">Admin Panel</span>
@@ -20,8 +30,6 @@ const AdminHeader = ({ toggleSidebar }) => {
       </div>
       
       <div className="header-right">
-        {/* Notification bell completely removed */}
-        
         <div className="admin-profile">
           <div className="admin-avatar">
             <FaUserCircle />

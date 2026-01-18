@@ -1,8 +1,8 @@
-// frontend/src/components/admin/FestivalManagement.jsx - FIXED VERSION
+// frontend/src/components/admin/FestivalManagement.jsx
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaEye, FaSpinner, FaUpload } from 'react-icons/fa';
 import FestivalCard from '../FestivalCard';
-import '../../components/admin/AdminPages.css';
+import './AdminPages.css'; // Change from '../../components/admin/AdminPages.css'
 
 const FestivalManagement = () => {
   const [festivals, setFestivals] = useState([]);

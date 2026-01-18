@@ -1,3 +1,4 @@
+// frontend/src/components/admin/AdminLayout.jsx
 import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import AdminHeader from "./AdminHeader";
@@ -60,14 +61,6 @@ const AdminLayout = () => {
 
   return (
     <div className="admin-layout">
-      {/* ================= MOBILE OVERLAY ================= */}
-      {isMobile && isMobileSidebarOpen && (
-        <div
-          className="sidebar-overlay active"
-          onClick={closeMobileSidebar}
-        />
-      )}
-
       {/* ================= SIDEBAR ================= */}
       <AdminSidebar
         isCollapsed={!isMobile && isSidebarCollapsed}

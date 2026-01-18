@@ -1,8 +1,8 @@
-// frontend/src/components/FestivalMenuImages.jsx - VERCEL VERSION
+// frontend/src/components/admin/FestivalMenuImages.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaUpload, FaTrash, FaSpinner, FaImage, FaFileUpload } from 'react-icons/fa';
-import './AdminPages.css';
+import './AdminPages.css'; // This is correct
 
 const FestivalMenuImages = () => {
   const { id } = useParams();

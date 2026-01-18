@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaSpinner, FaUpload, FaEye } from 'react-icons/fa';
 import axiosInstance from '../../api/axiosConfig';
-import './AdminPages.css';
+import './AdminPages.css'; // Should be at the top
 
 const GalleryManagement = () => {
   const [gallery, setGallery] = useState([]);
