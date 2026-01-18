@@ -9,6 +9,8 @@ const nodemailer = require('nodemailer');
 const multer = require('multer');
 const fs = require('fs');
 const cloudinary = require('cloudinary').v2; // ADDED: Cloudinary
+// Add near other imports
+const sendGridService = require('./services/sendgridService');
 
 dotenv.config();
 
