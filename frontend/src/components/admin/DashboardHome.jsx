@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../../api/axiosConfig';
-import '../components/admin/AdminDashboard.css';
 import '../components/admin/AdminPages.css';
 import { useNavigate } from 'react-router-dom';
 

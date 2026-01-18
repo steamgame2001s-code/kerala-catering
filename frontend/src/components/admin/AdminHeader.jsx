@@ -2,6 +2,7 @@
 import React from 'react';
 import { FaUserCircle, FaBars } from 'react-icons/fa';
 import './AdminPages.css';
+import './AdminPages.css';  // Single CSS file
 
 const AdminHeader = ({ toggleSidebar }) => {
   const adminName = localStorage.getItem('adminName') || 'Admin';

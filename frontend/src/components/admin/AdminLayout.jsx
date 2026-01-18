@@ -2,10 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import AdminHeader from "./AdminHeader";
 import AdminSidebar from "./AdminSidebar";
-import './admin-layout.css';
-import './admin-sidebar.css';
-import './admin-dashboard.css';
-import './admin-pages.css';
 import "./AdminPages.css";
 
 const AdminLayout = () => {
