@@ -1,6 +1,8 @@
+// frontend/src/components/admin/VerifyOTP.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaArrowLeft, FaKey, FaCheck, FaSpinner, FaRedo } from 'react-icons/fa';
+import axios from '../../api/axiosConfig'; // Import axios instance
 import './VerifyOTP.css';
 
 const VerifyOTP = () => {
@@ -101,33 +103,29 @@ const VerifyOTP = () => {
     setMessage('');
     
     try {
-      const response = await fetch('http://localhost:5000/api/admin/verify-otp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, otp: otpString })
+      // Use axios instance instead of fetch
+      const response = await axios.post('/admin/verify-otp', { 
+        email, 
+        otp: otpString 
       });
       
-      const data = await response.json();
-      
-      if (data.success) {
+      if (response.data.success) {
         setMessage('OTP verified successfully!');
         // Redirect to reset password page with token
         setTimeout(() => {
           navigate('/admin/reset-password', { 
             state: { 
               email, 
-              resetToken: data.resetToken 
+              resetToken: response.data.resetToken 
             } 
           });
         }, 1000);
       } else {
-        setError(data.error || 'Invalid OTP');
+        setError(response.data.error || 'Invalid OTP');
       }
     } catch (err) {
-      setError('Network error. Please try again.');
       console.error('Verify OTP error:', err);
+      setError(err.response?.data?.error || 'Network error. Please try again.');
     }
     
     setLoading(false);
@@ -143,27 +141,21 @@ const VerifyOTP = () => {
     setTimer(600); // Reset to 10 minutes
     
     try {
-      const response = await fetch('http://localhost:5000/api/admin/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email })
-      });
+      // Use axios instance instead of fetch
+      const response = await axios.post('/admin/forgot-password', { email });
       
-      const data = await response.json();
-      
-      if (data.success) {
+      if (response.data.success) {
         setMessage('New OTP has been sent to your email.');
         // Clear OTP inputs
         setOtp(['', '', '', '', '', '']);
         document.getElementById('otp-0').focus();
       } else {
-        setError(data.error || 'Failed to resend OTP');
+        setError(response.data.error || 'Failed to resend OTP');
         setCanResend(true);
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      console.error('Resend OTP error:', err);
+      setError(err.response?.data?.error || 'Network error. Please try again.');
       setCanResend(true);
     }
     

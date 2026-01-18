@@ -1,76 +1,91 @@
+// frontend/src/api/axiosConfig.js - UPDATED
 import axios from 'axios';
 
-// SMART API URL DETECTION
-const getApiBaseUrl = () => {
-  // Priority 1: Environment variable
-  if (process.env.REACT_APP_API_URL) {
-    console.log('🔧 Using env variable:', process.env.REACT_APP_API_URL);
-    return process.env.REACT_APP_API_URL;
+console.log('🔧 Axios Config Loading...');
+
+// Get API URL from environment variable
+const API_URL = process.env.REACT_APP_API_URL;
+
+console.log('🔧 Using env variable:', API_URL);
+
+// Fallback URLs for different environments
+const getApiUrl = () => {
+  if (API_URL) {
+    return API_URL;
   }
-  
-  // Priority 2: Detect Vercel production
-  const hostname = window.location.hostname;
-  const isVercel = hostname.includes('vercel.app');
-  const isProduction = process.env.NODE_ENV === 'production';
-  
-  if (isVercel || isProduction) {
-    console.log('🌐 Production detected, using Render backend');
-    return 'https://kerala-catering.onrender.com/api';
+
+  // Development fallback
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:10000/api';
   }
-  
-  // Priority 3: Local development
-  console.log('💻 Local development, using localhost:10000');
-  return 'http://localhost:10000/api';
+
+  // Production fallback
+  return 'https://kerala-catering.onrender.com/api';
 };
 
-const API_BASE_URL = getApiBaseUrl();
+const BASE_URL = getApiUrl();
 
-console.log('🎯 FINAL API URL:', API_BASE_URL);
+console.log('🎯 FINAL API URL:', BASE_URL);
 console.log('🌍 Hostname:', window.location.hostname);
 console.log('⚙️ NODE_ENV:', process.env.NODE_ENV);
 
+// Create axios instance with base URL
 const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 45000,
+  baseURL: BASE_URL,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
+  timeout: 30000, // 30 seconds timeout
 });
 
-// Add token to all requests automatically
+// Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('adminToken');
+    console.log(`🚀 ${config.method?.toUpperCase()} Request:`, config.url);
+    
+    // Add authorization token if available
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('🔑 Token attached to request');
     }
+    
     return config;
   },
   (error) => {
-    console.error('❌ Request error:', error);
+    console.error('❌ Request Error:', error);
     return Promise.reject(error);
   }
 );
 
-// Handle responses
+// Response interceptor
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`✅ ${response.status} Response:`, response.config.url);
+    return response;
+  },
   (error) => {
-    console.error('❌ API Error:', {
-      message: error.message,
+    console.error('❌ Response Error:', {
+      url: error.config?.url,
       status: error.response?.status,
-      url: error.config?.url
+      message: error.message,
+      data: error.response?.data
     });
-    
+
+    // Handle common errors
     if (error.response?.status === 401) {
+      console.log('🔒 Unauthorized - Clearing token');
       localStorage.removeItem('adminToken');
+      localStorage.removeItem('token');
       localStorage.removeItem('adminData');
       
-      if (window.location.pathname.includes('/admin')) {
+      // Only redirect if not on login page
+      if (!window.location.pathname.includes('/admin/login') && 
+          !window.location.pathname.includes('/login')) {
         window.location.href = '/admin/login';
       }
     }
-    
+
     return Promise.reject(error);
   }
 );

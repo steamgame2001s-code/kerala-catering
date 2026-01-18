@@ -1,6 +1,8 @@
+// frontend/src/components/admin/ForgotPassword.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaEnvelope, FaPaperPlane, FaSpinner } from 'react-icons/fa';
+import axios from '../../api/axiosConfig'; // Import axios instance
 import './ForgotPassword.css';
 
 const ForgotPassword = () => {
@@ -23,28 +25,21 @@ const ForgotPassword = () => {
     setMessage('');
     
     try {
-      const response = await fetch('http://localhost:5000/api/admin/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email })
-      });
+      // Use axios instance instead of fetch
+      const response = await axios.post('/admin/forgot-password', { email });
       
-      const data = await response.json();
-      
-      if (data.success) {
+      if (response.data.success) {
         setMessage('OTP has been sent to your email. Please check your inbox.');
         // Redirect to verify OTP page after 2 seconds
         setTimeout(() => {
           navigate('/admin/verify-otp', { state: { email } });
         }, 2000);
       } else {
-        setError(data.error || 'Failed to send OTP');
+        setError(response.data.error || 'Failed to send OTP');
       }
     } catch (err) {
-      setError('Network error. Please check your connection.');
       console.error('Forgot password error:', err);
+      setError(err.response?.data?.error || 'Network error. Please check your connection.');
     }
     
     setLoading(false);

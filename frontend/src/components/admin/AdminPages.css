@@ -484,15 +484,55 @@
   font-weight: 500;
 }
 
+/* frontend/src/components/admin/AdminPages.css - FIXED DESKTOP LAYOUT */
+
 /* ==================== RESPONSIVE BREAKPOINTS ==================== */
 
-/* Tablets and below (992px) */
-@media (max-width: 992px) {
-  /* Hide desktop collapse button */
-  .sidebar-collapse-btn {
-    display: none;
+/* Tablet (992px and below) - ONLY for tablets */
+@media (max-width: 992px) and (min-width: 769px) {
+  /* Adjust sidebar width for tablets */
+  .admin-sidebar {
+    width: 250px;
   }
   
+  .admin-main-content {
+    margin-left: 250px;
+  }
+  
+  .admin-sidebar.collapsed {
+    width: 80px;
+  }
+  
+  .admin-main-content.sidebar-collapsed {
+    margin-left: 80px;
+  }
+  
+  /* Show labels in collapsed mode on tablet */
+  .admin-sidebar.collapsed .menu-label,
+  .admin-sidebar.collapsed .sidebar-new-badge,
+  .admin-sidebar.collapsed .logout-btn span {
+    display: none !important;
+  }
+  
+  /* Keep menu items centered when collapsed on tablet */
+  .admin-sidebar.collapsed .menu-item {
+    justify-content: center;
+    padding: 18px 10px;
+  }
+  
+  /* Hide desktop toggle on tablet? Optional */
+  /* .desktop-sidebar-toggle {
+    display: flex !important;
+  } */
+  
+  /* Keep mobile toggle hidden on tablet */
+  .mobile-sidebar-toggle {
+    display: none !important;
+  }
+}
+
+/* Mobile Landscape (768px and below) - TRUE MOBILE */
+@media (max-width: 768px) {
   /* Show mobile toggle */
   .mobile-sidebar-toggle {
     display: flex;
@@ -500,7 +540,12 @@
     justify-content: center;
   }
   
-  /* Hide desktop sidebar toggle */
+  /* Hide desktop collapse button on mobile */
+  .sidebar-collapse-btn {
+    display: none;
+  }
+  
+  /* Hide desktop sidebar toggle on mobile */
   .desktop-sidebar-toggle {
     display: none;
   }
@@ -508,30 +553,33 @@
   /* Sidebar hidden by default on mobile */
   .admin-sidebar {
     transform: translateX(-100%);
-    width: 280px;
+    width: 280px !important; /* Force full width on mobile */
+    box-shadow: none;
+  }
+  
+  /* Don't collapse on mobile - always show full sidebar */
+  .admin-sidebar.collapsed {
+    width: 280px !important;
+    transform: translateX(-100%);
   }
   
   /* Show sidebar when mobile-open class is added */
-  .admin-sidebar.mobile-open {
+  .admin-sidebar.mobile-open,
+  .admin-sidebar.collapsed.mobile-open {
     transform: translateX(0);
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
   }
   
-  /* Don't collapse on mobile */
-  .admin-sidebar.collapsed {
-    width: 280px;
-  }
-  
   /* Always show labels on mobile */
-  .admin-sidebar.collapsed .menu-label,
-  .admin-sidebar.collapsed .sidebar-new-badge,
-  .admin-sidebar.collapsed .logout-btn span {
+  .admin-sidebar .menu-label,
+  .admin-sidebar .sidebar-new-badge,
+  .admin-sidebar .logout-btn span {
     display: block !important;
     opacity: 1 !important;
     width: auto !important;
   }
   
-  .admin-sidebar.collapsed .menu-item {
+  .admin-sidebar .menu-item {
     justify-content: flex-start;
     padding: 18px 25px;
   }
@@ -543,7 +591,7 @@
   }
   
   .admin-main-content.sidebar-collapsed {
-    margin-left: 0;
+    margin-left: 0 !important;
   }
   
   /* Adjust header for mobile */
@@ -564,55 +612,102 @@
   }
 }
 
-/* Mobile Portrait (768px and below) */
-@media (max-width: 768px) {
+/* Desktop (993px and above) - PROPER DESKTOP BEHAVIOR */
+@media (min-width: 993px) {
+  /* Ensure desktop behavior is correct */
   .admin-sidebar {
-    width: 260px;
+    transform: translateX(0) !important;
+    width: var(--admin-sidebar-width);
+  }
+  
+  .admin-sidebar.collapsed {
+    width: var(--admin-sidebar-collapsed);
+  }
+  
+  /* Main content adjusts to sidebar */
+  .admin-main-content {
+    margin-left: var(--admin-sidebar-width);
+  }
+  
+  .admin-main-content.sidebar-collapsed {
+    margin-left: var(--admin-sidebar-collapsed);
+  }
+  
+  /* Hide mobile toggle on desktop */
+  .mobile-sidebar-toggle {
+    display: none !important;
+  }
+  
+  /* Show desktop collapse button */
+  .sidebar-collapse-btn {
+    display: flex !important;
+  }
+  
+  /* Show desktop sidebar toggle */
+  .desktop-sidebar-toggle {
+    display: flex !important;
+  }
+  
+  /* Hide labels when collapsed on desktop */
+  .admin-sidebar.collapsed .menu-label,
+  .admin-sidebar.collapsed .sidebar-new-badge,
+  .admin-sidebar.collapsed .logout-btn span {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    display: block;
+  }
+  
+  /* Center menu items when collapsed on desktop */
+  .admin-sidebar.collapsed .menu-item {
+    justify-content: center;
+    padding: 18px 10px;
+  }
+}
+
+/* Mobile Portrait (480px and below) */
+@media (max-width: 480px) {
+  .admin-sidebar {
+    width: 240px !important;
   }
   
   .admin-sidebar.mobile-open {
-    width: 260px;
+    width: 240px !important;
   }
   
   .sidebar-header {
-    padding: 20px;
-    min-height: 100px;
+    padding: 16px;
+    min-height: 90px;
   }
   
   .sidebar-brand h2 {
-    font-size: 1.4rem;
-  }
-  
-  .sidebar-brand p {
-    font-size: 0.85rem;
-  }
-  
-  .menu-item {
-    padding: 16px 20px;
-    font-size: 14px;
-  }
-  
-  .menu-icon {
     font-size: 1.2rem;
   }
   
-  .logout-btn {
-    padding: 14px 20px;
-    font-size: 14px;
+  .menu-item {
+    padding: 14px 16px;
   }
   
   .mobile-sidebar-toggle {
-    top: 12px;
-    left: 12px;
-    padding: 10px;
-    font-size: 1.25rem;
+    top: 10px;
+    left: 10px;
+    padding: 8px;
   }
   
   .admin-header {
-    padding: 0 15px;
-    height: 65px;
+    padding: 0 12px;
   }
-  
+}
+
+/* Additional fix for desktop: prevent mobile overlay from showing */
+@media (min-width: 769px) {
+  .sidebar-overlay {
+    display: none !important;
+  }
+}
+
+/* Additional responsive adjustments */
+@media (max-width: 768px) {
   .admin-content {
     padding: 20px;
   }
@@ -627,56 +722,33 @@
   .page-header h2 {
     font-size: 1.6rem;
   }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-card {
+    padding: 20px;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .stat-icon {
+    margin-right: 0;
+    margin-bottom: 20px;
+  }
 }
 
 /* Small Mobile (480px and below) */
 @media (max-width: 480px) {
-  .admin-sidebar {
-    width: 240px;
-  }
-  
-  .admin-sidebar.mobile-open {
-    width: 240px;
-  }
-  
-  .sidebar-header {
-    padding: 16px;
-    min-height: 90px;
-  }
-  
-  .sidebar-brand h2 {
-    font-size: 1.2rem;
-  }
-  
-  .sidebar-brand p {
-    font-size: 0.8rem;
-  }
-  
-  .menu-item {
-    padding: 14px 16px;
-    font-size: 13px;
-  }
-  
-  .menu-icon {
-    font-size: 1.1rem;
-  }
-  
-  .logout-btn {
-    padding: 12px 16px;
-    font-size: 13px;
-  }
-  
-  .mobile-sidebar-toggle {
-    top: 10px;
-    left: 10px;
-    padding: 8px;
-    font-size: 1.125rem;
-  }
-  
-  .admin-header {
-    padding: 0 12px;
-  }
-  
   .admin-content {
     padding: 15px;
   }
@@ -688,8 +760,15 @@
   .page-header h2 {
     font-size: 1.4rem;
   }
+  
+  .dashboard-card {
+    padding: 20px;
+  }
+  
+  .stat-content h3 {
+    font-size: 2rem;
+  }
 }
-
 /* ==================== BUTTONS ==================== */
 .btn-primary {
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));

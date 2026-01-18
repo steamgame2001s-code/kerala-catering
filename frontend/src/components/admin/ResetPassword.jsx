@@ -1,6 +1,8 @@
+// frontend/src/components/admin/ResetPassword.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaArrowLeft, FaLock, FaCheck, FaSpinner, FaEye, FaEyeSlash } from 'react-icons/fa';
+import axios from '../../api/axiosConfig'; // Import axios instance
 import './ResetPassword.css';
 
 const ResetPassword = () => {
@@ -55,31 +57,24 @@ const ResetPassword = () => {
     setMessage('');
     
     try {
-      const response = await fetch('http://localhost:5000/api/admin/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          resetToken, 
-          newPassword 
-        })
+      // Use axios instance instead of fetch
+      const response = await axios.post('/admin/reset-password', { 
+        resetToken, 
+        newPassword 
       });
       
-      const data = await response.json();
-      
-      if (data.success) {
+      if (response.data.success) {
         setMessage('Password reset successful! Redirecting to login...');
         // Redirect to login page after 3 seconds
         setTimeout(() => {
           navigate('/admin/login');
         }, 3000);
       } else {
-        setError(data.error || 'Failed to reset password');
+        setError(response.data.error || 'Failed to reset password');
       }
     } catch (err) {
-      setError('Network error. Please try again.');
       console.error('Reset password error:', err);
+      setError(err.response?.data?.error || 'Network error. Please try again.');
     }
     
     setLoading(false);
