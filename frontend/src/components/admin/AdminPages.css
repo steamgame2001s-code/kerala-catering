@@ -60,6 +60,8 @@
 html {
   font-size: 16px;
   overflow-x: hidden;
+  width: 100%;
+  position: relative;
 }
 
 body {
@@ -70,6 +72,7 @@ body {
   overflow-x: hidden;
   min-height: 100vh;
   width: 100%;
+  position: relative;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -77,6 +80,7 @@ body {
 #root {
   width: 100%;
   overflow-x: hidden;
+  position: relative;
 }
 
 /* ================= ADMIN LAYOUT ================= */
@@ -103,6 +107,7 @@ body {
   flex-direction: column;
   transform: translateX(-100%);
   overflow-y: auto;
+  will-change: transform;
 }
 
 .admin-sidebar.mobile-open {
@@ -121,6 +126,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .sidebar-brand h2 {
@@ -245,6 +251,7 @@ body {
 .sidebar-footer {
   padding: 25px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
 }
 
 .logout-btn {
@@ -297,6 +304,8 @@ body {
   min-height: 100vh;
   transition: margin-left var(--transition-base);
   position: relative;
+  background: var(--background-gradient);
+  overflow-x: hidden;
 }
 
 /* Desktop sidebar margin */
@@ -481,6 +490,7 @@ body {
   width: 100%;
   animation: fadeIn 0.4s ease;
   overflow-x: hidden;
+  position: relative;
 }
 
 @keyframes fadeIn {
@@ -1039,6 +1049,7 @@ select.form-control {
   border: 1px solid #ffe0cc;
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .admin-table {
@@ -1679,62 +1690,180 @@ select.form-control {
   outline-offset: 2px;
 }
 
-/* ================= FIX FOR MOBILE ISSUES ================= */
-/* Prevent horizontal scrolling on mobile */
-@media (max-width: 767px) {
-  .admin-layout,
-  .admin-main-content,
-  .admin-content,
-  .admin-page {
-    overflow-x: hidden;
-    max-width: 100vw;
+/* ================= CRITICAL MOBILE FIXES ================= */
+/* This section fixes all mobile issues including cream color screen */
+@media (max-width: 1024px) {
+  /* Fix cream color screen issue - ensure background is applied */
+  .admin-main-content {
+    margin-left: 0 !important;
+    width: 100vw;
+    position: relative;
+    left: 0;
+    transform: none !important;
+    transition: transform 0.3s ease;
   }
   
-  /* Better touch targets */
-  button,
-  .btn-primary,
-  .btn-secondary,
-  .form-check,
-  .menu-item {
-    min-height: 44px;
+  /* Fix sidebar transform issues */
+  .admin-sidebar {
+    transform: translateX(-100%);
+    z-index: 1100;
   }
   
-  /* Stack buttons on mobile */
-  .page-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
+  .admin-sidebar.mobile-open {
+    transform: translateX(0);
   }
   
-  .page-header button {
+  /* When sidebar is open, shift main content */
+  .admin-sidebar.mobile-open ~ .admin-main-content {
+    transform: translateX(var(--sidebar-width));
+    overflow: hidden;
+  }
+  
+  /* Fix for iOS 100vh issue */
+  .admin-sidebar {
+    height: 100vh;
+    height: -webkit-fill-available;
+  }
+  
+  /* Remove sticky positioning that conflicts with transform */
+  .upload-card {
+    position: relative !important;
+    top: auto !important;
+  }
+  
+  /* Ensure content doesn't get cream color from transform */
+  .admin-content {
     width: 100%;
-  }
-  
-  /* Adjust table for mobile */
-  .table-container {
-    font-size: 0.875rem;
-  }
-  
-  /* Adjust modal for mobile */
-  .modal-content {
-    margin: 0;
-    border-radius: 0;
-    max-height: 100vh;
+    max-width: 100vw;
+    padding-left: 16px;
+    padding-right: 16px;
+    background: var(--background-gradient);
   }
 }
 
-/* Fix for iOS zoom on form inputs */
+/* Fix for mobile screens under 767px */
 @media (max-width: 767px) {
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="number"],
-  input[type="tel"],
-  input[type="url"],
-  input[type="search"],
-  textarea,
-  select {
-    font-size: 16px !important;
+  /* Ensure no horizontal overflow */
+  body, html, #root, .admin-layout {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    position: relative !important;
+  }
+  
+  /* Fix padding causing overflow */
+  .admin-content {
+    padding: 16px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+  
+  /* Stack grids properly */
+  .row,
+  .stats-grid,
+  .recent-grid,
+  .grid-two-column,
+  .current-images-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+  
+  /* Fix table overflow */
+  .table-container {
+    margin: 0 -16px;
+    width: calc(100% + 32px);
+    border-radius: 0;
+  }
+  
+  /* Fix festival menu layout */
+  .grid-two-column {
+    gap: 20px;
+  }
+  
+  .upload-card {
+    margin-bottom: 20px;
+  }
+  
+  /* Fix card layouts */
+  .admin-card,
+  .stat-card,
+  .recent-card {
+    padding: 20px !important;
+  }
+  
+  /* Improve touch targets */
+  button,
+  .btn-primary,
+  .btn-secondary,
+  .menu-item,
+  .form-check {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Fix header spacing */
+  .admin-header {
+    padding: 0 16px;
+  }
+  
+  /* Fix modal on mobile */
+  .modal-content {
+    border-radius: 0;
+    max-height: 100vh;
+    max-width: 100vw;
+  }
+}
+
+/* Fix for tablets (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Adjust sidebar width for tablets */
+  .admin-sidebar {
+    width: 240px;
+  }
+  
+  .admin-sidebar.mobile-open ~ .admin-main-content {
+    transform: translateX(240px);
+  }
+  
+  /* Adjust grids for tablets */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .recent-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .grid-two-column {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .current-images-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Final overflow guard - fixes cream color screen */
+@media (max-width: 1024px) {
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+    background: var(--background-gradient);
+  }
+  
+  /* Prevent body from shifting when sidebar opens */
+  body.sidebar-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Ensure main content has proper background */
+  .admin-main-content,
+  .admin-content {
+    background: var(--background-gradient) !important;
+    min-height: 100vh;
   }
 }
 
