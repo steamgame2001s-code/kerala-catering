@@ -1,0 +1,34 @@
+:root {
+  --sidebar-width: 280px;
+  --sidebar-collapsed: 80px;
+  --header-height: 70px;
+  --orange: #FF6B35;
+  --bg-gradient: linear-gradient(135deg, #FFF8F0, #FFE8D6);
+}
+
+/* ===== ROOT LAYOUT ===== */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-gradient);
+  overflow-x: hidden;
+}
+
+/* ===== MAIN CONTENT ===== */
+.admin-main {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  transition: margin-left 0.3s ease;
+  min-height: 100vh;
+}
+
+.admin-sidebar.collapsed ~ .admin-main {
+  margin-left: var(--sidebar-collapsed);
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 768px) {
+  .admin-main {
+    margin-left: 0 !important;
+  }
+}

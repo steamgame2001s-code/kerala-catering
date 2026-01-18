@@ -1,36 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
-import AdminHeader from './AdminHeader';
-import AdminSidebar from './AdminSidebar';
-import './AdminPages.css';
+import React, { useState, useEffect } from "react";
+import { Outlet } from "react-router-dom";
+import AdminHeader from "./AdminHeader";
+import AdminSidebar from "./AdminSidebar";
+import "./AdminPages.css";
 
 const AdminLayout = () => {
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  // Detect mobile screen size
+  /* =========================
+     SCREEN SIZE DETECTION
+     ========================= */
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024); // lg breakpoint
-      if (window.innerWidth < 1024) {
-        setSidebarCollapsed(true); // Auto-collapse sidebar on mobile
+    const checkScreen = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+
+      // Reset states correctly on breakpoint change
+      if (mobile) {
+        setSidebarCollapsed(false);
+      } else {
+        setMobileSidebarOpen(false);
       }
     };
 
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-
-    return () => {
-      window.removeEventListener('resize', checkMobile);
-    };
+    checkScreen();
+    window.addEventListener("resize", checkScreen);
+    return () => window.removeEventListener("resize", checkScreen);
   }, []);
 
+  /* =========================
+     BODY SCROLL LOCK (MOBILE)
+     ========================= */
+  useEffect(() => {
+    if (isMobile && isMobileSidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [isMobile, isMobileSidebarOpen]);
+
+  /* =========================
+     SIDEBAR TOGGLES
+     ========================= */
   const toggleSidebar = () => {
     if (isMobile) {
-      setMobileSidebarOpen(!isMobileSidebarOpen);
+      setMobileSidebarOpen(prev => !prev);
     } else {
-      setSidebarCollapsed(!isSidebarCollapsed);
+      setSidebarCollapsed(prev => !prev);
     }
   };
 
@@ -42,36 +60,36 @@ const AdminLayout = () => {
 
   return (
     <div className="admin-layout">
-      {/* Mobile Overlay */}
+      {/* ================= MOBILE OVERLAY ================= */}
       {isMobile && isMobileSidebarOpen && (
-        <div 
-          className="mobile-sidebar-overlay"
+        <div
+          className="sidebar-overlay active"
           onClick={closeMobileSidebar}
         />
       )}
 
-      {/* Admin Sidebar */}
-      <AdminSidebar 
-        isCollapsed={isMobile ? false : isSidebarCollapsed}
+      {/* ================= SIDEBAR ================= */}
+      <AdminSidebar
+        isCollapsed={!isMobile && isSidebarCollapsed}
         isMobile={isMobile}
         isMobileOpen={isMobileSidebarOpen}
         toggleCollapse={toggleSidebar}
         onMobileClose={closeMobileSidebar}
       />
-      
-      {/* Main Content Area */}
-      <div 
-        className={`admin-main ${
-          isSidebarCollapsed && !isMobile ? 'sidebar-collapsed' : ''
-        } ${
-          isMobile && isMobileSidebarOpen ? 'mobile-sidebar-open' : ''
-        }`}
+
+      {/* ================= MAIN CONTENT ================= */}
+      <div
+        className={`admin-main-content
+          ${!isMobile && isSidebarCollapsed ? "sidebar-collapsed" : ""}
+        `}
+        onClick={closeMobileSidebar}
       >
-        <AdminHeader 
+        <AdminHeader
           toggleSidebar={toggleSidebar}
           isMobile={isMobile}
         />
-        <main className="admin-content" onClick={closeMobileSidebar}>
+
+        <main className="admin-content">
           <Outlet />
         </main>
       </div>

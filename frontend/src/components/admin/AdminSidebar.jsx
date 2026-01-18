@@ -1,178 +1,124 @@
-// frontend/src/components/admin/AdminSidebar.jsx - COMPLETE MOBILE-FRIENDLY VERSION
-import React, { useState, useEffect } from 'react';
-import { 
-  FaTachometerAlt, 
-  FaCalendarAlt, 
-  FaUtensils, 
+// frontend/src/components/admin/AdminSidebar.jsx
+import React from "react";
+import {
+  FaTachometerAlt,
+  FaCalendarAlt,
+  FaUtensils,
   FaCamera,
   FaSignOutAlt,
   FaChevronLeft,
   FaChevronRight,
   FaHome,
-  FaFileImage,
-  FaBars,
-  FaTimes
-} from 'react-icons/fa';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import './AdminPages.css';
+  FaFileImage
+} from "react-icons/fa";
+import { NavLink, useNavigate } from "react-router-dom";
+import "./AdminPages.css";
 
-const AdminSidebar = ({ isCollapsed, toggleCollapse }) => {
+const AdminSidebar = ({
+  isCollapsed,
+  isMobile,
+  isMobileOpen,
+  toggleCollapse,
+  onMobileClose
+}) => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Detect if mobile
-  useEffect(() => {
-    const checkMobile = () => {
-      const mobile = window.innerWidth <= 992;
-      setIsMobile(mobile);
-      
-      // Close mobile menu if window is resized to desktop
-      if (!mobile) {
-        setIsMobileOpen(false);
-      }
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Close mobile menu when route changes
-  useEffect(() => {
-    setIsMobileOpen(false);
-  }, [location]);
-
-  // Prevent body scroll when mobile menu is open
-  useEffect(() => {
-    if (isMobile && isMobileOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isMobile, isMobileOpen]);
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminData');
-    localStorage.removeItem('adminName');
-    setIsMobileOpen(false);
-    navigate('/');
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
-  };
-
-  const handleMenuItemClick = () => {
-    if (isMobile) {
-      setIsMobileOpen(false);
-    }
-  };
-
-  const handleOverlayClick = () => {
-    setIsMobileOpen(false);
-  };
-
-  const toggleMobileMenu = () => {
-    setIsMobileOpen(!isMobileOpen);
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("adminData");
+    localStorage.removeItem("adminName");
+    onMobileClose();
+    navigate("/");
+    setTimeout(() => window.location.reload(), 100);
   };
 
   const menuItems = [
-    { path: '/admin/dashboard', icon: <FaTachometerAlt />, label: 'Dashboard' },
-    { path: '/admin/dashboard/festivals', icon: <FaCalendarAlt />, label: 'Festivals' },
-    { path: '/admin/dashboard/festival-menu', icon: <FaFileImage />, label: 'Festival Menu', new: true },
-    { path: '/admin/dashboard/menu', icon: <FaUtensils />, label: 'Menu' },
-    { path: '/admin/dashboard/gallery', icon: <FaCamera />, label: 'Gallery' },
+    { path: "/admin/dashboard", icon: <FaTachometerAlt />, label: "Dashboard" },
+    { path: "/admin/dashboard/festivals", icon: <FaCalendarAlt />, label: "Festivals" },
+    {
+      path: "/admin/dashboard/festival-menu",
+      icon: <FaFileImage />,
+      label: "Festival Menu",
+      new: true
+    },
+    { path: "/admin/dashboard/menu", icon: <FaUtensils />, label: "Menu" },
+    { path: "/admin/dashboard/gallery", icon: <FaCamera />, label: "Gallery" }
   ];
 
   return (
-    <>
-      {/* Mobile Toggle Button - only show on mobile */}
-      {isMobile && (
-        <button 
-          className="mobile-sidebar-toggle"
-          onClick={toggleMobileMenu}
-          aria-label={isMobileOpen ? "Close menu" : "Open menu"}
-        >
-          {isMobileOpen ? <FaTimes /> : <FaBars />}
-        </button>
-      )}
+    <aside
+      className={`admin-sidebar
+        ${isCollapsed && !isMobile ? "collapsed" : ""}
+        ${isMobile && isMobileOpen ? "mobile-open" : ""}
+      `}
+    >
+      {/* ================= HEADER ================= */}
+      <div className="sidebar-header">
+        {(!isCollapsed || isMobile) && (
+          <div className="sidebar-brand">
+            <h2>UPASANA</h2>
+            <p>Admin Panel</p>
+          </div>
+        )}
 
-      {/* Overlay for mobile */}
-      {isMobile && (
-        <div 
-          className={`sidebar-overlay ${isMobileOpen ? 'active' : ''}`}
-          onClick={handleOverlayClick}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside className={`admin-sidebar ${isCollapsed && !isMobile ? 'collapsed' : ''} ${isMobile && isMobileOpen ? 'mobile-open' : ''}`}>
-        <div className="sidebar-header">
-          {(!isCollapsed || isMobile) && (
-            <div className="sidebar-brand">
-              <h2>Kerala Catering</h2>
-              <p>Administration</p>
-            </div>
-          )}
-          {!isMobile && (
-            <button 
-              className="sidebar-collapse-btn" 
-              onClick={toggleCollapse}
-              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
-            </button>
-          )}
-        </div>
-        
-        <nav className="sidebar-menu">
-          {menuItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => 
-                `menu-item ${isActive ? 'active' : ''} ${item.new ? 'new-item' : ''}`
-              }
-              end={item.path === '/admin/dashboard'}
-              onClick={handleMenuItemClick}
-            >
-              <span className="menu-icon">{item.icon}</span>
-              {(!isCollapsed || isMobile) && (
-                <>
-                  <span className="menu-label">{item.label}</span>
-                  {item.new && <span className="new-badge">New</span>}
-                </>
-              )}
-            </NavLink>
-          ))}
-          
-          <button 
-            className="menu-item home-btn"
-            onClick={() => {
-              handleMenuItemClick();
-              navigate('/');
-            }}
+        {!isMobile && (
+          <button
+            className="sidebar-collapse-btn"
+            onClick={toggleCollapse}
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            <span className="menu-icon"><FaHome /></span>
-            {(!isCollapsed || isMobile) && <span className="menu-label">Back to Home</span>}
+            {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
           </button>
-        </nav>
-        
-        <div className="sidebar-footer">
-          <button className="logout-btn" onClick={handleLogout}>
-            <FaSignOutAlt />
-            {(!isCollapsed || isMobile) && <span>Logout</span>}
-          </button>
-        </div>
-      </aside>
-    </>
+        )}
+      </div>
+
+      {/* ================= MENU ================= */}
+      <nav className="sidebar-menu">
+        {menuItems.map(item => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            end={item.path === "/admin/dashboard"}
+            className={({ isActive }) =>
+              `menu-item ${isActive ? "active" : ""}`
+            }
+            onClick={onMobileClose}
+          >
+            <span className="menu-icon">{item.icon}</span>
+
+            {(!isCollapsed || isMobile) && (
+              <>
+                <span className="menu-label">{item.label}</span>
+                {item.new && <span className="new-badge">New</span>}
+              </>
+            )}
+          </NavLink>
+        ))}
+
+        <button
+          className="menu-item home-btn"
+          onClick={() => {
+            onMobileClose();
+            navigate("/");
+          }}
+        >
+          <span className="menu-icon">
+            <FaHome />
+          </span>
+          {(!isCollapsed || isMobile) && (
+            <span className="menu-label">Back to Home</span>
+          )}
+        </button>
+      </nav>
+
+      {/* ================= FOOTER ================= */}
+      <div className="sidebar-footer">
+        <button className="logout-btn" onClick={handleLogout}>
+          <FaSignOutAlt />
+          {(!isCollapsed || isMobile) && <span>Logout</span>}
+        </button>
+      </div>
+    </aside>
   );
 };
 
