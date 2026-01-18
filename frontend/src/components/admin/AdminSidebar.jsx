@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
 import "./AdminPages.css";
+import './admin-sidebar.css';
 
 const AdminSidebar = ({
   isCollapsed,

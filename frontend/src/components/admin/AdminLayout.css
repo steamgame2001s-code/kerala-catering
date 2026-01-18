@@ -1,34 +1,60 @@
+/* ==================== ADMIN LAYOUT - PROFESSIONAL ==================== */
 :root {
   --sidebar-width: 280px;
-  --sidebar-collapsed: 80px;
+  --sidebar-collapsed: 70px;
   --header-height: 70px;
-  --orange: #FF6B35;
-  --bg-gradient: linear-gradient(135deg, #FFF8F0, #FFE8D6);
+  --primary: #FF6B35;
+  --primary-dark: #E55A2B;
+  --secondary: #FFA62B;
+  --dark: #2D3748;
+  --gray: #718096;
+  --light-gray: #f7fafc;
+  --white: #ffffff;
+  --success: #38A169;
+  --warning: #D69E2E;
+  --danger: #E53E3E;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.12);
+  --radius: 12px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ===== ROOT LAYOUT ===== */
-.admin-layout {
-  display: flex;
-  min-height: 100vh;
-  background: var(--bg-gradient);
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f8fafc;
   overflow-x: hidden;
 }
 
-/* ===== MAIN CONTENT ===== */
-.admin-main {
+/* Main Layout */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.admin-main-content {
   flex: 1;
   margin-left: var(--sidebar-width);
   transition: margin-left 0.3s ease;
   min-height: 100vh;
+  width: 100%;
 }
 
-.admin-sidebar.collapsed ~ .admin-main {
+.admin-main-content.sidebar-collapsed {
   margin-left: var(--sidebar-collapsed);
 }
 
-/* ===== MOBILE ===== */
+/* Responsive */
 @media (max-width: 768px) {
-  .admin-main {
+  .admin-main-content,
+  .admin-main-content.sidebar-collapsed {
     margin-left: 0 !important;
   }
 }
