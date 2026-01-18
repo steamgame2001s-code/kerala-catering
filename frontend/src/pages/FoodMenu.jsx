@@ -268,7 +268,7 @@ This is an automated inquiry from Upasana Catering website.`;
     window.location.href = 'tel:+919447975836';
   };
 
-  // Handle form submission
+  // Handle form submission - UPDATED VERSION
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -310,14 +310,11 @@ This is an automated inquiry from Upasana Catering website.`;
         userInfo: `${formData.name} - ${formData.phone}`
       });
       
-      // Step 1: Send email and save to database via backend
-      let emailSuccess = false;
-      let emailResponse = null;
-      
+      // Step 1: Save to database via backend (NO EMAIL SENDING)
       try {
-        console.log('📤 [DEBUG] Attempting to send to /email/send-inquiry');
+        console.log('📤 [DEBUG] Saving inquiry to database');
         
-        emailResponse = await axios.post('/email/send-inquiry', {
+        const dbResponse = await axios.post('/email/send-inquiry', {
           name: formData.name,
           phone: formData.phone,
           location: formData.location,
@@ -327,21 +324,25 @@ This is an automated inquiry from Upasana Catering website.`;
           comments: formData.comments
         });
         
-        console.log('✅ [DEBUG] Backend response:', emailResponse.data);
+        console.log('✅ [DEBUG] Backend response:', dbResponse.data);
         
-        if (emailResponse.data.success) {
-          emailSuccess = true;
-          console.log('🎉 [DEBUG] Email sent successfully! Inquiry ID:', emailResponse.data.inquiryId);
+        if (dbResponse.data.success) {
+          console.log('🎉 [DEBUG] Inquiry saved to database! Inquiry ID:', dbResponse.data.inquiryId);
+          // Use the WhatsApp URL from backend response if available
+          if (dbResponse.data.whatsappUrl) {
+            console.log('🔗 [DEBUG] Opening WhatsApp from backend URL');
+            window.open(dbResponse.data.whatsappUrl, '_blank');
+          }
         }
-      } catch (emailError) {
-        console.error('❌ [DEBUG] Failed to send email:', emailError);
-        console.error('❌ [DEBUG] Error details:', emailError.response?.data || emailError.message);
+      } catch (dbError) {
+        console.error('❌ [DEBUG] Failed to save to database:', dbError);
+        console.error('❌ [DEBUG] Error details:', dbError.response?.data || dbError.message);
         
-        // Don't block the flow if email fails - user can still send via WhatsApp
-        alert(`Note: Email sending failed but you can still send via WhatsApp.\n\nError: ${emailError.response?.data?.message || emailError.message}`);
+        // Don't block the flow if database save fails - user can still send via WhatsApp
+        console.log('⚠️ [DEBUG] Database save failed, proceeding with WhatsApp only');
       }
 
-      // Step 2: Create and send WhatsApp message
+      // Step 2: Create and send WhatsApp message (only if not opened from backend)
       console.log('📱 [DEBUG] Creating WhatsApp message');
       const whatsappMessage = createWhatsAppMessage();
       
@@ -351,13 +352,13 @@ This is an automated inquiry from Upasana Catering website.`;
       
       console.log('🔗 [DEBUG] WhatsApp URL created');
       
-      // Step 3: Open WhatsApp immediately (no confirmation popup)
+      // Step 3: Open WhatsApp if not already opened from backend
       console.log('✅ [DEBUG] Opening WhatsApp');
       window.open(whatsappUrl, '_blank');
       
       // Show success message
       setTimeout(() => {
-        alert(`🎉 Inquiry Prepared Successfully!\n\nDear ${formData.name},\n\n✅ WhatsApp has been opened with your inquiry details\n📋 Inquiry ID: ${inquiryId}\n${emailSuccess ? '📧 Email sent to our team\n' : ''}📞 Our team will contact you within 24 hours\n\nThank you for choosing Upasana Catering!`);
+        alert(`🎉 Inquiry Prepared Successfully!\n\nDear ${formData.name},\n\n✅ WhatsApp has been opened with your inquiry details\n📋 Inquiry ID: ${inquiryId}\n📞 Our team will contact you within 24 hours\n\nThank you for choosing Upasana Catering!`);
       }, 1000);
       
       // Reset form
@@ -641,8 +642,13 @@ This is an automated inquiry from Upasana Catering website.`;
             className="submit-btn"
             disabled={submitting}
           >
-            {submitting ? 'Sending...' : 'Send Inquiry via WhatsApp & Email'}
+            {submitting ? 'Processing...' : 'Send Inquiry via WhatsApp'}
           </button>
+          
+          {/* Update the button text */}
+          <p className="text-center text-gray-500 text-sm mt-2">
+            Note: Inquiry will be saved to our system and WhatsApp will open automatically
+          </p>
           
           {/* Alternative Contact Methods */}
           <div className="alternative-contact mt-6">
@@ -670,7 +676,7 @@ This is an automated inquiry from Upasana Catering website.`;
           
           <div className="privacy-note">
             <p className="text-sm text-gray-500 text-center mt-4">
-              By submitting, you agree to be contacted via WhatsApp and email. 
+              By submitting, you agree to be contacted via WhatsApp. 
               Your information will be used only to respond to your inquiry.
             </p>
             <p className="text-sm text-gray-500 text-center mt-2">

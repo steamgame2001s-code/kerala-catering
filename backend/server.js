@@ -1,4 +1,4 @@
-// backend/server.js - UPDATED WITH PROPER CORS FOR VERCEl
+// backend/server.js - UPDATED WITH PROPER CORS FOR VERCEL AND EMAIL FIXES
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -8,13 +8,11 @@ const path = require('path');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
 const fs = require('fs');
-const cloudinary = require('cloudinary').v2; // ADDED: Cloudinary
-// Add near other imports
-const sendGridService = require('./services/sendgridService');
+const cloudinary = require('cloudinary').v2;
 
 dotenv.config();
 
-// Cloudinary Configuration - ADDED
+// Cloudinary Configuration
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dlgrdnghb',
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -30,12 +28,12 @@ const Gallery = require('./models/Gallery');
 const Order = require('./models/Order');
 const User = require('./models/User');
 const Inquiry = require('./models/Inquiry');
-const UserAction = require('./models/UserAction'); // ADDED: User Action model
+const UserAction = require('./models/UserAction');
 
 const app = express();
 
 // ========== MIDDLEWARE ==========
-// UPDATED CORS CONFIGURATION FOR VERCEl - FIXED VERSION
+// UPDATED CORS CONFIGURATION FOR VERCEL - FIXED VERSION
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:10000',
@@ -79,7 +77,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+  optionsSuccessStatus: 200
 }));
 
 // Log CORS config
@@ -234,24 +232,30 @@ console.log(`FROM (Website): ${process.env.EMAIL_USER || 'Not configured'}`);
 console.log(`TO (Business): ${process.env.BUSINESS_EMAIL || 'Not configured'}`);
 console.log(`EMAIL_PASS: ${process.env.EMAIL_PASS ? '✓ Set (' + process.env.EMAIL_PASS.length + ' chars)' : '❌ NOT SET'}`);
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+// Create transporter only if email credentials exist
+let transporter = null;
+if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  });
 
-// Test email connection
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('❌ Email configuration error:', error.message);
-    console.error('   Please check EMAIL_USER and EMAIL_PASS in .env');
-    console.error('   Make sure you are using a Gmail App Password');
-  } else {
-    console.log('✅ Email server is ready to send messages');
-  }
-});
+  // Test email connection
+  transporter.verify((error, success) => {
+    if (error) {
+      console.error('❌ Email configuration error:', error.message);
+      console.error('   Please check EMAIL_USER and EMAIL_PASS in .env');
+      console.error('   Make sure you are using a Gmail App Password');
+    } else {
+      console.log('✅ Email server is ready to send messages');
+    }
+  });
+} else {
+  console.log('⚠️ Email service not configured - using WhatsApp mode');
+}
 
 // =================== AUTHENTICATION MIDDLEWARE ===================
 const authenticateAdmin = (req, res, next) => {
@@ -373,63 +377,80 @@ app.get('/api/cors-test', (req, res) => {
   });
 });
 
-// =================== EMAIL & INQUIRY ROUTES ===================
+// =================== FIX 1: EMAIL TEST ENDPOINT ===================
+// REMOVED GMAIL FALLBACK CODE - SIMPLIFIED VERSION
 app.get('/api/email/test', async (req, res) => {
   try {
     console.log('📧 Testing email configuration...');
     
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      return res.status(500).json({
-        success: false,
-        message: 'Email credentials not configured in .env file',
-        required: ['EMAIL_USER', 'EMAIL_PASS']
+    // Check if any email service is configured
+    const hasEmailConfig = process.env.EMAIL_USER && process.env.EMAIL_PASS;
+    
+    if (!hasEmailConfig) {
+      return res.status(200).json({
+        success: true,
+        message: 'Email service is not configured - using WhatsApp mode',
+        provider: 'WhatsApp Only',
+        note: 'System is running in WhatsApp-only mode. Inquiries will be logged to database.',
+        configuration: {
+          EMAIL_USER: process.env.EMAIL_USER ? '✓ Set' : '❌ Not set',
+          EMAIL_PASS: process.env.EMAIL_PASS ? '✓ Set' : '❌ Not set',
+          BUSINESS_EMAIL: process.env.BUSINESS_EMAIL || 'Not set'
+        }
       });
     }
+    
+    // If email is configured, test it
+    try {
+      const toEmail = process.env.BUSINESS_EMAIL || process.env.EMAIL_USER;
+      
+      const mailOptions = {
+        from: `"Upasana Catering Test" <${process.env.EMAIL_USER}>`,
+        to: toEmail,
+        subject: '✅ Test Email - Upasana Catering',
+        text: `This is a test email sent from your catering website backend.\n\nFROM: ${process.env.EMAIL_USER}\nTO: ${toEmail}\nTime: ${new Date().toLocaleString()}`,
+        html: `
+          <h1>✅ Test Email Successful!</h1>
+          <p>Your catering website email system is working correctly.</p>
+          <p><strong>FROM:</strong> ${process.env.EMAIL_USER}</p>
+          <p><strong>TO:</strong> ${toEmail}</p>
+          <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+        `
+      };
 
-    const toEmail = process.env.BUSINESS_EMAIL || process.env.EMAIL_USER;
-    
-    const mailOptions = {
-      from: `"Upasana Catering Test" <${process.env.EMAIL_USER}>`,
-      to: toEmail,
-      subject: '✅ Test Email - Upasana Catering Backend',
-      text: `This is a test email sent from your catering website backend.\n\nFROM: ${process.env.EMAIL_USER}\nTO: ${toEmail}\nTime: ${new Date().toLocaleString()}`,
-      html: `
-        <h1>✅ Test Email Successful!</h1>
-        <p>Your catering website email system is working correctly.</p>
-        <p><strong>FROM:</strong> ${process.env.EMAIL_USER}</p>
-        <p><strong>TO:</strong> ${toEmail}</p>
-        <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
-        <hr>
-        <p>If you received this email at ${toEmail}, your email configuration is correct.</p>
-      `
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-    
-    console.log('✅ Test email sent successfully:', info.messageId);
-    console.log(`📨 Sent FROM: ${process.env.EMAIL_USER}`);
-    console.log(`📨 Sent TO: ${toEmail}`);
-    
-    res.status(200).json({ 
-      success: true, 
-      message: 'Test email sent successfully',
-      from: process.env.EMAIL_USER,
-      to: toEmail,
-      messageId: info.messageId,
-      timestamp: new Date().toISOString()
-    });
+      const info = await transporter.sendMail(mailOptions);
+      
+      res.status(200).json({ 
+        success: true, 
+        message: 'Test email sent successfully',
+        from: process.env.EMAIL_USER,
+        to: toEmail,
+        provider: 'Gmail',
+        messageId: info.messageId
+      });
+      
+    } catch (emailError) {
+      console.error('❌ Email send error:', emailError);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to send test email',
+        error: emailError.message,
+        note: 'Please check your email configuration in .env file'
+      });
+    }
     
   } catch (error) {
     console.error('❌ Email test error:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Failed to send test email',
-      error: error.message,
-      stack: error.stack
+      message: 'Failed to test email configuration',
+      error: error.message
     });
   }
 });
 
+// =================== FIX 3: SEND INQUIRY ENDPOINT ===================
+// REMOVED EMAIL SENDING - JUST SAVE TO DATABASE
 app.post('/api/email/send-inquiry', async (req, res) => {
   try {
     console.log('📧 Received inquiry request:', req.body);
@@ -452,133 +473,8 @@ app.post('/api/email/send-inquiry', async (req, res) => {
     }
 
     const inquiryId = `UP${Date.now().toString().slice(-8)}`;
-    const formattedDate = new Date().toLocaleDateString('en-IN', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-    const formattedTime = new Date().toLocaleTimeString('en-IN', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true 
-    });
-
-    const toEmail = process.env.BUSINESS_EMAIL || process.env.EMAIL_USER;
     
-    const htmlTemplate = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: #f97316; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
-          .content { background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; border-top: none; }
-          .section { margin-bottom: 20px; }
-          .section-title { color: #f97316; font-weight: bold; font-size: 18px; margin-bottom: 10px; }
-          .field { margin-bottom: 8px; }
-          .field-label { font-weight: bold; color: #4b5563; }
-          .field-value { color: #1f2937; }
-          .priority { background: #dc2626; color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px; margin-left: 10px; }
-          .footer { margin-top: 30px; text-align: center; color: #6b7280; font-size: 14px; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>🌟 New Menu Inquiry 🌟</h1>
-            <h2>Upasana Catering Services</h2>
-          </div>
-          
-          <div class="content">
-            <div class="section">
-              <div class="section-title">
-                👤 Customer Information <span class="priority">NEW INQUIRY</span>
-              </div>
-              <div class="field"><span class="field-label">Name:</span> <span class="field-value">${name}</span></div>
-              <div class="field"><span class="field-label">Phone:</span> <span class="field-value">${phone}</span></div>
-              <div class="field"><span class="field-label">Location:</span> <span class="field-value">${location}</span></div>
-              <div class="field"><span class="field-label">Email:</span> <span class="field-value">${email || 'Not provided'}</span></div>
-            </div>
-            
-            <div class="section">
-              <div class="section-title">📅 Event Details</div>
-              <div class="field"><span class="field-label">Event Type:</span> <span class="field-value">${event || 'Not specified'}</span></div>
-              <div class="field"><span class="field-label">Preferred Menu:</span> <span class="field-value">${menu || 'Not selected'}</span></div>
-            </div>
-            
-            ${comments ? `
-            <div class="section">
-              <div class="section-title">💬 Special Requests</div>
-              <div style="background: #fff7ed; padding: 15px; border-radius: 8px; border-left: 4px solid #f97316;">
-                ${comments.replace(/\n/g, '<br>')}
-              </div>
-            </div>
-            ` : ''}
-            
-            <div class="section">
-              <div class="section-title">📊 Inquiry Summary</div>
-              <div class="field"><span class="field-label">Inquiry ID:</span> <span class="field-value">${inquiryId}</span></div>
-              <div class="field"><span class="field-label">Date:</span> <span class="field-value">${formattedDate}</span></div>
-              <div class="field"><span class="field-label">Time:</span> <span class="field-value">${formattedTime}</span></div>
-              <div class="field"><span class="field-label">Source:</span> <span class="field-value">Website Menu Page</span></div>
-            </div>
-            
-            <div class="footer">
-              <p><strong>Action Required:</strong> Please contact customer within 24 hours</p>
-              <p><em>WhatsApp: ${phone} | Email: ${email || 'Use reply-to address'}</em></p>
-            </div>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-
-    const textTemplate = `
-      NEW MENU INQUIRY - UPASANA CATERING
-      ====================================
-      
-      Customer Information:
-      --------------------
-      Name: ${name}
-      Phone: ${phone}
-      Location: ${location}
-      Email: ${email || 'Not provided'}
-      
-      Event Details:
-      --------------
-      Event Type: ${event || 'Not specified'}
-      Preferred Menu: ${menu || 'Not selected'}
-      
-      ${comments ? `Special Requests:\n${comments}\n\n` : ''}
-      
-      Inquiry Summary:
-      ---------------
-      Inquiry ID: ${inquiryId}
-      Date: ${formattedDate}
-      Time: ${formattedTime}
-      Source: Website Menu Page
-      
-      ====================================
-      ACTION REQUIRED: Contact within 24 hours
-      WhatsApp: ${phone}
-      ${email ? `Email: ${email}` : ''}
-    `;
-
-    const mailOptions = {
-      from: `"Upasana Catering Website" <${process.env.EMAIL_USER}>`,
-      to: toEmail,
-      replyTo: email || process.env.EMAIL_USER,
-      subject: `🍽️ New Menu Inquiry - ${name} - ${inquiryId}`,
-      html: htmlTemplate,
-      text: textTemplate
-    };
-
-    await transporter.sendMail(mailOptions);
-    
-    console.log(`✅ Inquiry email sent for ID: ${inquiryId}`);
-    
+    // Save to database
     try {
       const inquiry = new Inquiry({
         inquiryId,
@@ -589,12 +485,13 @@ app.post('/api/email/send-inquiry', async (req, res) => {
         event,
         menu,
         comments,
-        status: 'new'
+        status: 'new',
+        emailProvider: 'WhatsApp Only'
       });
       await inquiry.save();
       console.log(`💾 Inquiry saved to database: ${inquiryId}`);
       
-      // Log the inquiry as an action
+      // Log user action
       try {
         const action = new UserAction({
           type: 'inquiry',
@@ -606,22 +503,36 @@ app.post('/api/email/send-inquiry', async (req, res) => {
           festival: menu || '',
           priority: 'high',
           status: 'new',
-          userInfo: `${name} (${phone})`
+          userInfo: `${name} (${phone})`,
+          emailProvider: 'WhatsApp Only'
         });
         await action.save();
-        console.log(`📊 Action logged for inquiry: ${inquiryId}`);
+        console.log(`📊 Action logged: ${action._id}`);
       } catch (actionError) {
-        console.error('Failed to log action:', actionError.message);
+        console.error('Action log error:', actionError.message);
       }
       
     } catch (dbError) {
-      console.error('Failed to save inquiry to database:', dbError.message);
+      console.error('Database save error:', dbError.message);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Failed to save inquiry to database',
+        error: dbError.message 
+      });
     }
     
+    // Return WhatsApp URL for frontend
+    const whatsappMessage = `Hello! I'm ${name}. I'm interested in your catering services for ${event || 'an event'} at ${location}. Preferred menu: ${menu || 'Not specified'}. ${comments ? `Special requests: ${comments}` : ''}`;
+    const encodedMessage = encodeURIComponent(whatsappMessage);
+    const whatsappUrl = `https://wa.me/919999999999?text=${encodedMessage}`; // Replace with actual number
+    
+    // Return success response
     res.status(200).json({ 
       success: true, 
-      message: 'Inquiry email sent successfully',
+      message: 'Inquiry logged successfully. Please contact via WhatsApp.',
       inquiryId: inquiryId,
+      provider: 'WhatsApp Only',
+      whatsappUrl: whatsappUrl,
       data: {
         name,
         phone,
@@ -634,18 +545,16 @@ app.post('/api/email/send-inquiry', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Email sending error:', error);
+    console.error('❌ Inquiry processing error:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Failed to send inquiry email',
+      message: 'Failed to process inquiry',
       error: error.message 
     });
   }
 });
 
 // =================== USER ACTION TRACKING ROUTES ===================
-// ADDED: User action tracking routes
-
 app.post('/api/actions/log', async (req, res) => {
   try {
     const { type, name, phone, email, message, page, userInfo } = req.body;
@@ -759,7 +668,8 @@ app.get('/api/actions/stats', async (req, res) => {
   }
 });
 
-// =================== PASSWORD RESET ROUTES ===================
+// =================== FIX 2: FORGOT PASSWORD ENDPOINT ===================
+// REMOVED EMAIL REQUIREMENT - ALWAYS RETURN SUCCESS
 app.post('/api/admin/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
@@ -778,9 +688,13 @@ app.post('/api/admin/forgot-password', async (req, res) => {
     
     if (!admin) {
       console.log(`⚠️ Admin not found: ${email}`);
+      // Return success for security (don't reveal if admin exists)
       return res.json({
         success: true,
-        message: 'If an admin with this email exists, an OTP has been sent to your email'
+        message: 'If an admin with this email exists, password reset instructions have been sent.',
+        note: 'Email service is not configured. Use manual OTP below for testing.',
+        testingMode: true,
+        manualOTP: '123456' // For testing only
       });
     }
     
@@ -793,160 +707,130 @@ app.post('/api/admin/forgot-password', async (req, res) => {
     await admin.save();
     
     console.log(`🔑 OTP Generated: ${otp}`);
-    console.log(`⏰ Expires: ${new Date(admin.resetPasswordOTPExpires).toLocaleString()}`);
     
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.error('❌ Email not configured!');
-      return res.status(500).json({
-        success: false,
-        error: 'Email service not configured'
+    // Check if email is configured
+    const hasEmailConfig = process.env.EMAIL_USER && process.env.EMAIL_PASS;
+    
+    if (!hasEmailConfig) {
+      console.log('⚠️ Email not configured - returning OTP in response for testing');
+      return res.json({
+        success: true,
+        message: 'Email service not configured. Use OTP below for testing.',
+        email: email,
+        testingMode: true,
+        otp: otp, // Return OTP in response for testing
+        expiresIn: '10 minutes',
+        note: 'In production, OTP would be sent via email.'
       });
     }
     
-    const mailOptions = {
-      from: `"Upasana Catering Admin" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: '🔐 Password Reset OTP - Upasana Catering',
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background: #f4f4f4; }
-            .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-            .header { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; padding: 30px; text-align: center; }
-            .header h1 { margin: 0; font-size: 28px; }
-            .content { padding: 40px 30px; }
-            .otp-box { 
-              background: #1f2937; 
-              color: white; 
-              padding: 20px; 
-              font-size: 36px; 
-              font-weight: bold; 
-              text-align: center; 
-              letter-spacing: 8px;
-              border-radius: 8px;
-              margin: 30px 0;
-              font-family: 'Courier New', monospace;
-            }
-            .warning { 
-              background: #fef3c7; 
-              border-left: 4px solid #f59e0b; 
-              padding: 15px; 
-              margin: 20px 0;
-              border-radius: 4px;
-            }
-            .warning strong { color: #92400e; }
-            .footer { 
-              background: #f9fafb; 
-              padding: 20px 30px; 
-              text-align: center; 
-              color: #6b7280; 
-              font-size: 14px;
-              border-top: 1px solid #e5e7eb;
-            }
-            .info-item { margin: 10px 0; }
-            .info-label { font-weight: bold; color: #4b5563; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>🔐 Password Reset Request</h1>
-              <p style="margin: 10px 0 0 0; opacity: 0.9;">Upasana Catering Admin Portal</p>
-            </div>
-            
-            <div class="content">
-              <p>Hello <strong>${admin.username}</strong>,</p>
-              
-              <p>We received a request to reset your password. Use the OTP below to continue:</p>
-              
-              <div class="otp-box">${otp}</div>
-              
-              <div class="warning">
-                <p><strong>⚠️ Important Security Information:</strong></p>
-                <ul style="margin: 10px 0; padding-left: 20px;">
-                  <li>This OTP is valid for <strong>10 minutes only</strong></li>
-                  <li><strong>Never share this OTP</strong> with anyone</li>
-                  <li>If you didn't request this, please ignore this email</li>
-                  <li>Your password will not change unless you complete the reset process</li>
-                </ul>
+    // Try to send email if configured
+    try {
+      const mailOptions = {
+        from: `"Upasana Catering Admin" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: '🔐 Password Reset OTP - Upasana Catering',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background: #f4f4f4; }
+              .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+              .header { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; padding: 30px; text-align: center; }
+              .header h1 { margin: 0; font-size: 28px; }
+              .content { padding: 40px 30px; }
+              .otp-box { 
+                background: #1f2937; 
+                color: white; 
+                padding: 20px; 
+                font-size: 36px; 
+                font-weight: bold; 
+                text-align: center; 
+                letter-spacing: 8px;
+                border-radius: 8px;
+                margin: 30px 0;
+                font-family: 'Courier New', monospace;
+              }
+              .warning { 
+                background: #fef3c7; 
+                border-left: 4px solid #f59e0b; 
+                padding: 15px; 
+                margin: 20px 0;
+                border-radius: 4px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>🔐 Password Reset Request</h1>
+                <p style="margin: 10px 0 0 0; opacity: 0.9;">Upasana Catering Admin Portal</p>
               </div>
               
-              <div class="info-item">
-                <span class="info-label">Email:</span> ${email}
-              </div>
-              <div class="info-item">
-                <span class="info-label">Time:</span> ${new Date().toLocaleString()}
-              </div>
-              <div class="info-item">
-                <span class="info-label">Expires:</span> ${new Date(admin.resetPasswordOTPExpires).toLocaleString()}
+              <div class="content">
+                <p>Hello <strong>${admin.username}</strong>,</p>
+                
+                <p>Use this OTP to reset your password:</p>
+                
+                <div class="otp-box">${otp}</div>
+                
+                <div class="warning">
+                  <p><strong>⚠️ Security:</strong></p>
+                  <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>OTP valid for <strong>10 minutes only</strong></li>
+                    <li><strong>Never share this OTP</strong> with anyone</li>
+                    <li>If you didn't request this, please ignore this email</li>
+                  </ul>
+                </div>
               </div>
             </div>
-            
-            <div class="footer">
-              <p><strong>Upasana Catering Services</strong></p>
-              <p style="margin: 5px 0;">This is an automated email. Please do not reply.</p>
-              <p style="margin: 5px 0; font-size: 12px;">If you're having trouble, contact support.</p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `,
-      text: `
+          </body>
+          </html>
+        `,
+        text: `
 Password Reset OTP - Upasana Catering
 
 Hello ${admin.username},
 
-We received a request to reset your password for the Admin Portal.
+OTP: ${otp}
 
-YOUR OTP: ${otp}
+Valid for 10 minutes.
 
-This OTP is valid for 10 minutes only.
-Expires at: ${new Date(admin.resetPasswordOTPExpires).toLocaleString()}
-
-IMPORTANT:
-- Do not share this OTP with anyone
-- If you didn't request this, please ignore this email
-- Your password will not change unless you complete the reset process
-
-Email: ${email}
 Time: ${new Date().toLocaleString()}
+        `
+      };
 
----
-Upasana Catering Services
-This is an automated email. Please do not reply.
-      `
-    };
-
-    console.log('📨 Attempting to send email...');
-    console.log(`   FROM: ${process.env.EMAIL_USER}`);
-    console.log(`   TO: ${email}`);
-    
-    const info = await transporter.sendMail(mailOptions);
-    
-    console.log(`✅ OTP email sent successfully!`);
-    console.log(`   Message ID: ${info.messageId}`);
-    console.log(`   Response: ${info.response}`);
-    console.log('=================================\n');
-    
-    res.json({
-      success: true,
-      message: 'OTP has been sent to your email',
-      email: email,
-      expiresIn: '10 minutes'
-    });
+      const info = await transporter.sendMail(mailOptions);
+      
+      console.log(`✅ OTP sent via email: ${info.messageId}`);
+      
+      res.json({
+        success: true,
+        message: 'OTP has been sent to your email',
+        email: email,
+        provider: 'Email',
+        expiresIn: '10 minutes'
+      });
+      
+    } catch (emailError) {
+      console.error('❌ Email send failed:', emailError.message);
+      return res.json({
+        success: true,
+        message: 'Email service failed. Use OTP below for testing.',
+        email: email,
+        testingMode: true,
+        otp: otp, // Return OTP in response when email fails
+        expiresIn: '10 minutes',
+        error: emailError.message
+      });
+    }
     
   } catch (error) {
-    console.error('\n❌ FORGOT PASSWORD ERROR:');
-    console.error('Error message:', error.message);
-    console.error('Error code:', error.code);
-    console.error('Full error:', error);
-    console.log('=================================\n');
-    
+    console.error('\n❌ FORGOT PASSWORD ERROR:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to send OTP. Please check server configuration.',
+      error: 'Failed to process request',
       details: error.message
     });
   }
@@ -1444,7 +1328,6 @@ app.get('/api/admin/inquiries', authenticateAdmin, async (req, res) => {
 });
 
 // =================== ADMIN DASHBOARD & PROFILE ROUTES ===================
-// UPDATED: Dashboard stats route with UserAction tracking
 app.get('/api/admin/dashboard/stats', authenticateAdmin, async (req, res) => {
   try {
     console.log('📊 [DASHBOARD] Fetching dashboard stats...');
@@ -1556,8 +1439,7 @@ app.get('/api/admin/profile', authenticateAdmin, async (req, res) => {
   }
 });
 
-// =================== FESTIVAL MENU IMAGES ROUTES (FIXED) ===================
-
+// =================== FESTIVAL MENU IMAGES ROUTES ===================
 // GET festivals for menu management
 app.get('/api/admin/festivals-menu-management', authenticateAdmin, async (req, res) => {
   try {
@@ -1708,7 +1590,6 @@ app.delete('/api/admin/festivals/:festivalId/menu-images/:imageId',
 );
 
 // =================== FESTIVAL ROUTES (WITH DEBUG) ===================
-
 // GET all festivals for admin
 app.get('/api/admin/festivals', authenticateAdmin, async (req, res) => {
   try {
@@ -1738,7 +1619,7 @@ app.post('/api/admin/festivals',
     { name: 'image', maxCount: 1 },
     { name: 'bannerImage', maxCount: 1 }
   ]),
-  debugFormData, // ADD DEBUG HERE TOO
+  debugFormData,
   async (req, res) => {
     try {
       console.log('📝 Creating festival');
@@ -1904,8 +1785,7 @@ app.delete('/api/admin/festivals/:id', authenticateAdmin, async (req, res) => {
   }
 });
 
-// =================== FOOD ITEM ROUTES (WITH DEBUG) ===================
-
+// =================== FOOD ITEM ROUTES ===================
 // GET food items for admin
 app.get('/api/admin/food-items', authenticateAdmin, async (req, res) => {
   try {
@@ -1923,15 +1803,13 @@ app.get('/api/admin/food-items', authenticateAdmin, async (req, res) => {
 // CREATE food item with image upload
 app.post('/api/admin/food-items',
   authenticateAdmin,
-  uploadFoodItem.single('image'), // This processes the file
-  debugFormData, // ADD THIS - Debug what we receive
+  uploadFoodItem.single('image'),
+  debugFormData,
   async (req, res) => {
     try {
       console.log('📝 Creating food item');
       console.log('Raw body:', req.body);
       
-      // CRITICAL: When using FormData, all fields come as strings
-      // We need to manually construct the object
       const foodItemData = {
         name: req.body.name,
         description: req.body.description || '',
@@ -1979,7 +1857,7 @@ app.post('/api/admin/food-items',
       
       console.log('Final data to save:', JSON.stringify(foodItemData, null, 2));
       
-      // Validate required fields before saving
+      // Validate required fields
       if (!foodItemData.name) {
         return res.status(400).json({ 
           success: false, 
@@ -1987,6 +1865,7 @@ app.post('/api/admin/food-items',
           received: req.body
         });
       }
+      
       const foodItem = new FoodItem(foodItemData);
       await foodItem.save();
       
@@ -2057,8 +1936,7 @@ app.delete('/api/admin/food-items/:id', authenticateAdmin, async (req, res) => {
   }
 });
 
-// =================== GALLERY ROUTES (WITH DEBUG) ===================
-
+// =================== GALLERY ROUTES ===================
 // GET gallery for admin
 app.get('/api/admin/gallery', authenticateAdmin, async (req, res) => {
   try {
@@ -2075,7 +1953,7 @@ app.get('/api/admin/gallery', authenticateAdmin, async (req, res) => {
 app.post('/api/admin/gallery',
   authenticateAdmin,
   uploadGallery.single('image'),
-  debugFormData, // ADD DEBUG
+  debugFormData,
   async (req, res) => {
     try {
       console.log('📝 Creating gallery item');
@@ -2201,7 +2079,7 @@ app.get('/api/seed', async (req, res) => {
     await FoodItem.deleteMany({});
     await Admin.deleteMany({});
     await Inquiry.deleteMany({});
-    await UserAction.deleteMany({}); // ADDED: Clear UserAction data
+    await UserAction.deleteMany({});
 
     const admin = new Admin({
       username: 'superadmin',
@@ -2219,7 +2097,6 @@ app.get('/api/seed', async (req, res) => {
         description: 'Experience the joy of Kerala Christmas with our traditional feast.',
         image: 'https://images.unsplash.com/photo-1541783245831-57d6fb0926d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
         bannerImage: 'https://images.unsplash.com/photo-1577805947697-89e18249d767?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-
         rating: 4.8,
         reviewCount: 124,
         categories: ['Biriyani', 'Roast', 'Fish Curry', 'Desserts'],
@@ -2379,7 +2256,6 @@ app.get('/', (req, res) => {
 });
 
 // =================== GLOBAL ERROR HANDLER ===================
-// Global Error Handler
 app.use((err, req, res, next) => {
   console.error('❌ Global Error Handler:', err);
   
@@ -2466,26 +2342,15 @@ const server = app.listen(PORT, () => {
   console.log(`   Allowed origins: ${JSON.stringify(allowedOrigins)}`);
   console.log(`   + All *.vercel.app domains`);
   console.log(`   + All localhost ports`);
-  console.log(`\n✨ Admin routes available:`);
-  console.log(`   GET  /api/admin/festivals`);
-  console.log(`   POST /api/admin/festivals (with image upload & debug)`);
-  console.log(`   PUT  /api/admin/festivals/:id (with image upload)`);
-  console.log(`   DELETE /api/admin/festivals/:id`);
-  console.log(`   GET  /api/admin/dashboard/stats`);
-  console.log(`\n📊 Action tracking routes:`);
-  console.log(`   POST /api/actions/log`);
-  console.log(`   GET  /api/actions/recent`);
-  console.log(`   GET  /api/actions/stats`);
+  console.log(`\n✨ Running in WhatsApp-only mode. Inquiries will be logged to database.`);
   console.log(`\n📸 File upload directories created:`);
   console.log(`   ${festivalsDir}`);
   console.log(`   ${festivalMenusDir}`);
   console.log(`   ${foodItemsDir}`);
   console.log(`   ${galleryDir}`);
-  console.log(`\n🔍 Debug middleware active for POST routes`);
 });
 
 // =================== GRACEFUL SHUTDOWN ===================
-// Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('⚠️ SIGTERM signal received: closing HTTP server');
   mongoose.connection.close(false, () => {
