@@ -1,4 +1,4 @@
-// backend/server.js - UPDATED WITH PROPER CORS FOR VERCEL AND EMAIL FIXES
+// backend/server.js - UPDATED WITH SENDGRID FOR FORGOT PASSWORD
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -9,6 +9,7 @@ const nodemailer = require('nodemailer');
 const multer = require('multer');
 const fs = require('fs');
 const cloudinary = require('cloudinary').v2;
+const sgMail = require('@sendgrid/mail'); // ADD THIS
 
 dotenv.config();
 
@@ -19,6 +20,14 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 console.log('☁️ Cloudinary configured:', process.env.CLOUDINARY_CLOUD_NAME ? 'Yes' : 'No');
+
+// Initialize SendGrid if API key exists
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  console.log('✅ SendGrid configured');
+} else {
+  console.log('⚠️ SendGrid not configured');
+}
 
 // Import models
 const Admin = require('./models/Admin');
@@ -228,6 +237,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/kerala-ca
 
 // =================== EMAIL CONFIGURATION ===================
 console.log('\n📧 Email Configuration:');
+console.log(`SendGrid: ${process.env.SENDGRID_API_KEY ? '✅ Configured' : '❌ Not configured'}`);
 console.log(`FROM (Website): ${process.env.EMAIL_USER || 'Not configured'}`);
 console.log(`TO (Business): ${process.env.BUSINESS_EMAIL || 'Not configured'}`);
 console.log(`EMAIL_PASS: ${process.env.EMAIL_PASS ? '✓ Set (' + process.env.EMAIL_PASS.length + ' chars)' : '❌ NOT SET'}`);
@@ -250,11 +260,11 @@ if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
       console.error('   Please check EMAIL_USER and EMAIL_PASS in .env');
       console.error('   Make sure you are using a Gmail App Password');
     } else {
-      console.log('✅ Email server is ready to send messages');
+      console.log('✅ Gmail server is ready to send messages');
     }
   });
 } else {
-  console.log('⚠️ Email service not configured - using WhatsApp mode');
+  console.log('⚠️ Gmail service not configured');
 }
 
 // =================== AUTHENTICATION MIDDLEWARE ===================
@@ -377,67 +387,101 @@ app.get('/api/cors-test', (req, res) => {
   });
 });
 
-// =================== FIX 1: EMAIL TEST ENDPOINT ===================
-// REMOVED GMAIL FALLBACK CODE - SIMPLIFIED VERSION
+// =================== EMAIL TEST ENDPOINT ===================
 app.get('/api/email/test', async (req, res) => {
   try {
     console.log('📧 Testing email configuration...');
     
     // Check if any email service is configured
-    const hasEmailConfig = process.env.EMAIL_USER && process.env.EMAIL_PASS;
+    const hasSendGrid = !!process.env.SENDGRID_API_KEY;
+    const hasGmail = process.env.EMAIL_USER && process.env.EMAIL_PASS;
     
-    if (!hasEmailConfig) {
+    if (!hasSendGrid && !hasGmail) {
       return res.status(200).json({
         success: true,
         message: 'Email service is not configured - using WhatsApp mode',
         provider: 'WhatsApp Only',
-        note: 'System is running in WhatsApp-only mode. Inquiries will be logged to database.',
-        configuration: {
-          EMAIL_USER: process.env.EMAIL_USER ? '✓ Set' : '❌ Not set',
-          EMAIL_PASS: process.env.EMAIL_PASS ? '✓ Set' : '❌ Not set',
-          BUSINESS_EMAIL: process.env.BUSINESS_EMAIL || 'Not set'
-        }
+        note: 'System is running in WhatsApp-only mode. Inquiries will be logged to database.'
       });
     }
     
-    // If email is configured, test it
-    try {
-      const toEmail = process.env.BUSINESS_EMAIL || process.env.EMAIL_USER;
-      
-      const mailOptions = {
-        from: `"Upasana Catering Test" <${process.env.EMAIL_USER}>`,
-        to: toEmail,
-        subject: '✅ Test Email - Upasana Catering',
-        text: `This is a test email sent from your catering website backend.\n\nFROM: ${process.env.EMAIL_USER}\nTO: ${toEmail}\nTime: ${new Date().toLocaleString()}`,
-        html: `
-          <h1>✅ Test Email Successful!</h1>
-          <p>Your catering website email system is working correctly.</p>
-          <p><strong>FROM:</strong> ${process.env.EMAIL_USER}</p>
-          <p><strong>TO:</strong> ${toEmail}</p>
-          <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
-        `
-      };
+    // Try SendGrid first if configured
+    if (hasSendGrid) {
+      try {
+        const toEmail = process.env.BUSINESS_EMAIL || process.env.EMAIL_USER || 'upasanacatering@gmail.com';
+        
+        const msg = {
+          to: toEmail,
+          from: {
+            email: 'upasanawebemail@gmail.com',
+            name: 'Upasana Catering Test'
+          },
+          subject: '✅ Test Email - Upasana Catering',
+          text: `This is a test email sent from your catering website backend.\n\nProvider: SendGrid\nTO: ${toEmail}\nTime: ${new Date().toLocaleString()}`,
+          html: `
+            <h1>✅ Test Email Successful!</h1>
+            <p>Your catering website email system is working correctly via SendGrid.</p>
+            <p><strong>Provider:</strong> SendGrid</p>
+            <p><strong>TO:</strong> ${toEmail}</p>
+            <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+          `
+        };
 
-      const info = await transporter.sendMail(mailOptions);
-      
-      res.status(200).json({ 
-        success: true, 
-        message: 'Test email sent successfully',
-        from: process.env.EMAIL_USER,
-        to: toEmail,
-        provider: 'Gmail',
-        messageId: info.messageId
-      });
-      
-    } catch (emailError) {
-      console.error('❌ Email send error:', emailError);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Failed to send test email',
-        error: emailError.message,
-        note: 'Please check your email configuration in .env file'
-      });
+        const response = await sgMail.send(msg);
+        
+        return res.status(200).json({ 
+          success: true, 
+          message: 'Test email sent successfully via SendGrid',
+          to: toEmail,
+          provider: 'SendGrid',
+          status: response[0].statusCode,
+          messageId: response[0].headers['x-message-id']
+        });
+      } catch (sendGridError) {
+        console.error('❌ SendGrid test failed:', sendGridError.message);
+      }
     }
+    
+    // Fallback to Gmail
+    if (hasGmail && transporter) {
+      try {
+        const toEmail = process.env.BUSINESS_EMAIL || process.env.EMAIL_USER;
+        
+        const mailOptions = {
+          from: `"Upasana Catering Test" <${process.env.EMAIL_USER}>`,
+          to: toEmail,
+          subject: '✅ Test Email - Upasana Catering',
+          text: `This is a test email sent from your catering website backend.\n\nFROM: ${process.env.EMAIL_USER}\nTO: ${toEmail}\nTime: ${new Date().toLocaleString()}`,
+          html: `
+            <h1>✅ Test Email Successful!</h1>
+            <p>Your catering website email system is working correctly.</p>
+            <p><strong>FROM:</strong> ${process.env.EMAIL_USER}</p>
+            <p><strong>TO:</strong> ${toEmail}</p>
+            <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+          `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        
+        return res.status(200).json({ 
+          success: true, 
+          message: 'Test email sent successfully via Gmail',
+          from: process.env.EMAIL_USER,
+          to: toEmail,
+          provider: 'Gmail',
+          messageId: info.messageId
+        });
+      } catch (gmailError) {
+        console.error('❌ Gmail test failed:', gmailError.message);
+      }
+    }
+    
+    // All email methods failed
+    res.status(500).json({ 
+      success: false, 
+      message: 'All email providers failed',
+      note: 'Please check your email configuration'
+    });
     
   } catch (error) {
     console.error('❌ Email test error:', error);
@@ -449,8 +493,8 @@ app.get('/api/email/test', async (req, res) => {
   }
 });
 
-// =================== FIX 3: SEND INQUIRY ENDPOINT ===================
-// REMOVED EMAIL SENDING - JUST SAVE TO DATABASE
+// =================== SEND INQUIRY ENDPOINT ===================
+// UPDATED: Include SendGrid option
 app.post('/api/email/send-inquiry', async (req, res) => {
   try {
     console.log('📧 Received inquiry request:', req.body);
@@ -474,7 +518,263 @@ app.post('/api/email/send-inquiry', async (req, res) => {
 
     const inquiryId = `UP${Date.now().toString().slice(-8)}`;
     
-    // Save to database
+    let emailSent = false;
+    let emailProvider = 'None';
+    
+    // Try SendGrid first
+    if (process.env.SENDGRID_API_KEY) {
+      try {
+        const toEmail = process.env.BUSINESS_EMAIL || process.env.EMAIL_USER || 'upasanacatering@gmail.com';
+        
+        const htmlTemplate = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: #f97316; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+              .content { background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; border-top: none; }
+              .section { margin-bottom: 20px; }
+              .section-title { color: #f97316; font-weight: bold; font-size: 18px; margin-bottom: 10px; }
+              .field { margin-bottom: 8px; }
+              .field-label { font-weight: bold; color: #4b5563; }
+              .field-value { color: #1f2937; }
+              .priority { background: #dc2626; color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px; margin-left: 10px; }
+              .footer { margin-top: 30px; text-align: center; color: #6b7280; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>🌟 New Menu Inquiry 🌟</h1>
+                <h2>Upasana Catering Services</h2>
+              </div>
+              
+              <div class="content">
+                <div class="section">
+                  <div class="section-title">
+                    👤 Customer Information <span class="priority">NEW INQUIRY</span>
+                  </div>
+                  <div class="field"><span class="field-label">Name:</span> <span class="field-value">${name}</span></div>
+                  <div class="field"><span class="field-label">Phone:</span> <span class="field-value">${phone}</span></div>
+                  <div class="field"><span class="field-label">Location:</span> <span class="field-value">${location}</span></div>
+                  <div class="field"><span class="field-label">Email:</span> <span class="field-value">${email || 'Not provided'}</span></div>
+                </div>
+                
+                <div class="section">
+                  <div class="section-title">📅 Event Details</div>
+                  <div class="field"><span class="field-label">Event Type:</span> <span class="field-value">${event || 'Not specified'}</span></div>
+                  <div class="field"><span class="field-label">Preferred Menu:</span> <span class="field-value">${menu || 'Not selected'}</span></div>
+                </div>
+                
+                ${comments ? `
+                <div class="section">
+                  <div class="section-title">💬 Special Requests</div>
+                  <div style="background: #fff7ed; padding: 15px; border-radius: 8px; border-left: 4px solid #f97316;">
+                    ${comments.replace(/\n/g, '<br>')}
+                  </div>
+                </div>
+                ` : ''}
+                
+                <div class="section">
+                  <div class="section-title">📊 Inquiry Summary</div>
+                  <div class="field"><span class="field-label">Inquiry ID:</span> <span class="field-value">${inquiryId}</span></div>
+                  <div class="field"><span class="field-label">Date:</span> <span class="field-value">${new Date().toLocaleDateString('en-IN')}</span></div>
+                  <div class="field"><span class="field-label">Time:</span> <span class="field-value">${new Date().toLocaleTimeString('en-IN')}</span></div>
+                  <div class="field"><span class="field-label">Source:</span> <span class="field-value">Website Menu Page</span></div>
+                </div>
+                
+                <div class="footer">
+                  <p><strong>Action Required:</strong> Please contact customer within 24 hours</p>
+                  <p><em>WhatsApp: ${phone} | Email: ${email || 'Not provided'}</em></p>
+                </div>
+              </div>
+            </div>
+          </body>
+          </html>
+        `;
+
+        const textTemplate = `
+          NEW MENU INQUIRY - UPASANA CATERING
+          ====================================
+          
+          Customer Information:
+          --------------------
+          Name: ${name}
+          Phone: ${phone}
+          Location: ${location}
+          Email: ${email || 'Not provided'}
+          
+          Event Details:
+          --------------
+          Event Type: ${event || 'Not specified'}
+          Preferred Menu: ${menu || 'Not selected'}
+          
+          ${comments ? `Special Requests:\n${comments}\n\n` : ''}
+          
+          Inquiry Summary:
+          ---------------
+          Inquiry ID: ${inquiryId}
+          Date: ${new Date().toLocaleDateString('en-IN')}
+          Time: ${new Date().toLocaleTimeString('en-IN')}
+          Source: Website Menu Page
+          
+          ====================================
+          ACTION REQUIRED: Contact within 24 hours
+          WhatsApp: ${phone}
+          ${email ? `Email: ${email}` : ''}
+        `;
+
+        const msg = {
+          to: toEmail,
+          from: {
+            email: 'upasanawebemail@gmail.com',
+            name: 'Upasana Catering Website'
+          },
+          replyTo: email || 'upasanacatering@gmail.com',
+          subject: `🍽️ New Menu Inquiry - ${name} - ${inquiryId}`,
+          html: htmlTemplate,
+          text: textTemplate
+        };
+
+        await sgMail.send(msg);
+        
+        emailSent = true;
+        emailProvider = 'SendGrid';
+        console.log(`✅ Inquiry sent via SendGrid: ${inquiryId}`);
+        
+      } catch (sendGridError) {
+        console.log('SendGrid failed:', sendGridError.message);
+      }
+    }
+    
+    // Fallback to Gmail if SendGrid fails or not configured
+    if (!emailSent && process.env.EMAIL_USER && process.env.EMAIL_PASS && transporter) {
+      try {
+        const toEmail = process.env.BUSINESS_EMAIL || process.env.EMAIL_USER;
+        
+        const htmlTemplate = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: #f97316; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+              .content { background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; border-top: none; }
+              .section { margin-bottom: 20px; }
+              .section-title { color: #f97316; font-weight: bold; font-size: 18px; margin-bottom: 10px; }
+              .field { margin-bottom: 8px; }
+              .field-label { font-weight: bold; color: #4b5563; }
+              .field-value { color: #1f2937; }
+              .priority { background: #dc2626; color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px; margin-left: 10px; }
+              .footer { margin-top: 30px; text-align: center; color: #6b7280; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>🌟 New Menu Inquiry 🌟</h1>
+                <h2>Upasana Catering Services</h2>
+              </div>
+              
+              <div class="content">
+                <div class="section">
+                  <div class="section-title">
+                    👤 Customer Information <span class="priority">NEW INQUIRY</span>
+                  </div>
+                  <div class="field"><span class="field-label">Name:</span> <span class="field-value">${name}</span></div>
+                  <div class="field"><span class="field-label">Phone:</span> <span class="field-value">${phone}</span></div>
+                  <div class="field"><span class="field-label">Location:</span> <span class="field-value">${location}</span></div>
+                  <div class="field"><span class="field-label">Email:</span> <span class="field-value">${email || 'Not provided'}</span></div>
+                </div>
+                
+                <div class="section">
+                  <div class="section-title">📅 Event Details</div>
+                  <div class="field"><span class="field-label">Event Type:</span> <span class="field-value">${event || 'Not specified'}</span></div>
+                  <div class="field"><span class="field-label">Preferred Menu:</span> <span class="field-value">${menu || 'Not selected'}</span></div>
+                </div>
+                
+                ${comments ? `
+                <div class="section">
+                  <div class="section-title">💬 Special Requests</div>
+                  <div style="background: #fff7ed; padding: 15px; border-radius: 8px; border-left: 4px solid #f97316;">
+                    ${comments.replace(/\n/g, '<br>')}
+                  </div>
+                </div>
+                ` : ''}
+                
+                <div class="section">
+                  <div class="section-title">📊 Inquiry Summary</div>
+                  <div class="field"><span class="field-label">Inquiry ID:</span> <span class="field-value">${inquiryId}</span></div>
+                  <div class="field"><span class="field-label">Date:</span> <span class="field-value">${new Date().toLocaleDateString('en-IN')}</span></div>
+                  <div class="field"><span class="field-label">Time:</span> <span class="field-value">${new Date().toLocaleTimeString('en-IN')}</span></div>
+                  <div class="field"><span class="field-label">Source:</span> <span class="field-value">Website Menu Page</span></div>
+                </div>
+                
+                <div class="footer">
+                  <p><strong>Action Required:</strong> Please contact customer within 24 hours</p>
+                  <p><em>WhatsApp: ${phone} | Email: ${email || 'Not provided'}</em></p>
+                </div>
+              </div>
+            </div>
+          </body>
+          </html>
+        `;
+
+        const textTemplate = `
+          NEW MENU INQUIRY - UPASANA CATERING
+          ====================================
+          
+          Customer Information:
+          --------------------
+          Name: ${name}
+          Phone: ${phone}
+          Location: ${location}
+          Email: ${email || 'Not provided'}
+          
+          Event Details:
+          --------------
+          Event Type: ${event || 'Not specified'}
+          Preferred Menu: ${menu || 'Not selected'}
+          
+          ${comments ? `Special Requests:\n${comments}\n\n` : ''}
+          
+          Inquiry Summary:
+          ---------------
+          Inquiry ID: ${inquiryId}
+          Date: ${new Date().toLocaleDateString('en-IN')}
+          Time: ${new Date().toLocaleTimeString('en-IN')}
+          Source: Website Menu Page
+          
+          ====================================
+          ACTION REQUIRED: Contact within 24 hours
+          WhatsApp: ${phone}
+          ${email ? `Email: ${email}` : ''}
+        `;
+
+        const mailOptions = {
+          from: `"Upasana Catering Website" <${process.env.EMAIL_USER}>`,
+          to: toEmail,
+          replyTo: email || process.env.EMAIL_USER,
+          subject: `🍽️ New Menu Inquiry - ${name} - ${inquiryId}`,
+          html: htmlTemplate,
+          text: textTemplate
+        };
+
+        await transporter.sendMail(mailOptions);
+        
+        emailSent = true;
+        emailProvider = 'Gmail';
+        console.log(`✅ Inquiry sent via Gmail: ${inquiryId}`);
+        
+      } catch (gmailError) {
+        console.error('Gmail failed:', gmailError.message);
+      }
+    }
+    
+    // Save to database regardless of email success
     try {
       const inquiry = new Inquiry({
         inquiryId,
@@ -486,7 +786,7 @@ app.post('/api/email/send-inquiry', async (req, res) => {
         menu,
         comments,
         status: 'new',
-        emailProvider: 'WhatsApp Only'
+        emailProvider: emailSent ? emailProvider : 'Failed'
       });
       await inquiry.save();
       console.log(`💾 Inquiry saved to database: ${inquiryId}`);
@@ -504,7 +804,7 @@ app.post('/api/email/send-inquiry', async (req, res) => {
           priority: 'high',
           status: 'new',
           userInfo: `${name} (${phone})`,
-          emailProvider: 'WhatsApp Only'
+          emailProvider: emailSent ? emailProvider : 'Failed'
         });
         await action.save();
         console.log(`📊 Action logged: ${action._id}`);
@@ -514,24 +814,19 @@ app.post('/api/email/send-inquiry', async (req, res) => {
       
     } catch (dbError) {
       console.error('Database save error:', dbError.message);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Failed to save inquiry to database',
-        error: dbError.message 
-      });
     }
     
     // Return WhatsApp URL for frontend
     const whatsappMessage = `Hello! I'm ${name}. I'm interested in your catering services for ${event || 'an event'} at ${location}. Preferred menu: ${menu || 'Not specified'}. ${comments ? `Special requests: ${comments}` : ''}`;
     const encodedMessage = encodeURIComponent(whatsappMessage);
-    const whatsappUrl = `https://wa.me/919999999999?text=${encodedMessage}`; // Replace with actual number
+    const whatsappUrl = `https://wa.me/919447975836?text=${encodedMessage}`;
     
     // Return success response
     res.status(200).json({ 
       success: true, 
-      message: 'Inquiry logged successfully. Please contact via WhatsApp.',
+      message: emailSent ? 'Inquiry sent successfully' : 'Inquiry logged to database',
       inquiryId: inquiryId,
-      provider: 'WhatsApp Only',
+      provider: emailSent ? emailProvider : 'WhatsApp Only',
       whatsappUrl: whatsappUrl,
       data: {
         name,
@@ -668,8 +963,7 @@ app.get('/api/actions/stats', async (req, res) => {
   }
 });
 
-// =================== FIX 2: FORGOT PASSWORD ENDPOINT ===================
-// REMOVED EMAIL REQUIREMENT - ALWAYS RETURN SUCCESS
+// =================== FIXED: FORGOT PASSWORD ENDPOINT WITH SENDGRID ===================
 app.post('/api/admin/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
@@ -691,10 +985,7 @@ app.post('/api/admin/forgot-password', async (req, res) => {
       // Return success for security (don't reveal if admin exists)
       return res.json({
         success: true,
-        message: 'If an admin with this email exists, password reset instructions have been sent.',
-        note: 'Email service is not configured. Use manual OTP below for testing.',
-        testingMode: true,
-        manualOTP: '123456' // For testing only
+        message: 'If an admin with this email exists, an OTP has been sent to your email'
       });
     }
     
@@ -708,87 +999,84 @@ app.post('/api/admin/forgot-password', async (req, res) => {
     
     console.log(`🔑 OTP Generated: ${otp}`);
     
-    // Check if email is configured
-    const hasEmailConfig = process.env.EMAIL_USER && process.env.EMAIL_PASS;
+    let emailSent = false;
+    let emailProvider = 'None';
     
-    if (!hasEmailConfig) {
-      console.log('⚠️ Email not configured - returning OTP in response for testing');
-      return res.json({
-        success: true,
-        message: 'Email service not configured. Use OTP below for testing.',
-        email: email,
-        testingMode: true,
-        otp: otp, // Return OTP in response for testing
-        expiresIn: '10 minutes',
-        note: 'In production, OTP would be sent via email.'
-      });
-    }
-    
-    // Try to send email if configured
-    try {
-      const mailOptions = {
-        from: `"Upasana Catering Admin" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: '🔐 Password Reset OTP - Upasana Catering',
-        html: `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <style>
-              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background: #f4f4f4; }
-              .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-              .header { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; padding: 30px; text-align: center; }
-              .header h1 { margin: 0; font-size: 28px; }
-              .content { padding: 40px 30px; }
-              .otp-box { 
-                background: #1f2937; 
-                color: white; 
-                padding: 20px; 
-                font-size: 36px; 
-                font-weight: bold; 
-                text-align: center; 
-                letter-spacing: 8px;
-                border-radius: 8px;
-                margin: 30px 0;
-                font-family: 'Courier New', monospace;
-              }
-              .warning { 
-                background: #fef3c7; 
-                border-left: 4px solid #f59e0b; 
-                padding: 15px; 
-                margin: 20px 0;
-                border-radius: 4px;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <h1>🔐 Password Reset Request</h1>
-                <p style="margin: 10px 0 0 0; opacity: 0.9;">Upasana Catering Admin Portal</p>
-              </div>
-              
-              <div class="content">
-                <p>Hello <strong>${admin.username}</strong>,</p>
+    // Try SendGrid first if configured
+    if (process.env.SENDGRID_API_KEY) {
+      try {
+        console.log('📤 Attempting to send OTP via SendGrid...');
+        
+        const msg = {
+          to: email,
+          from: {
+            email: 'upasanawebemail@gmail.com',
+            name: 'Upasana Catering Admin'
+          },
+          subject: '🔐 Password Reset OTP - Upasana Catering',
+          html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background: #f4f4f4; }
+                .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+                .header { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; padding: 30px; text-align: center; }
+                .header h1 { margin: 0; font-size: 28px; }
+                .content { padding: 40px 30px; }
+                .otp-box { 
+                  background: #1f2937; 
+                  color: white; 
+                  padding: 20px; 
+                  font-size: 36px; 
+                  font-weight: bold; 
+                  text-align: center; 
+                  letter-spacing: 8px;
+                  border-radius: 8px;
+                  margin: 30px 0;
+                  font-family: 'Courier New', monospace;
+                }
+                .warning { 
+                  background: #fef3c7; 
+                  border-left: 4px solid #f59e0b; 
+                  padding: 15px; 
+                  margin: 20px 0;
+                  border-radius: 4px;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>🔐 Password Reset Request</h1>
+                  <p style="margin: 10px 0 0 0; opacity: 0.9;">Upasana Catering Admin Portal</p>
+                </div>
                 
-                <p>Use this OTP to reset your password:</p>
-                
-                <div class="otp-box">${otp}</div>
-                
-                <div class="warning">
-                  <p><strong>⚠️ Security:</strong></p>
-                  <ul style="margin: 10px 0; padding-left: 20px;">
-                    <li>OTP valid for <strong>10 minutes only</strong></li>
-                    <li><strong>Never share this OTP</strong> with anyone</li>
-                    <li>If you didn't request this, please ignore this email</li>
-                  </ul>
+                <div class="content">
+                  <p>Hello <strong>${admin.username}</strong>,</p>
+                  
+                  <p>Use this OTP to reset your password:</p>
+                  
+                  <div class="otp-box">${otp}</div>
+                  
+                  <div class="warning">
+                    <p><strong>⚠️ Security:</strong></p>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                      <li>OTP valid for <strong>10 minutes only</strong></li>
+                      <li><strong>Never share this OTP</strong> with anyone</li>
+                      <li>If you didn't request this, please ignore this email</li>
+                    </ul>
+                  </div>
+                  
+                  <p style="color: #666; font-size: 14px; margin-top: 30px; text-align: center;">
+                    This email was sent via SendGrid from Upasana Catering Admin System
+                  </p>
                 </div>
               </div>
-            </div>
-          </body>
-          </html>
-        `,
-        text: `
+            </body>
+            </html>
+          `,
+          text: `
 Password Reset OTP - Upasana Catering
 
 Hello ${admin.username},
@@ -798,33 +1086,134 @@ OTP: ${otp}
 Valid for 10 minutes.
 
 Time: ${new Date().toLocaleString()}
-        `
-      };
 
-      const info = await transporter.sendMail(mailOptions);
-      
-      console.log(`✅ OTP sent via email: ${info.messageId}`);
-      
-      res.json({
-        success: true,
-        message: 'OTP has been sent to your email',
-        email: email,
-        provider: 'Email',
-        expiresIn: '10 minutes'
-      });
-      
-    } catch (emailError) {
-      console.error('❌ Email send failed:', emailError.message);
+-------------------------------------
+Upasana Catering Admin System
+          `
+        };
+
+        const response = await sgMail.send(msg);
+        
+        emailSent = true;
+        emailProvider = 'SendGrid';
+        console.log(`✅ OTP sent via SendGrid: ${response[0].statusCode}`);
+        
+      } catch (sendGridError) {
+        console.error('❌ SendGrid failed:', sendGridError.message);
+      }
+    }
+    
+    // Fallback to Gmail if SendGrid fails or not configured
+    if (!emailSent && process.env.EMAIL_USER && process.env.EMAIL_PASS && transporter) {
+      try {
+        console.log('📤 Attempting to send OTP via Gmail...');
+        
+        const mailOptions = {
+          from: `"Upasana Catering Admin" <${process.env.EMAIL_USER}>`,
+          to: email,
+          subject: '🔐 Password Reset OTP - Upasana Catering',
+          html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background: #f4f4f4; }
+                .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+                .header { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; padding: 30px; text-align: center; }
+                .header h1 { margin: 0; font-size: 28px; }
+                .content { padding: 40px 30px; }
+                .otp-box { 
+                  background: #1f2937; 
+                  color: white; 
+                  padding: 20px; 
+                  font-size: 36px; 
+                  font-weight: bold; 
+                  text-align: center; 
+                  letter-spacing: 8px;
+                  border-radius: 8px;
+                  margin: 30px 0;
+                  font-family: 'Courier New', monospace;
+                }
+                .warning { 
+                  background: #fef3c7; 
+                  border-left: 4px solid #f59e0b; 
+                  padding: 15px; 
+                  margin: 20px 0;
+                  border-radius: 4px;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>🔐 Password Reset Request</h1>
+                  <p style="margin: 10px 0 0 0; opacity: 0.9;">Upasana Catering Admin Portal</p>
+                </div>
+                
+                <div class="content">
+                  <p>Hello <strong>${admin.username}</strong>,</p>
+                  
+                  <p>Use this OTP to reset your password:</p>
+                  
+                  <div class="otp-box">${otp}</div>
+                  
+                  <div class="warning">
+                    <p><strong>⚠️ Security:</strong></p>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                      <li>OTP valid for <strong>10 minutes only</strong></li>
+                      <li><strong>Never share this OTP</strong> with anyone</li>
+                      <li>If you didn't request this, please ignore this email</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </body>
+            </html>
+          `,
+          text: `
+Password Reset OTP - Upasana Catering
+
+Hello ${admin.username},
+
+OTP: ${otp}
+
+Valid for 10 minutes.
+
+Time: ${new Date().toLocaleString()}
+          `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        
+        emailSent = true;
+        emailProvider = 'Gmail';
+        console.log(`✅ OTP sent via Gmail: ${info.messageId}`);
+        
+      } catch (gmailError) {
+        console.error('❌ Gmail failed:', gmailError.message);
+      }
+    }
+    
+    if (!emailSent) {
+      console.error('❌ All email providers failed');
       return res.json({
         success: true,
         message: 'Email service failed. Use OTP below for testing.',
         email: email,
         testingMode: true,
-        otp: otp, // Return OTP in response when email fails
+        otp: otp, // Return OTP in response for testing
         expiresIn: '10 minutes',
-        error: emailError.message
+        note: 'In production, OTP would be sent via email.'
       });
     }
+    
+    res.json({
+      success: true,
+      message: 'OTP has been sent to your email',
+      email: email,
+      provider: emailProvider,
+      expiresIn: '10 minutes'
+    });
     
   } catch (error) {
     console.error('\n❌ FORGOT PASSWORD ERROR:', error);
@@ -2336,13 +2725,13 @@ const server = app.listen(PORT, () => {
   console.log(`   Email: ${process.env.ADMIN_EMAIL || '❌ NOT SET'}`);
   console.log(`   Password: ${process.env.ADMIN_PASSWORD ? '✓ Set in .env' : '❌ NOT SET'}`);
   console.log(`\n📨 Email Configuration:`);
-  console.log(`   FROM: ${process.env.EMAIL_USER || 'Not set'}`);
-  console.log(`   TO: ${process.env.BUSINESS_EMAIL || 'Not set'}`);
+  console.log(`   SendGrid: ${process.env.SENDGRID_API_KEY ? '✅ Configured' : '❌ Not configured'}`);
+  console.log(`   Gmail: ${process.env.EMAIL_USER ? '✅ Configured' : '❌ Not configured'}`);
+  console.log(`   Business Email: ${process.env.BUSINESS_EMAIL || 'Not set'}`);
   console.log(`\n🌐 CORS Configuration:`);
   console.log(`   Allowed origins: ${JSON.stringify(allowedOrigins)}`);
   console.log(`   + All *.vercel.app domains`);
   console.log(`   + All localhost ports`);
-  console.log(`\n✨ Running in WhatsApp-only mode. Inquiries will be logged to database.`);
   console.log(`\n📸 File upload directories created:`);
   console.log(`   ${festivalsDir}`);
   console.log(`   ${festivalMenusDir}`);
