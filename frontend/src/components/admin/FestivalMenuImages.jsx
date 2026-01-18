@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaUpload, FaTrash, FaSpinner, FaImage, FaFileUpload } from 'react-icons/fa';
-import './AdminPages.css'; // This is correct
+import './FestivalMenuImages.css'; // This is correct
 
 const FestivalMenuImages = () => {
   const { id } = useParams();

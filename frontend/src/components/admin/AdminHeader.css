@@ -1,0 +1,275 @@
+/* ============================================
+   ADMIN HEADER - PROFESSIONAL ORANGE & WHITE
+   ============================================ */
+
+.admin-header {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.15);
+  padding: 0 2rem;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   HEADER LEFT SECTION
+   ============================================ */
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* Sidebar Toggle Buttons */
+.mobile-sidebar-toggle,
+.desktop-sidebar-toggle {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.mobile-sidebar-toggle:hover,
+.desktop-sidebar-toggle:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-sidebar-toggle:active,
+.desktop-sidebar-toggle:active {
+  transform: translateY(0);
+}
+
+/* Brand Section */
+.header-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.header-brand h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header-subtitle {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ============================================
+   HEADER RIGHT SECTION
+   ============================================ */
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* Admin Profile */
+.admin-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.admin-profile:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.admin-avatar {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff6b35;
+  font-size: 1.8rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.admin-profile:hover .admin-avatar {
+  transform: scale(1.05);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+}
+
+.admin-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.admin-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.admin-role {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Tablet */
+@media (max-width: 768px) {
+  .admin-header {
+    padding: 0 1.5rem;
+    height: 65px;
+  }
+
+  .header-left {
+    gap: 1rem;
+  }
+
+  .header-brand h1 {
+    font-size: 1.3rem;
+  }
+
+  .header-subtitle {
+    font-size: 0.7rem;
+  }
+
+  .admin-info {
+    display: none; /* Hide admin name/role on tablet */
+  }
+
+  .admin-profile {
+    padding: 0.4rem;
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .admin-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 1.6rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .admin-header {
+    padding: 0 1rem;
+    height: 60px;
+  }
+
+  .header-left {
+    gap: 0.75rem;
+  }
+
+  .mobile-sidebar-toggle,
+  .desktop-sidebar-toggle {
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+  }
+
+  .header-brand h1 {
+    font-size: 1.1rem;
+  }
+
+  .header-subtitle {
+    display: none; /* Hide subtitle on mobile */
+  }
+
+  .admin-avatar {
+    width: 34px;
+    height: 34px;
+    font-size: 1.5rem;
+  }
+}
+
+/* Extra Small Screens */
+@media (max-width: 360px) {
+  .admin-header {
+    padding: 0 0.75rem;
+  }
+
+  .header-brand h1 {
+    font-size: 1rem;
+  }
+
+  .mobile-sidebar-toggle,
+  .desktop-sidebar-toggle {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-header {
+  animation: slideDown 0.4s ease-out;
+}
+
+/* Smooth transitions for interactive elements */
+.mobile-sidebar-toggle,
+.desktop-sidebar-toggle,
+.admin-profile,
+.admin-avatar {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus states for accessibility */
+.mobile-sidebar-toggle:focus,
+.desktop-sidebar-toggle:focus,
+.admin-profile:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}

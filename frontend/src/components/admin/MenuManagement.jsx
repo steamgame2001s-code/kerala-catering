@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaEye, FaSpinner, FaUpload } from 'react-icons/fa';
 import axiosInstance from '../../api/axiosConfig';
-import './AdminPages.css';
+import './MenuManagement.css';
 
 const MenuManagement = () => {
   const [foodItems, setFoodItems] = useState([]);

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaEye, FaSpinner, FaUpload } from 'react-icons/fa';
 import FestivalCard from '../FestivalCard';
-import './AdminPages.css'; // Change from '../../components/admin/AdminPages.css'
+import './FestivalManagement.css'; // Change from '../../components/admin/AdminPages.css'
 
 const FestivalManagement = () => {
   const [festivals, setFestivals] = useState([]);

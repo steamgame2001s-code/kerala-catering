@@ -1,7 +1,7 @@
 // frontend/src/components/admin/DashboardHome.jsx
 import React, { useState, useEffect } from 'react';
 import axios from '../../api/axiosConfig';
-import './AdminPages.css'; // ADD THIS LINE
+import './DashboardHome.css'; // ADD THIS LINE
 import { useNavigate } from 'react-router-dom';
 
 const DashboardHome = () => {

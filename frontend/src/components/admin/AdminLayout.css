@@ -1,0 +1,348 @@
+/* ============================================
+   ADMIN LAYOUT - PROFESSIONAL ORANGE & WHITE
+   ============================================ */
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fef8f5 0%, #fff5f0 100%);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ============================================
+   MAIN CONTENT AREA
+   ============================================ */
+
+.admin-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #fef8f5 0%, #ffffff 100%);
+}
+
+/* Desktop: When sidebar is NOT collapsed */
+.admin-main-content {
+  margin-left: 280px;
+}
+
+/* Desktop: When sidebar IS collapsed */
+.admin-main-content.sidebar-collapsed {
+  margin-left: 80px;
+}
+
+/* ============================================
+   CONTENT WRAPPER
+   ============================================ */
+
+.admin-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Content background card effect */
+.admin-content::before {
+  content: '';
+  position: fixed;
+  top: 70px;
+  left: 280px;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at top right, rgba(255, 107, 53, 0.03) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+  transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-main-content.sidebar-collapsed .admin-content::before {
+  left: 80px;
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+
+.admin-main-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.admin-main-content::-webkit-scrollbar-track {
+  background: #fef8f5;
+}
+
+.admin-main-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ff6b35 0%, #f7931e 100%);
+  border-radius: 10px;
+  border: 2px solid #fef8f5;
+}
+
+.admin-main-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #f7931e 0%, #ff6b35 100%);
+}
+
+/* ============================================
+   MOBILE OVERLAY
+   ============================================ */
+
+@media (max-width: 1023px) {
+  .admin-layout::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 90;
+    backdrop-filter: blur(2px);
+  }
+
+  .admin-layout.mobile-sidebar-open::before {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Tablet and Mobile */
+@media (max-width: 1023px) {
+  .admin-main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .admin-main-content.sidebar-collapsed {
+    margin-left: 0;
+  }
+
+  .admin-content {
+    padding: 1.5rem;
+  }
+
+  .admin-content::before {
+    left: 0;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .admin-content {
+    padding: 1.25rem;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .admin-content {
+    padding: 1rem;
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Page transition effect */
+.admin-content > * {
+  animation: fadeInContent 0.4s ease-out;
+}
+
+@keyframes fadeInContent {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   UTILITY CLASSES FOR CONTENT
+   ============================================ */
+
+/* Card container for content sections */
+.content-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 2px 12px rgba(255, 107, 53, 0.08);
+  border: 1px solid rgba(255, 107, 53, 0.1);
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+}
+
+.content-card:hover {
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.12);
+  transform: translateY(-2px);
+}
+
+/* Section headers */
+.section-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(255, 107, 53, 0.1);
+}
+
+.section-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.section-subtitle {
+  font-size: 0.95rem;
+  color: #7f8c8d;
+  margin: 0;
+}
+
+/* Loading state */
+.admin-content.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 107, 53, 0.1);
+  border-top: 4px solid #ff6b35;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 3rem auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #95a5a6;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  color: rgba(255, 107, 53, 0.3);
+  margin-bottom: 1rem;
+}
+
+.empty-state-text {
+  font-size: 1.1rem;
+  color: #7f8c8d;
+}
+
+/* ============================================
+   RESPONSIVE UTILITIES
+   ============================================ */
+
+@media (max-width: 768px) {
+  .content-card {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-card {
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+
+  .section-title {
+    font-size: 1.35rem;
+  }
+
+  .empty-state {
+    padding: 3rem 1rem;
+  }
+
+  .empty-state-icon {
+    font-size: 3rem;
+  }
+}
+
+/* ============================================
+   FOCUS MANAGEMENT
+   ============================================ */
+
+.admin-main-content:focus-within {
+  outline: none;
+}
+
+/* Skip to content link for accessibility */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #ff6b35;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0 0 8px 0;
+  text-decoration: none;
+  z-index: 1000;
+  transition: top 0.3s ease;
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .admin-main-content {
+    margin-left: 0;
+  }
+
+  .admin-content {
+    padding: 0;
+  }
+
+  .admin-content::before {
+    display: none;
+  }
+}

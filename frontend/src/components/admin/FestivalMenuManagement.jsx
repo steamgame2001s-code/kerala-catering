@@ -1,7 +1,7 @@
 // frontend/src/components/admin/FestivalMenuManagement.jsx - FIXED VERSION
 import React, { useState, useEffect } from 'react';
 import { FaUpload, FaTrash, FaImage, FaSpinner } from 'react-icons/fa';
-import '../../components/admin/AdminPages.css';
+import './FestivalMenuManagement.css'; // Should be at the top
 
 const FestivalMenuManagement = () => {
   const [festivals, setFestivals] = useState([]);

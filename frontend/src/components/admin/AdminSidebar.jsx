@@ -12,7 +12,7 @@ import {
   FaFileImage
 } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
-import "./AdminPages.css";  // Single CSS file
+import "./AdminSidebar.css";  // Single CSS file
 
 const AdminSidebar = ({
   isCollapsed,

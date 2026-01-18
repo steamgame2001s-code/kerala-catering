@@ -1,7 +1,7 @@
 // frontend/src/components/admin/AdminHeader.jsx - CLEAN VERSION (NO NOTIFICATIONS)
 import React from 'react';
 import { FaUserCircle, FaBars } from 'react-icons/fa';
-import './AdminPages.css';  // Single CSS file
+import './AdminHeader.css';  // Single CSS file
 
 const AdminHeader = ({ toggleSidebar, isMobile }) => {
   const adminName = localStorage.getItem('adminName') || 'Admin';
