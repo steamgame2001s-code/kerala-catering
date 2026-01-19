@@ -118,35 +118,62 @@ const GalleryManagement = () => {
     }
   };
 
+  const prepareFormData = () => {
+    const formDataToSend = new FormData();
+    
+    // Append all form fields
+    formDataToSend.append('title', formData.title);
+    formDataToSend.append('description', formData.description || '');
+    formDataToSend.append('category', formData.category);
+    formDataToSend.append('festival', formData.festival || '');
+    formDataToSend.append('order', formData.order || '0');
+    formDataToSend.append('tags', formData.tags || '');
+    formDataToSend.append('featured', formData.featured.toString());
+    formDataToSend.append('isActive', formData.isActive.toString());
+    
+    // Append image file if exists
+    if (imageFile) {
+      formDataToSend.append('image', imageFile);
+    } else if (editingItem && !imageFile) {
+      // When editing without new image, send current image URL
+      formDataToSend.append('currentImageUrl', editingItem.imageUrl || '');
+    }
+    
+    return formDataToSend;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormSubmitting(true);
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('category', formData.category);
-      formDataToSend.append('festival', formData.festival);
-      formDataToSend.append('order', formData.order);
-      formDataToSend.append('tags', formData.tags);
-      formDataToSend.append('featured', formData.featured);
-      formDataToSend.append('isActive', formData.isActive);
+      const formDataToSend = prepareFormData();
+      let url, method;
       
-      if (imageFile) {
-        formDataToSend.append('image', imageFile);
+      if (editingItem) {
+        url = `/admin/gallery/${editingItem._id}`;
+        method = 'PUT';
+      } else {
+        url = '/admin/gallery';
+        method = 'POST';
       }
 
-      let response;
-      if (editingItem) {
-        response = await axiosInstance.put(`/admin/gallery/${editingItem._id}`, formDataToSend, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-      } else {
-        response = await axiosInstance.post('/admin/gallery', formDataToSend, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+      console.log(`📤 Sending ${method} request to: ${url}`);
+      console.log('📦 FormData entries:');
+      for (let [key, value] of formDataToSend.entries()) {
+        console.log(`  ${key}: ${value}`);
       }
+
+      const response = await axiosInstance({
+        method: method,
+        url: url,
+        data: formDataToSend,
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      console.log('✅ Response:', response.data);
       
       if (response.data.success) {
         alert(editingItem ? '✅ Gallery item updated successfully!' : '✅ Gallery item added successfully!');
@@ -158,8 +185,21 @@ const GalleryManagement = () => {
         alert(`❌ ${response.data.error || 'Failed to save gallery item'}`);
       }
     } catch (error) {
-      console.error('Failed to save gallery item:', error);
-      alert('❌ Failed to save gallery item');
+      console.error('❌ Failed to save gallery item:', error);
+      console.error('❌ Error details:', error.response?.data || error.message);
+      
+      // More specific error messages
+      if (error.response?.status === 500) {
+        alert('❌ Server error. Please check if the backend is running properly.');
+      } else if (error.response?.status === 413) {
+        alert('❌ File too large. Please select a smaller image.');
+      } else if (error.response?.status === 400) {
+        alert('❌ Invalid data. Please check all required fields.');
+      } else if (!navigator.onLine) {
+        alert('❌ Network error. Please check your internet connection.');
+      } else {
+        alert('❌ Failed to save gallery item. Please try again.');
+      }
     } finally {
       setFormSubmitting(false);
     }
@@ -313,6 +353,7 @@ const GalleryManagement = () => {
                       value={formData.title} 
                       onChange={(e) => setFormData({...formData, title: e.target.value})} 
                       required 
+                      disabled={formSubmitting}
                     />
                   </div>
                   
@@ -323,6 +364,7 @@ const GalleryManagement = () => {
                       value={formData.category} 
                       onChange={(e) => setFormData({...formData, category: e.target.value})} 
                       required
+                      disabled={formSubmitting}
                     >
                       <option value="food">Food</option>
                       <option value="event">Event</option>
@@ -340,6 +382,7 @@ const GalleryManagement = () => {
                     value={formData.description} 
                     onChange={(e) => setFormData({...formData, description: e.target.value})} 
                     rows="3" 
+                    disabled={formSubmitting}
                   />
                 </div>
 
@@ -352,6 +395,7 @@ const GalleryManagement = () => {
                       value={formData.festival} 
                       onChange={(e) => setFormData({...formData, festival: e.target.value})} 
                       placeholder="Festival ID or leave empty" 
+                      disabled={formSubmitting}
                     />
                   </div>
                   
@@ -363,6 +407,7 @@ const GalleryManagement = () => {
                       value={formData.order} 
                       onChange={(e) => setFormData({...formData, order: e.target.value})} 
                       min="0"
+                      disabled={formSubmitting}
                     />
                   </div>
                 </div>
@@ -375,6 +420,7 @@ const GalleryManagement = () => {
                     value={formData.tags} 
                     onChange={(e) => setFormData({...formData, tags: e.target.value})} 
                     placeholder="e.g., Traditional, Spicy, Healthy" 
+                    disabled={formSubmitting}
                   />
                 </div>
 
@@ -387,6 +433,7 @@ const GalleryManagement = () => {
                       accept="image/*" 
                       onChange={handleImageChange} 
                       required={!editingItem && !imagePreview} 
+                      disabled={formSubmitting}
                     />
                     <small className="form-text">Max size: 10MB | Formats: JPG, PNG, GIF, WEBP</small>
                     
@@ -420,6 +467,7 @@ const GalleryManagement = () => {
                       type="checkbox" 
                       checked={formData.featured} 
                       onChange={(e) => setFormData({...formData, featured: e.target.checked})} 
+                      disabled={formSubmitting}
                     />
                     <span>Featured Item</span>
                   </label>
@@ -429,6 +477,7 @@ const GalleryManagement = () => {
                       type="checkbox" 
                       checked={formData.isActive} 
                       onChange={(e) => setFormData({...formData, isActive: e.target.checked})} 
+                      disabled={formSubmitting}
                     />
                     <span>Active (Show on website)</span>
                   </label>

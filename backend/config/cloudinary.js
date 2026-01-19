@@ -1,9 +1,7 @@
-// backend/config/cloudinary.js - FINAL FIXED VERSION WITH SHARP COMPRESSION
+// backend/config/cloudinary.js - SIMPLIFIED FIXED VERSION
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
-const sharp = require('sharp');
-const { Readable } = require('stream');
 
 // ========== CLOUDINARY CONFIGURATION ==========
 cloudinary.config({
@@ -12,7 +10,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-console.log('☁️ Cloudinary Config:', {
+console.log('☁️ Cloudinary Config Check:', {
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dlgrdnghb',
   api_key: process.env.CLOUDINARY_API_KEY ? '✓ Set' : '❌ Missing',
   api_secret: process.env.CLOUDINARY_API_SECRET ? '✓ Set' : '❌ Missing'
@@ -23,87 +21,29 @@ cloudinary.api.ping()
   .then(() => console.log('✅ Cloudinary connected successfully'))
   .catch(err => console.error('❌ Cloudinary connection error:', err.message));
 
-// ========== HELPER: COMPRESS IMAGE BUFFER ==========
-const compressImage = async (buffer, maxWidth, maxHeight, quality = 85) => {
-  try {
-    console.log(`🔄 Compressing image (max: ${maxWidth}x${maxHeight}, quality: ${quality}%)`);
-    
-    const compressed = await sharp(buffer)
-      .resize(maxWidth, maxHeight, { 
-        fit: 'inside', 
-        withoutEnlargement: true 
-      })
-      .jpeg({ 
-        quality: quality,
-        progressive: true,
-        mozjpeg: true
-      })
-      .toBuffer();
-    
-    const originalSize = (buffer.length / 1024).toFixed(2);
-    const compressedSize = (compressed.length / 1024).toFixed(2);
-    const savings = (((buffer.length - compressed.length) / buffer.length) * 100).toFixed(1);
-    
-    console.log(`✅ Compressed: ${originalSize}KB → ${compressedSize}KB (saved ${savings}%)`);
-    
-    return compressed;
-  } catch (error) {
-    console.error('❌ Compression error:', error.message);
-    return buffer; // Return original if compression fails
-  }
-};
-
-// ========== HELPER: CONVERT BUFFER TO STREAM ==========
-const bufferToStream = (buffer) => {
-  const readable = new Readable();
-  readable._read = () => {};
-  readable.push(buffer);
-  readable.push(null);
-  return readable;
-};
-
-// ========== FESTIVAL STORAGE ==========
+// ========== FESTIVAL STORAGE (SIMPLIFIED) ==========
 const festivalStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: async (req, file) => {
-    try {
-      // Read file buffer
-      const chunks = [];
-      for await (const chunk of file.stream) {
-        chunks.push(chunk);
-      }
-      const buffer = Buffer.concat(chunks);
-      
-      // Compress image
-      const compressed = await compressImage(buffer, 1200, 800, 85);
-      
-      const timestamp = Date.now();
-      const random = Math.round(Math.random() * 1E9);
-      
-      return {
-        folder: 'kerala-catering/festivals',
-        format: 'jpg',
-        public_id: `festival-${timestamp}-${random}`,
-        transformation: [
-          { quality: 'auto:good' },
-          { fetch_format: 'auto' }
-        ]
-      };
-    } catch (error) {
-      console.error('Festival storage error:', error);
-      throw error;
-    }
+  params: {
+    folder: 'kerala-catering/festivals',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+    transformation: [
+      { width: 1200, height: 800, crop: 'limit' },
+      { quality: 'auto:good' },
+      { fetch_format: 'auto' }
+    ],
+    format: 'jpg'
   }
 });
 
 const uploadFestival = multer({
   storage: festivalStorage,
   limits: { 
-    fileSize: 5 * 1024 * 1024, // 5MB before compression
+    fileSize: 5 * 1024 * 1024, // 5MB
     files: 1 
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|webp/;
+    const allowedTypes = /jpeg|jpg|png|webp|gif/;
     const ext = file.originalname.toLowerCase().split('.').pop();
     const mimetype = file.mimetype;
     
@@ -113,40 +53,21 @@ const uploadFestival = multer({
     }
     
     console.log(`❌ Rejected file: ${file.originalname}`);
-    cb(new Error('Only JPG, PNG, and WEBP images are allowed!'));
+    cb(new Error('Only JPG, PNG, WEBP, and GIF images are allowed!'));
   }
 });
 
 // ========== FESTIVAL MENU STORAGE ==========
 const festivalMenuStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: async (req, file) => {
-    try {
-      const chunks = [];
-      for await (const chunk of file.stream) {
-        chunks.push(chunk);
-      }
-      const buffer = Buffer.concat(chunks);
-      
-      // Compress menu images (larger size for readability)
-      const compressed = await compressImage(buffer, 1600, 1200, 90);
-      
-      const timestamp = Date.now();
-      const random = Math.round(Math.random() * 1E9);
-      
-      return {
-        folder: 'kerala-catering/festival-menus',
-        format: 'jpg',
-        public_id: `menu-${timestamp}-${random}`,
-        transformation: [
-          { quality: 'auto:best' },
-          { fetch_format: 'auto' }
-        ]
-      };
-    } catch (error) {
-      console.error('Menu storage error:', error);
-      throw error;
-    }
+  params: {
+    folder: 'kerala-catering/festival-menus',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [
+      { width: 1600, height: 1200, crop: 'limit' },
+      { quality: 'auto:best' },
+      { fetch_format: 'auto' }
+    ]
   }
 });
 
@@ -174,33 +95,14 @@ const uploadFestivalMenu = multer({
 // ========== FOOD ITEMS STORAGE ==========
 const foodItemStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: async (req, file) => {
-    try {
-      const chunks = [];
-      for await (const chunk of file.stream) {
-        chunks.push(chunk);
-      }
-      const buffer = Buffer.concat(chunks);
-      
-      // Compress food images (square format)
-      const compressed = await compressImage(buffer, 800, 800, 85);
-      
-      const timestamp = Date.now();
-      const random = Math.round(Math.random() * 1E9);
-      
-      return {
-        folder: 'kerala-catering/food-items',
-        format: 'jpg',
-        public_id: `food-${timestamp}-${random}`,
-        transformation: [
-          { quality: 'auto:good' },
-          { fetch_format: 'auto' }
-        ]
-      };
-    } catch (error) {
-      console.error('Food storage error:', error);
-      throw error;
-    }
+  params: {
+    folder: 'kerala-catering/food-items',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [
+      { width: 800, height: 800, crop: 'fill', gravity: 'auto' },
+      { quality: 'auto:good' },
+      { fetch_format: 'auto' }
+    ]
   }
 });
 
@@ -228,33 +130,14 @@ const uploadFoodItem = multer({
 // ========== GALLERY STORAGE ==========
 const galleryStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: async (req, file) => {
-    try {
-      const chunks = [];
-      for await (const chunk of file.stream) {
-        chunks.push(chunk);
-      }
-      const buffer = Buffer.concat(chunks);
-      
-      // Compress gallery images
-      const compressed = await compressImage(buffer, 1400, 1000, 88);
-      
-      const timestamp = Date.now();
-      const random = Math.round(Math.random() * 1E9);
-      
-      return {
-        folder: 'kerala-catering/gallery',
-        format: 'jpg',
-        public_id: `gallery-${timestamp}-${random}`,
-        transformation: [
-          { quality: 'auto:good' },
-          { fetch_format: 'auto' }
-        ]
-      };
-    } catch (error) {
-      console.error('Gallery storage error:', error);
-      throw error;
-    }
+  params: {
+    folder: 'kerala-catering/gallery',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [
+      { width: 1400, height: 1000, crop: 'limit' },
+      { quality: 'auto:good' },
+      { fetch_format: 'auto' }
+    ]
   }
 });
 
@@ -294,7 +177,6 @@ const deleteImage = async (imageUrl) => {
     }
 
     // Extract public_id from Cloudinary URL
-    // Example: https://res.cloudinary.com/dlgrdnghb/image/upload/v1234567890/kerala-catering/festivals/festival-123.jpg
     const urlParts = imageUrl.split('/');
     const uploadIndex = urlParts.indexOf('upload');
     
@@ -318,7 +200,7 @@ const deleteImage = async (imageUrl) => {
       return true;
     } else if (result.result === 'not found') {
       console.log('⚠️ Image not found in Cloudinary (may have been deleted already)');
-      return true; // Consider this a success since image doesn't exist
+      return true;
     } else {
       console.log('⚠️ Unexpected deletion response:', result);
       return false;
@@ -329,22 +211,6 @@ const deleteImage = async (imageUrl) => {
   }
 };
 
-// ========== BULK DELETE HELPER ==========
-const deleteMultipleImages = async (imageUrls) => {
-  console.log(`🗑️ Bulk delete: ${imageUrls.length} images`);
-  
-  const results = await Promise.allSettled(
-    imageUrls.map(url => deleteImage(url))
-  );
-  
-  const successful = results.filter(r => r.status === 'fulfilled' && r.value).length;
-  const failed = results.length - successful;
-  
-  console.log(`✅ Bulk delete complete: ${successful} deleted, ${failed} failed`);
-  
-  return { successful, failed };
-};
-
 // ========== EXPORTS ==========
 module.exports = {
   cloudinary,
@@ -352,9 +218,7 @@ module.exports = {
   uploadFestivalMenu,
   uploadFoodItem,
   uploadGallery,
-  deleteImage,
-  deleteMultipleImages,
-  compressImage
+  deleteImage
 };
 
-console.log('📦 Cloudinary module loaded with Sharp compression enabled');
+console.log('📦 Cloudinary module loaded successfully');

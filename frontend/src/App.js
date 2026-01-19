@@ -42,9 +42,10 @@ function App() {
     console.log('=== APP STARTED ===');
     console.log('NODE_ENV:', process.env.NODE_ENV);
     console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
-    console.log('Backend URL:', process.env.NODE_ENV === 'production' 
-      ? 'https://kerala-catering.onrender.com/api' 
-      : 'http://localhost:5000/api');
+    console.log('Backend URL:', process.env.REACT_APP_API_URL || 
+      (process.env.NODE_ENV === 'production' 
+        ? 'https://kerala-catering.onrender.com/api' 
+        : 'http://localhost:5000/api'));
   }, []);
 
   return (

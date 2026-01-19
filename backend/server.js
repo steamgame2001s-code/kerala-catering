@@ -99,6 +99,16 @@ const extendRequestTimeout = (req, res, next) => {
   next();
 };
 
+// ========== REQUEST LOGGING ==========
+app.use((req, res, next) => {
+  console.log('\n🌐 REQUEST INFO:');
+  console.log(`📋 ${req.method} ${req.url}`);
+  console.log(`📦 Content-Type: ${req.headers['content-type']}`);
+  console.log(`🔑 Auth: ${req.headers.authorization ? 'Present' : 'None'}`);
+  console.log(`📊 Content-Length: ${req.headers['content-length'] || '0'}`);
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -300,6 +310,42 @@ app.get('/api/test-cloudinary', async (req, res) => {
   }
 });
 
+// =================== SIMPLE UPLOAD TEST ENDPOINT ===================
+app.post('/api/admin/test-upload',
+  authenticateAdmin,
+  extendRequestTimeout,
+  uploadGallery.single('testImage'),
+  (req, res) => {
+    try {
+      console.log('🧪 Test upload endpoint hit');
+      
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          error: 'No file uploaded'
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: '✅ Test upload successful!',
+        fileInfo: {
+          path: req.file.path,
+          filename: req.file.filename,
+          size: req.file.size,
+          cloudinaryUrl: req.file.path
+        }
+      });
+    } catch (error) {
+      console.error('Test upload error:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+);
+
 // =================== UPLOAD TEST ENDPOINT ===================
 app.post('/api/upload-test', 
   extendRequestTimeout,
@@ -330,7 +376,7 @@ app.post('/api/upload-test',
       res.status(500).json({
         success: false,
         error: error.message,
-        note: 'Check file size (max 2MB) and format (JPG, PNG, WEBP)'
+        note: 'Check file size (max 5MB) and format (JPG, PNG, WEBP)'
       });
     }
   }
@@ -1188,14 +1234,6 @@ app.post('/api/admin/festivals/:festivalId/menu-images',
         return res.status(400).json({ success: false, error: 'No image file provided' });
       }
       
-      // Check file size manually
-      if (req.file.size > 5 * 1024 * 1024) {
-        return res.status(400).json({
-          success: false,
-          error: 'Image file is too large. Maximum size is 5MB.'
-        });
-      }
-      
       const festival = await Festival.findById(req.params.festivalId);
       if (!festival) {
         return res.status(404).json({ success: false, error: 'Festival not found' });
@@ -1226,7 +1264,7 @@ app.post('/api/admin/festivals/:festivalId/menu-images',
       res.status(500).json({ 
         success: false, 
         error: error.message,
-        note: 'Try a smaller image file (max 5MB)'
+        note: 'Try a smaller image file (max 10MB)'
       });
     }
   }
@@ -1302,21 +1340,6 @@ app.post('/api/admin/festivals',
   async (req, res) => {
     try {
       console.log('📝 Creating festival with Cloudinary upload');
-      
-      // Check file sizes manually
-      if (req.files?.image && req.files.image[0].size > 3 * 1024 * 1024) {
-        return res.status(400).json({
-          success: false,
-          error: 'Main image is too large. Maximum size is 3MB.'
-        });
-      }
-      
-      if (req.files?.bannerImage && req.files.bannerImage[0].size > 3 * 1024 * 1024) {
-        return res.status(400).json({
-          success: false,
-          error: 'Banner image is too large. Maximum size is 3MB.'
-        });
-      }
       
       const festivalData = {
         name: req.body.name,
@@ -1532,7 +1555,7 @@ app.get('/api/admin/food-items', authenticateAdmin, async (req, res) => {
   }
 });
 
-// CREATE food item with image upload (to Cloudinary) - FIXED VERSION
+// CREATE food item with image upload (to Cloudinary)
 app.post('/api/admin/food-items',
   authenticateAdmin,
   extendRequestTimeout,
@@ -1541,14 +1564,16 @@ app.post('/api/admin/food-items',
   async (req, res) => {
     try {
       console.log('📝 Creating food item with Cloudinary upload');
+      console.log('📊 Has file:', !!req.file);
       
-      // Check file size manually
-      if (req.file && req.file.size > 2 * 1024 * 1024) {
+      if (!req.file) {
         return res.status(400).json({
           success: false,
-          error: 'Image file is too large. Maximum size is 2MB.'
+          error: 'Image file is required for food items'
         });
       }
+      
+      console.log('✅ File uploaded:', req.file.path);
       
       const foodItemData = {
         name: req.body.name,
@@ -1562,21 +1587,10 @@ app.post('/api/admin/food-items',
         spicyLevel: req.body.spicyLevel ? parseInt(req.body.spicyLevel) : 1,
         isBestSeller: req.body.isBestSeller === 'true' || req.body.isBestSeller === true,
         isAvailable: req.body.isAvailable === 'true' || req.body.isAvailable === true || req.body.isAvailable !== 'false',
-        isActive: req.body.isActive === 'true' || req.body.isActive === true || req.body.isActive !== 'false'
+        isActive: req.body.isActive === 'true' || req.body.isActive === true || req.body.isActive !== 'false',
+        image: req.file.path, // Cloudinary URL
+        cloudinaryImageId: req.file.filename // Cloudinary public ID
       };
-      
-      // Handle image upload to Cloudinary
-      if (req.file) {
-        foodItemData.image = req.file.path; // Cloudinary URL
-        foodItemData.cloudinaryImageId = req.file.filename; // Cloudinary public ID
-        console.log('✅ Food image uploaded to Cloudinary:', foodItemData.image);
-      } else if (!req.body.existingImage) {
-        console.log('⚠️ No image file provided for food item');
-        return res.status(400).json({
-          success: false,
-          error: 'Image is required for food items'
-        });
-      }
       
       // Auto-generate slug
       if (!foodItemData.slug && foodItemData.name) {
@@ -1602,8 +1616,7 @@ app.post('/api/admin/food-items',
       if (!foodItemData.name) {
         return res.status(400).json({ 
           success: false, 
-          error: 'Name is required',
-          received: req.body
+          error: 'Name is required'
         });
       }
       
@@ -1614,16 +1627,15 @@ app.post('/api/admin/food-items',
       res.status(201).json({ 
         success: true, 
         foodItem,
-        message: 'Food item created successfully with image uploaded to Cloudinary'
+        message: 'Food item created successfully'
       });
       
     } catch (error) {
-      console.error('❌ Create food item error:', error);
+      console.error('❌ Create food item error:', error.message);
       res.status(500).json({ 
         success: false, 
         error: error.message,
-        note: 'Try using a smaller image file (max 2MB)',
-        receivedData: req.body 
+        note: 'Try using a smaller image file (max 5MB)'
       });
     }
   }
@@ -1674,10 +1686,10 @@ app.put('/api/admin/food-items/:id',
         message: 'Food item updated successfully'
       });
     } catch (error) {
+      console.error('❌ Update food item error:', error.message);
       res.status(500).json({ 
         success: false, 
-        error: error.message,
-        note: 'Try using a smaller image file (max 2MB)'
+        error: error.message
       });
     }
   }
@@ -1700,8 +1712,7 @@ app.delete('/api/admin/food-items/:id', authenticateAdmin, async (req, res) => {
     
     res.json({ 
       success: true, 
-      message: 'Food item deleted successfully',
-      note: 'Image has been deleted from Cloudinary'
+      message: 'Food item deleted successfully'
     });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Server error' });
@@ -1720,25 +1731,18 @@ app.get('/api/admin/gallery', authenticateAdmin, async (req, res) => {
   }
 });
 
-// CREATE gallery item with image upload (to Cloudinary) - FIXED VERSION
+// CREATE gallery item with image upload (to Cloudinary) - SIMPLIFIED
 app.post('/api/admin/gallery',
   authenticateAdmin,
   extendRequestTimeout,
   uploadGallery.single('image'),
-  debugFormData,
   async (req, res) => {
     try {
-      console.log('📝 Creating gallery item with Cloudinary upload');
-      
-      // Check file size manually
-      if (req.file && req.file.size > 3 * 1024 * 1024) {
-        return res.status(400).json({
-          success: false,
-          error: 'Image file is too large. Maximum size is 3MB.'
-        });
-      }
+      console.log('📝 CREATE Gallery route hit');
+      console.log('📊 Has file:', !!req.file);
       
       if (!req.file) {
+        console.log('❌ No image file provided');
         return res.status(400).json({ 
           success: false, 
           error: 'Image file is required',
@@ -1746,63 +1750,58 @@ app.post('/api/admin/gallery',
         });
       }
       
-      const galleryData = {
+      console.log('✅ File uploaded:', req.file.path);
+      
+      // Basic validation
+      if (!req.body.title) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Title is required'
+        });
+      }
+      
+      const galleryItem = new Gallery({
         title: req.body.title,
         description: req.body.description || '',
         category: req.body.category || 'food',
         festival: req.body.festival || null,
         order: req.body.order ? parseInt(req.body.order) : 0,
         featured: req.body.featured === 'true' || req.body.featured === true,
-        isActive: req.body.isActive === 'true' || req.body.isActive === true || req.body.isActive !== 'false',
-        imageUrl: req.file.path, // Cloudinary URL
-        cloudinaryPublicId: req.file.filename // Cloudinary public ID
-      };
+        isActive: req.body.isActive === 'true' || req.body.isActive === true,
+        imageUrl: req.file.path,
+        cloudinaryPublicId: req.file.filename
+      });
       
-      // Parse tags if string
-      if (req.body.tags) {
-        galleryData.tags = typeof req.body.tags === 'string'
-          ? req.body.tags.split(',').map(t => t.trim()).filter(Boolean)
-          : req.body.tags;
-      }
-      
-      // Validate
-      if (!galleryData.title) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'Title is required',
-          received: req.body
-        });
-      }
-      
-      const galleryItem = new Gallery(galleryData);
       await galleryItem.save();
       
-      console.log(`✅ Gallery item created: ${galleryItem.title} (ID: ${galleryItem._id})`);
+      console.log('✅ Gallery item saved to database');
+      
       res.status(201).json({ 
         success: true, 
         galleryItem,
-        message: 'Gallery item created successfully with image uploaded to Cloudinary'
+        message: 'Gallery item created successfully'
       });
       
     } catch (error) {
-      console.error('❌ Create gallery error:', error);
+      console.error('❌ Create gallery error:', error.message);
       res.status(500).json({ 
         success: false, 
         error: error.message,
-        note: 'Try using a smaller image file (max 3MB)',
-        receivedData: req.body
+        note: 'Please try with a smaller image file'
       });
     }
   }
 );
 
-// UPDATE gallery item with optional image upload
+// UPDATE gallery item with optional image upload - SIMPLIFIED
 app.put('/api/admin/gallery/:id',
   authenticateAdmin,
   extendRequestTimeout,
   uploadGallery.single('image'),
   async (req, res) => {
     try {
+      console.log('🔄 UPDATE Gallery route hit for ID:', req.params.id);
+      
       const galleryItem = await Gallery.findById(req.params.id);
       if (!galleryItem) {
         return res.status(404).json({ success: false, error: 'Gallery item not found' });
@@ -1812,21 +1811,20 @@ app.put('/api/admin/gallery/:id',
       
       // Handle new image upload
       if (req.file) {
-        // Delete old image from Cloudinary if exists
+        console.log('📸 New image uploaded:', req.file.path);
+        
+        // Delete old image if exists
         if (galleryItem.imageUrl && galleryItem.imageUrl.includes('cloudinary.com')) {
-          await deleteImage(galleryItem.imageUrl);
+          try {
+            await deleteImage(galleryItem.imageUrl);
+            console.log('🗑️ Old image deleted');
+          } catch (deleteError) {
+            console.log('⚠️ Could not delete old image:', deleteError.message);
+          }
         }
         
         galleryData.imageUrl = req.file.path;
         galleryData.cloudinaryPublicId = req.file.filename;
-      }
-      
-      // Parse tags
-      if (typeof galleryData.tags === 'string') {
-        galleryData.tags = galleryData.tags
-          .split(',')
-          .map(t => t.trim())
-          .filter(Boolean);
       }
       
       const updatedGalleryItem = await Gallery.findByIdAndUpdate(
@@ -1835,16 +1833,18 @@ app.put('/api/admin/gallery/:id',
         { new: true, runValidators: true }
       );
       
+      console.log('✅ Gallery item updated');
+      
       res.json({ 
         success: true, 
         galleryItem: updatedGalleryItem,
         message: 'Gallery item updated successfully'
       });
     } catch (error) {
+      console.error('❌ Update gallery error:', error.message);
       res.status(500).json({ 
         success: false, 
-        error: error.message,
-        note: 'Try using a smaller image file (max 3MB)'
+        error: error.message
       });
     }
   }
@@ -1867,8 +1867,7 @@ app.delete('/api/admin/gallery/:id', authenticateAdmin, async (req, res) => {
     
     res.json({ 
       success: true, 
-      message: 'Gallery item deleted successfully',
-      note: 'Image has been deleted from Cloudinary'
+      message: 'Gallery item deleted successfully'
     });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Server error' });

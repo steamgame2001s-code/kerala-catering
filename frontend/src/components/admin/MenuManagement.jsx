@@ -128,40 +128,64 @@ const MenuManagement = () => {
     }
   };
 
+  const prepareFormData = () => {
+    const formDataToSend = new FormData();
+    
+    // Append all form fields
+    formDataToSend.append('name', formData.name);
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('category', formData.category);
+    formDataToSend.append('festival', formData.festival || '');
+    formDataToSend.append('originalPrice', formData.originalPrice || '0');
+    formDataToSend.append('calories', formData.calories || '');
+    formDataToSend.append('prepTime', formData.prepTime || '');
+    formDataToSend.append('serves', formData.serves || '');
+    formDataToSend.append('spicyLevel', formData.spicyLevel);
+    formDataToSend.append('ingredients', formData.ingredients || '');
+    formDataToSend.append('isBestSeller', formData.isBestSeller.toString());
+    formDataToSend.append('isAvailable', formData.isAvailable.toString());
+    formDataToSend.append('isActive', formData.isActive.toString());
+    
+    // Append image file if exists
+    if (imageFile) {
+      formDataToSend.append('image', imageFile);
+    }
+    
+    return formDataToSend;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormSubmitting(true);
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('category', formData.category);
-      formDataToSend.append('festival', formData.festival);
-      formDataToSend.append('originalPrice', formData.originalPrice || '');
-      formDataToSend.append('calories', formData.calories || '');
-      formDataToSend.append('prepTime', formData.prepTime || '');
-      formDataToSend.append('serves', formData.serves || '');
-      formDataToSend.append('spicyLevel', formData.spicyLevel);
-      formDataToSend.append('ingredients', formData.ingredients);
-      formDataToSend.append('isBestSeller', formData.isBestSeller);
-      formDataToSend.append('isAvailable', formData.isAvailable);
-      formDataToSend.append('isActive', formData.isActive);
+      const formDataToSend = prepareFormData();
+      let url, method;
       
-      if (imageFile) {
-        formDataToSend.append('image', imageFile);
+      if (editingItem) {
+        url = `/admin/food-items/${editingItem._id}`;
+        method = 'PUT';
+      } else {
+        url = '/admin/food-items';
+        method = 'POST';
       }
 
-      let response;
-      if (editingItem) {
-        response = await axiosInstance.put(`/admin/food-items/${editingItem._id}`, formDataToSend, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-      } else {
-        response = await axiosInstance.post('/admin/food-items', formDataToSend, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+      console.log(`📤 Sending ${method} request to: ${url}`);
+      console.log('📦 FormData entries:');
+      for (let [key, value] of formDataToSend.entries()) {
+        console.log(`  ${key}: ${value}`);
       }
+
+      const response = await axiosInstance({
+        method: method,
+        url: url,
+        data: formDataToSend,
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      console.log('✅ Response:', response.data);
       
       if (response.data.success) {
         alert(editingItem ? '✅ Food item updated successfully!' : '✅ Food item added successfully!');
@@ -173,8 +197,21 @@ const MenuManagement = () => {
         alert(`❌ ${response.data.error || 'Failed to save food item'}`);
       }
     } catch (error) {
-      console.error('Failed to save food item:', error);
-      alert('❌ Failed to save food item');
+      console.error('❌ Failed to save food item:', error);
+      console.error('❌ Error details:', error.response?.data || error.message);
+      
+      // More specific error messages
+      if (error.response?.status === 500) {
+        alert('❌ Server error. Please check if the backend is running properly.');
+      } else if (error.response?.status === 413) {
+        alert('❌ File too large. Please select a smaller image.');
+      } else if (error.response?.status === 400) {
+        alert('❌ Invalid data. Please check all required fields.');
+      } else if (!navigator.onLine) {
+        alert('❌ Network error. Please check your internet connection.');
+      } else {
+        alert('❌ Failed to save food item. Please try again.');
+      }
     } finally {
       setFormSubmitting(false);
     }
@@ -372,6 +409,7 @@ const MenuManagement = () => {
                       value={formData.name} 
                       onChange={(e) => setFormData({...formData, name: e.target.value})} 
                       required 
+                      disabled={formSubmitting}
                     />
                   </div>
                   
@@ -382,6 +420,7 @@ const MenuManagement = () => {
                       value={formData.category} 
                       onChange={(e) => setFormData({...formData, category: e.target.value})} 
                       required
+                      disabled={formSubmitting}
                     >
                       <option value="main-course">Main Course</option>
                       <option value="appetizer">Appetizer</option>
@@ -401,6 +440,7 @@ const MenuManagement = () => {
                     onChange={(e) => setFormData({...formData, description: e.target.value})} 
                     rows="3" 
                     required 
+                    disabled={formSubmitting}
                   />
                 </div>
 
@@ -413,6 +453,7 @@ const MenuManagement = () => {
                       value={formData.festival} 
                       onChange={(e) => setFormData({...formData, festival: e.target.value})} 
                       placeholder="e.g., Christmas, Onam" 
+                      disabled={formSubmitting}
                     />
                   </div>
                   
@@ -426,6 +467,7 @@ const MenuManagement = () => {
                       required 
                       min="0"
                       step="0.01"
+                      disabled={formSubmitting}
                     />
                   </div>
                 </div>
@@ -439,6 +481,7 @@ const MenuManagement = () => {
                       value={formData.calories} 
                       onChange={(e) => setFormData({...formData, calories: e.target.value})} 
                       min="0"
+                      disabled={formSubmitting}
                     />
                   </div>
                   
@@ -450,6 +493,7 @@ const MenuManagement = () => {
                       value={formData.prepTime} 
                       onChange={(e) => setFormData({...formData, prepTime: e.target.value})} 
                       min="0"
+                      disabled={formSubmitting}
                     />
                   </div>
                 </div>
@@ -463,6 +507,7 @@ const MenuManagement = () => {
                       value={formData.serves} 
                       onChange={(e) => setFormData({...formData, serves: e.target.value})} 
                       min="1"
+                      disabled={formSubmitting}
                     />
                   </div>
                   
@@ -472,6 +517,7 @@ const MenuManagement = () => {
                       className="form-control" 
                       value={formData.spicyLevel} 
                       onChange={(e) => setFormData({...formData, spicyLevel: e.target.value})}
+                      disabled={formSubmitting}
                     >
                       <option value="1">Mild</option>
                       <option value="2">Medium</option>
@@ -490,6 +536,7 @@ const MenuManagement = () => {
                     value={formData.ingredients} 
                     onChange={(e) => setFormData({...formData, ingredients: e.target.value})} 
                     placeholder="e.g., Rice, Chicken, Spices, Onion" 
+                    disabled={formSubmitting}
                   />
                 </div>
 
@@ -502,6 +549,7 @@ const MenuManagement = () => {
                       accept="image/*" 
                       onChange={handleImageChange} 
                       required={!editingItem && !imagePreview} 
+                      disabled={formSubmitting}
                     />
                     <small className="form-text">Max size: 10MB | Formats: JPG, PNG, GIF, WEBP</small>
                     
@@ -535,6 +583,7 @@ const MenuManagement = () => {
                       type="checkbox" 
                       checked={formData.isBestSeller} 
                       onChange={(e) => setFormData({...formData, isBestSeller: e.target.checked})} 
+                      disabled={formSubmitting}
                     />
                     <span>Best Seller</span>
                   </label>
@@ -544,6 +593,7 @@ const MenuManagement = () => {
                       type="checkbox" 
                       checked={formData.isAvailable} 
                       onChange={(e) => setFormData({...formData, isAvailable: e.target.checked})} 
+                      disabled={formSubmitting}
                     />
                     <span>Available for Order</span>
                   </label>
@@ -553,6 +603,7 @@ const MenuManagement = () => {
                       type="checkbox" 
                       checked={formData.isActive} 
                       onChange={(e) => setFormData({...formData, isActive: e.target.checked})} 
+                      disabled={formSubmitting}
                     />
                     <span>Active (Show on website)</span>
                   </label>
