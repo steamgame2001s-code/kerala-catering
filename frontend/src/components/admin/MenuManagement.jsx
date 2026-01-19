@@ -1,3 +1,4 @@
+// frontend/src/components/admin/MenuManagement.jsx - FIXED
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaEye, FaSpinner, FaUpload } from 'react-icons/fa';
 import axiosInstance from '../../api/axiosConfig';
@@ -28,6 +29,12 @@ const MenuManagement = () => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
 
+  // FALLBACK IMAGES (SVG data URLs)
+  const FALLBACK_IMAGES = {
+    food: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' fill='%23ff6b35'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial, sans-serif' font-size='12' fill='white' text-anchor='middle'%3EFood%3C/text%3E%3C/svg%3E",
+    preview: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250'%3E%3Crect width='400' height='250' fill='%23ff6b35'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial, sans-serif' font-size='20' fill='white' text-anchor='middle'%3EFood Image%3C/text%3E%3C/svg%3E"
+  };
+
   useEffect(() => {
     fetchFoodItems();
   }, []);
@@ -52,6 +59,14 @@ const MenuManagement = () => {
     }
   };
 
+  const getAbsoluteImageUrl = (url) => {
+    if (!url) return FALLBACK_IMAGES.food;
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return url;
+  };
+
   const handleEdit = (item) => {
     setEditingItem(item);
     setFormData({
@@ -69,7 +84,7 @@ const MenuManagement = () => {
       isAvailable: item.isAvailable !== false,
       isActive: item.isActive !== false
     });
-    if (item.image) setImagePreview(item.image);
+    if (item.image) setImagePreview(getAbsoluteImageUrl(item.image));
     setImageFile(null);
     setShowForm(true);
   };
@@ -97,13 +112,11 @@ const MenuManagement = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Check file size
       if (file.size > 10 * 1024 * 1024) {
         alert('❌ Image size should be less than 10MB');
         return;
       }
       
-      // Check file type
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       if (!validTypes.includes(file.type)) {
         alert('❌ Please select a valid image file (JPG, PNG, GIF, WEBP)');
@@ -273,11 +286,12 @@ const MenuManagement = () => {
                 <tr key={item._id}>
                   <td>
                     <img 
-                      src={item.image} 
+                      src={getAbsoluteImageUrl(item.image)} 
                       alt={item.name}
                       className="table-image"
                       onError={(e) => { 
-                        e.target.src = 'https://via.placeholder.com/60x60/FF6B35/FFFFFF?text=Food';
+                        e.target.src = FALLBACK_IMAGES.food;
+                        e.target.onerror = null;
                       }}
                     />
                   </td>
@@ -500,7 +514,8 @@ const MenuManagement = () => {
                             alt="Preview" 
                             className="preview-image" 
                             onError={(e) => { 
-                              e.target.src = 'https://via.placeholder.com/400x250/FF6B35/FFFFFF?text=Food+Image';
+                              e.target.src = FALLBACK_IMAGES.preview;
+                              e.target.onerror = null;
                             }} 
                           />
                           {!imageFile && editingItem && (

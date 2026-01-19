@@ -1,7 +1,8 @@
+// frontend/src/components/admin/GalleryManagement.jsx - FIXED
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaSpinner, FaUpload, FaEye } from 'react-icons/fa';
 import axiosInstance from '../../api/axiosConfig';
-import './GalleryManagement.css'; // Should be at the top
+import './GalleryManagement.css';
 
 const GalleryManagement = () => {
   const [gallery, setGallery] = useState([]);
@@ -22,6 +23,12 @@ const GalleryManagement = () => {
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
+
+  // FALLBACK IMAGES (SVG data URLs)
+  const FALLBACK_IMAGES = {
+    gallery: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250'%3E%3Crect width='400' height='250' fill='%23ff6b35'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial, sans-serif' font-size='20' fill='white' text-anchor='middle'%3EGallery Image%3C/text%3E%3C/svg%3E",
+    preview: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250'%3E%3Crect width='400' height='250' fill='%23f59e0b'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial, sans-serif' font-size='18' fill='white' text-anchor='middle'%3EImage Preview%3C/text%3E%3C/svg%3E"
+  };
 
   useEffect(() => {
     fetchGallery();
@@ -47,6 +54,14 @@ const GalleryManagement = () => {
     }
   };
 
+  const getAbsoluteImageUrl = (url) => {
+    if (!url) return FALLBACK_IMAGES.gallery;
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return url;
+  };
+
   const handleEdit = (item) => {
     setEditingItem(item);
     setFormData({
@@ -59,7 +74,7 @@ const GalleryManagement = () => {
       featured: item.featured || false,
       isActive: item.isActive !== false
     });
-    if (item.imageUrl) setImagePreview(item.imageUrl);
+    if (item.imageUrl) setImagePreview(getAbsoluteImageUrl(item.imageUrl));
     setImageFile(null);
     setShowForm(true);
   };
@@ -87,13 +102,11 @@ const GalleryManagement = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Check file size
       if (file.size > 10 * 1024 * 1024) {
         alert('❌ Image size should be less than 10MB');
         return;
       }
       
-      // Check file type
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       if (!validTypes.includes(file.type)) {
         alert('❌ Please select a valid image file (JPG, PNG, GIF, WEBP)');
@@ -242,10 +255,11 @@ const GalleryManagement = () => {
             <div key={item._id} className="gallery-card">
               <div className="gallery-image">
                 <img 
-                  src={item.imageUrl} 
+                  src={getAbsoluteImageUrl(item.imageUrl)} 
                   alt={item.title}
                   onError={(e) => { 
-                    e.target.src = 'https://via.placeholder.com/400x250/FF6B35/FFFFFF?text=Gallery+Image';
+                    e.target.src = FALLBACK_IMAGES.gallery;
+                    e.target.onerror = null;
                   }}
                 />
                 {item.featured && <span className="featured-badge">Featured</span>}
@@ -385,7 +399,8 @@ const GalleryManagement = () => {
                             alt="Preview" 
                             className="preview-image" 
                             onError={(e) => { 
-                              e.target.src = 'https://via.placeholder.com/400x250/FF6B35/FFFFFF?text=Preview';
+                              e.target.src = FALLBACK_IMAGES.preview;
+                              e.target.onerror = null;
                             }} 
                           />
                           {!imageFile && editingItem && (

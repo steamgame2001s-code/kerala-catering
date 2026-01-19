@@ -1,7 +1,8 @@
-// frontend/src/components/admin/FestivalMenuManagement.jsx - FIXED VERSION
+// frontend/src/components/admin/FestivalMenuManagement.jsx - COMPLETELY FIXED
 import React, { useState, useEffect } from 'react';
 import { FaUpload, FaTrash, FaImage, FaSpinner } from 'react-icons/fa';
-import './FestivalMenuManagement.css'; // Should be at the top
+import axiosInstance from '../../api/axiosConfig'; // USE AXIOS INSTANCE
+import './FestivalMenuManagement.css';
 
 const FestivalMenuManagement = () => {
   const [festivals, setFestivals] = useState([]);
@@ -12,103 +13,45 @@ const FestivalMenuManagement = () => {
   const [imagePreview, setImagePreview] = useState('');
   const [caption, setCaption] = useState('');
 
-  // FIXED: Get API URL from environment variable with fallback
-  const API_URL = process.env.REACT_APP_API_URL || 'https://your-backend-url.onrender.com';
+  // FALLBACK IMAGES (SVG data URLs)
+  const FALLBACK_IMAGES = {
+    menu: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200' viewBox='0 0 400 200'%3E%3Crect width='400' height='200' fill='%23ff6b35'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial, sans-serif' font-size='18' fill='white' text-anchor='middle'%3EMenu Image%3C/text%3E%3C/svg%3E",
+    notFound: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' fill='%23e74c3c'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial, sans-serif' font-size='12' fill='white' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E"
+  };
 
   useEffect(() => {
-    console.log('🌐 API_URL:', API_URL);
     fetchFestivals();
   }, []);
 
   const getAbsoluteImageUrl = (url) => {
-    if (!url) return '';
+    if (!url) return FALLBACK_IMAGES.menu;
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
-    if (url.startsWith('/')) {
-      return `${API_URL}${url}`;
-    }
-    return `${API_URL}/${url}`;
+    return url;
   };
 
   const fetchFestivals = async () => {
     try {
       setLoading(true);
       
-      const token = localStorage.getItem('adminToken');
-      console.log('Token:', token ? 'Present' : 'Missing');
+      console.log('🌐 Fetching festivals using axiosInstance');
       
-      if (!token) {
-        console.error('No token found, redirecting to login');
-        window.location.href = '/admin/login';
-        return;
-      }
+      // USE AXIOS INSTANCE (not manual fetch)
+      const response = await axiosInstance.get('/admin/festivals');
       
-      // FIXED: Try multiple possible routes
-      const possibleRoutes = [
-        '/api/admin/festivals',
-        '/api/festivals', 
-        '/admin/festivals'
-      ];
+      console.log('✅ API response:', response.data);
       
-      let response = null;
-      let successRoute = null;
-      
-      for (const route of possibleRoutes) {
-        try {
-          console.log(`🌐 Trying route: ${API_URL}${route}`);
-          
-          const testResponse = await fetch(`${API_URL}${route}`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          });
-          
-          console.log(`📡 Response for ${route}: ${testResponse.status}`);
-          
-          if (testResponse.ok) {
-            response = testResponse;
-            successRoute = route;
-            break;
-          }
-        } catch (err) {
-          console.log(`❌ Route ${route} failed:`, err.message);
-          continue;
-        }
-      }
-      
-      if (!response) {
-        throw new Error('Could not connect to any backend route');
-      }
-      
-      console.log(`✅ Successfully connected using route: ${successRoute}`);
-      
-      if (response.status === 401) {
-        console.error('Token invalid, redirecting to login');
-        localStorage.removeItem('adminToken');
-        window.location.href = '/admin/login';
-        return;
-      }
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('API Response:', data);
-      
-      if (data.success) {
-        console.log(`Loaded ${data.festivals.length} festivals`);
-        setFestivals(data.festivals);
+      if (response.data.success) {
+        console.log(`Loaded ${response.data.festivals?.length || 0} festivals`);
+        setFestivals(response.data.festivals || []);
       } else {
-        console.error('API error:', data.error);
-        alert(data.error || 'Failed to load festivals');
+        console.error('API error:', response.data.error);
+        alert(response.data.error || 'Failed to load festivals');
       }
     } catch (error) {
       console.error('Error fetching festivals:', error);
-      alert('Failed to load festivals: ' + error.message + '\n\nPlease check:\n1. Backend is running\n2. REACT_APP_API_URL is set correctly\n3. Network connection');
+      alert('Failed to load festivals: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -148,26 +91,24 @@ const FestivalMenuManagement = () => {
     try {
       setUploading(true);
       
-      const token = localStorage.getItem('adminToken');
-      
       const formData = new FormData();
       formData.append('image', imageFile);
       formData.append('caption', caption);
 
       console.log('Uploading to festival:', selectedFestival);
       
-      const response = await fetch(
-        `${API_URL}/api/admin/festivals/${selectedFestival}/menu-images`,
+      // USE AXIOS INSTANCE
+      const response = await axiosInstance.post(
+        `/admin/festivals/${selectedFestival}/menu-images`,
+        formData,
         {
-          method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData
+            'Content-Type': 'multipart/form-data'
+          }
         }
       );
 
-      const data = await response.json();
+      const data = response.data;
       
       if (data.success) {
         alert('Menu image uploaded successfully!');
@@ -194,20 +135,12 @@ const FestivalMenuManagement = () => {
     }
 
     try {
-      const token = localStorage.getItem('adminToken');
-      
-      const response = await fetch(
-        `${API_URL}/api/admin/festivals/${festivalId}/menu-images/${imageId}`,
-        {
-          method: 'DELETE',
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
+      // USE AXIOS INSTANCE
+      const response = await axiosInstance.delete(
+        `/admin/festivals/${festivalId}/menu-images/${imageId}`
       );
 
-      const data = await response.json();
+      const data = response.data;
 
       if (data.success) {
         alert('Menu image deleted successfully!');
@@ -344,7 +277,8 @@ const FestivalMenuManagement = () => {
                             alt={image.caption || `Menu ${index + 1}`}
                             className="menu-image"
                             onError={(e) => {
-                              e.target.src = 'https://via.placeholder.com/400x200?text=Image+Not+Found';
+                              e.target.src = FALLBACK_IMAGES.menu;
+                              e.target.onerror = null;
                             }}
                           />
                           <div className="menu-image-footer">
@@ -398,7 +332,8 @@ const FestivalMenuManagement = () => {
                   alt={festival.name}
                   className="festival-overview-image"
                   onError={(e) => {
-                    e.target.src = 'https://via.placeholder.com/60x60?text=No+Image';
+                    e.target.src = FALLBACK_IMAGES.notFound;
+                    e.target.onerror = null;
                   }}
                 />
                 <div className="festival-overview-info">

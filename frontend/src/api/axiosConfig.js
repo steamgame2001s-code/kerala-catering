@@ -1,4 +1,4 @@
-// frontend/src/api/axiosConfig.js - CORRECT FOR REACT
+// frontend/src/api/axiosConfig.js - FINAL FIXED VERSION
 import axios from 'axios';
 
 console.log('🔧 Axios Config Loading...');
@@ -33,7 +33,7 @@ console.log('🌍 Environment:', process.env.NODE_ENV);
 
 // Create axios instance with base URL
 const axiosInstance = axios.create({
-  baseURL: `${BASE_URL}/api`, // Add /api here
+  baseURL: `${BASE_URL}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -43,13 +43,12 @@ const axiosInstance = axios.create({
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    console.log(`🚀 ${config.method?.toUpperCase()} Request to: ${config.baseURL}${config.url}`);
+    console.log(`🚀 ${config.method?.toUpperCase()} Request: ${config.baseURL}${config.url}`);
     
     // Add authorization token if available
     const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('🔑 Token attached');
     }
     
     return config;
@@ -63,7 +62,7 @@ axiosInstance.interceptors.request.use(
 // Response interceptor
 axiosInstance.interceptors.response.use(
   (response) => {
-    console.log(`✅ ${response.status} Response from: ${response.config.url}`);
+    console.log(`✅ ${response.status} Response: ${response.config.url}`);
     return response;
   },
   (error) => {
