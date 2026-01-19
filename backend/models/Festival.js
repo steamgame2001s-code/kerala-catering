@@ -1,4 +1,4 @@
-// backend/models/Festival.js - COMPLETE WITH MENU IMAGES
+// backend/models/Festival.js - UPDATED WITH CLOUDINARY FIELDS
 const mongoose = require('mongoose');
 
 const festivalSchema = new mongoose.Schema({
@@ -22,7 +22,16 @@ const festivalSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
+  // NEW: Cloudinary public ID for main image
+  cloudinaryImageId: { 
+    type: String 
+  },
+  
   bannerImage: { 
+    type: String 
+  },
+  // NEW: Cloudinary public ID for banner image
+  cloudinaryBannerId: { 
     type: String 
   },
   
@@ -31,6 +40,10 @@ const festivalSchema = new mongoose.Schema({
     imageUrl: { 
       type: String, 
       required: true 
+    },
+    // NEW: Cloudinary public ID for menu images
+    cloudinaryPublicId: { 
+      type: String 
     },
     caption: { 
       type: String, 
@@ -45,7 +58,6 @@ const festivalSchema = new mongoose.Schema({
       default: Date.now 
     }
   }],
-  
   
   rating: { 
     type: Number, 

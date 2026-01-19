@@ -607,7 +607,683 @@
 }
 
 /* Ensure sidebar stays on top on mobile */
+@media (max-width: 1023px) {/* ============================================
+   ADMIN SIDEBAR - PROFESSIONAL ORANGE & WHITE
+   FULLY RESPONSIVE FOR ALL DEVICES
+   ============================================ */
+
+.admin-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 280px;
+  background: linear-gradient(180deg, #ffffff 0%, #fefefe 100%);
+  box-shadow: 4px 0 20px rgba(255, 107, 53, 0.08);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  border-right: 1px solid rgba(255, 107, 53, 0.1);
+}
+
+/* Collapsed State (Desktop only - above 1024px) */
+.admin-sidebar.collapsed {
+  width: 80px;
+}
+
+/* Mobile Sidebar - Hidden by default */
 @media (max-width: 1023px) {
+  .admin-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .admin-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+}
+
+/* ============================================
+   SIDEBAR OVERLAY (MOBILE & TABLET)
+   ============================================ */
+
+.sidebar-overlay {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+/* ============================================
+   SIDEBAR HEADER
+   ============================================ */
+
+.sidebar-header {
+  padding: 1.5rem;
+  border-bottom: 2px solid rgba(255, 107, 53, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 70px;
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.05) 0%, transparent 100%);
+  flex-shrink: 0; /* Prevent shrinking on mobile */
+}
+
+.sidebar-brand {
+  flex: 1;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-brand h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0 0 0.25rem 0;
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 1px;
+}
+
+.sidebar-brand p {
+  font-size: 0.75rem;
+  color: #95a5a6;
+  margin: 0;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+/* Collapse Button (Desktop Only) */
+.sidebar-collapse-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+}
+
+.sidebar-collapse-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+}
+
+.sidebar-collapse-btn:active {
+  transform: scale(0.95);
+}
+
+/* Collapsed Header State */
+.admin-sidebar.collapsed .sidebar-header {
+  justify-content: center;
+  padding: 1.5rem 0.5rem;
+}
+
+/* ============================================
+   SIDEBAR MENU
+   ============================================ */
+
+.sidebar-menu {
+  flex: 1;
+  min-height: 0; /* Allow flex shrinking */
+  padding: 1.5rem 0.75rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+.sidebar-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 107, 53, 0.2);
+  border-radius: 10px;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 107, 53, 0.3);
+}
+
+/* ============================================
+   MENU ITEMS
+   ============================================ */
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 12px;
+  color: #2c3e50;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: 2px solid transparent;
+  background: transparent;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #ff6b35 0%, #f7931e 100%);
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+/* Hover State */
+.menu-item:hover {
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(247, 147, 30, 0.08) 100%);
+  color: #ff6b35;
+  transform: translateX(4px);
+}
+
+/* Active State */
+.menu-item.active {
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(247, 147, 30, 0.15) 100%);
+  color: #ff6b35;
+  border-color: rgba(255, 107, 53, 0.3);
+  font-weight: 600;
+}
+
+.menu-item.active::before {
+  transform: scaleY(1);
+}
+
+/* Menu Icon */
+.menu-icon {
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  color: inherit;
+  transition: all 0.3s ease;
+}
+
+.menu-item:hover .menu-icon,
+.menu-item.active .menu-icon {
+  transform: scale(1.1);
+}
+
+/* Menu Label */
+.menu-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.3s ease;
+}
+
+/* New Badge */
+.new-badge {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  color: white;
+  font-size: 0.65rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(255, 107, 53, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 6px rgba(255, 107, 53, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 3px 8px rgba(255, 107, 53, 0.5);
+  }
+}
+
+/* Home Button Special Style */
+.menu-item.home-btn {
+  margin-top: 1rem;
+  border-top: 1px solid rgba(255, 107, 53, 0.1);
+  padding-top: 1.375rem;
+  color: #7f8c8d;
+}
+
+.menu-item.home-btn:hover {
+  color: #ff6b35;
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.05) 0%, rgba(247, 147, 30, 0.05) 100%);
+}
+
+/* Collapsed Menu Items */
+.admin-sidebar.collapsed .menu-item {
+  justify-content: center;
+  padding: 0.875rem 0.5rem;
+  gap: 0;
+}
+
+.admin-sidebar.collapsed .menu-item .menu-label,
+.admin-sidebar.collapsed .menu-item .new-badge {
+  display: none;
+}
+
+.admin-sidebar.collapsed .menu-item:hover {
+  transform: translateX(0);
+}
+
+/* Tooltip for collapsed state */
+.admin-sidebar.collapsed .menu-item {
+  position: relative;
+}
+
+.admin-sidebar.collapsed .menu-item::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #2c3e50;
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  z-index: 1001;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.admin-sidebar.collapsed .menu-item:hover::after {
+  opacity: 1;
+  visibility: visible;
+  left: calc(100% + 15px);
+}
+
+/* ============================================
+   SIDEBAR FOOTER (FIXED FOR MOBILE)
+   ============================================ */
+
+.sidebar-footer {
+  padding: 1rem 0.75rem;
+  border-top: 2px solid rgba(255, 107, 53, 0.1);
+  background: linear-gradient(0deg, rgba(255, 107, 53, 0.03) 0%, transparent 100%);
+  flex-shrink: 0; /* Prevent shrinking on mobile */
+  margin-top: auto; /* Push to bottom - MOST IMPORTANT FIX */
+}
+
+/* Logout Button */
+.logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+}
+
+.logout-btn svg {
+  font-size: 1.1rem;
+}
+
+/* Collapsed Logout Button */
+.admin-sidebar.collapsed .logout-btn {
+  padding: 0.875rem 0.5rem;
+  gap: 0;
+}
+
+.admin-sidebar.collapsed .logout-btn span {
+  display: none;
+}
+
+/* ============================================
+   MOBILE CLOSE BUTTON
+   ============================================ */
+
+.sidebar-close-btn {
+  display: none;
+  position: absolute;
+  top: 20px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: #ff6b35;
+  font-size: 1.8rem;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.sidebar-close-btn:hover {
+  background: rgba(255, 107, 53, 0.1);
+}
+
+@media (max-width: 1023px) {
+  .sidebar-close-btn {
+    display: block;
+  }
+}
+
+/* Ensure sidebar stays on top on mobile */
+@media (max-width: 1023px) {
+  .admin-sidebar.mobile-open {
+    z-index: 1001;
+  }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN - TABLET
+   ============================================ */
+
+@media (max-width: 1023px) and (min-width: 768px) {
+  .admin-sidebar {
+    width: 280px;
+  }
+
+  .sidebar-header {
+    padding: 1.25rem;
+  }
+
+  .sidebar-brand h2 {
+    font-size: 1.4rem;
+  }
+
+  .menu-item {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.9rem;
+  }
+
+  .menu-icon {
+    font-size: 1.2rem;
+  }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN - MOBILE (FIXED)
+   ============================================ */
+
+@media (max-width: 767px) {
+  .admin-sidebar {
+    width: 280px;
+    height: 100vh; /* Full height */
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-header {
+    padding: 1.25rem;
+    min-height: 65px;
+    flex-shrink: 0; /* Don't shrink */
+  }
+
+  .sidebar-brand h2 {
+    font-size: 1.35rem;
+  }
+
+  .sidebar-brand p {
+    font-size: 0.7rem;
+  }
+
+  .sidebar-menu {
+    flex: 1;
+    min-height: 0; /* Allow scrolling */
+    overflow-y: auto;
+    padding: 1.25rem 0.75rem;
+  }
+
+  .menu-item {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .menu-icon {
+    font-size: 1.15rem;
+  }
+
+  .new-badge {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.4rem;
+  }
+
+  .sidebar-footer {
+    padding: 1rem 0.75rem;
+    flex-shrink: 0; /* Don't shrink */
+    margin-top: auto; /* Push to bottom */
+    background: linear-gradient(0deg, #ffffff 0%, #fefefe 100%);
+    box-shadow: 0 -4px 12px rgba(255, 107, 53, 0.08);
+  }
+
+  .logout-btn {
+    font-size: 0.9rem;
+    padding: 0.875rem 1rem;
+    min-height: 48px; /* Larger touch target */
+  }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN - SMALL MOBILE
+   ============================================ */
+
+@media (max-width: 480px) {
+  .admin-sidebar {
+    width: 260px;
+  }
+
+  .sidebar-header {
+    padding: 1rem;
+  }
+
+  .sidebar-brand h2 {
+    font-size: 1.25rem;
+  }
+
+  .sidebar-menu {
+    padding: 1rem 0.5rem;
+  }
+
+  .menu-item {
+    padding: 0.7rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .sidebar-footer {
+    padding: 0.875rem;
+  }
+
+  .logout-btn {
+    padding: 0.875rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN - EXTRA SMALL MOBILE
+   ============================================ */
+
+@media (max-width: 360px) {
+  .admin-sidebar {
+    width: 240px;
+  }
+
+  .sidebar-brand h2 {
+    font-size: 1.15rem;
+  }
+
+  .menu-item {
+    font-size: 0.85rem;
+  }
+
+  .logout-btn {
+    font-size: 0.85rem;
+    padding: 0.75rem;
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.admin-sidebar.mobile-open {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+/* Menu items stagger animation */
+.menu-item {
+  animation: fadeInItem 0.3s ease-out backwards;
+}
+
+.menu-item:nth-child(1) { animation-delay: 0.05s; }
+.menu-item:nth-child(2) { animation-delay: 0.1s; }
+.menu-item:nth-child(3) { animation-delay: 0.15s; }
+.menu-item:nth-child(4) { animation-delay: 0.2s; }
+.menu-item:nth-child(5) { animation-delay: 0.25s; }
+.menu-item:nth-child(6) { animation-delay: 0.3s; }
+
+@keyframes fadeInItem {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Mobile logout button animation */
+@media (max-width: 1023px) {
+  .sidebar-footer {
+    animation: fadeInUp 0.4s ease-out 0.2s backwards;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.menu-item:focus-visible,
+.logout-btn:focus-visible,
+.sidebar-collapse-btn:focus-visible,
+.sidebar-close-btn:focus-visible {
+  outline: 2px solid #ff6b35;
+  outline-offset: 2px;
+}
+
+/* Touch feedback for mobile logout button */
+@media (max-width: 767px) {
+  .logout-btn:active {
+    transform: scale(0.98);
+    background: linear-gradient(135deg, #e55a2b 0%, #e0841a 100%);
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .admin-sidebar,
+  .menu-item,
+  .logout-btn,
+  .sidebar-overlay,
+  .new-badge,
+  .sidebar-footer {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .admin-sidebar {
+    display: none;
+  }
+}
   .admin-sidebar.mobile-open {
     z-index: 1001;
   }
