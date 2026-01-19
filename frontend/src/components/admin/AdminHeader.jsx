@@ -1,4 +1,4 @@
-// frontend/src/components/admin/AdminHeader.jsx - FIXED
+// frontend/src/components/admin/AdminHeader.jsx - COMPLETE FIXED
 import React from 'react';
 import { FaUserCircle, FaBars } from 'react-icons/fa';
 import './AdminHeader.css';
@@ -9,7 +9,7 @@ const AdminHeader = ({ toggleSidebar, isMobile }) => {
   return (
     <header className="admin-header">
       <div className="header-left">
-        {/* Sidebar Toggle Button - Works on both mobile and desktop */}
+        {/* THIS IS THE HAMBURGER BUTTON THAT SHOULD WORK */}
         <button 
           className={isMobile ? "mobile-sidebar-toggle" : "desktop-sidebar-toggle"} 
           onClick={toggleSidebar}

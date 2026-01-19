@@ -1,4 +1,4 @@
-// frontend/src/components/admin/AdminLayout.jsx
+// frontend/src/components/admin/AdminLayout.jsx - FIXED
 import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import AdminHeader from "./AdminHeader";
@@ -32,35 +32,75 @@ const AdminLayout = () => {
   }, []);
 
   /* =========================
-     BODY SCROLL LOCK (MOBILE)
+     BODY SCROLL LOCK (MOBILE) - FIXED
      ========================= */
   useEffect(() => {
+    const body = document.body;
     if (isMobile && isMobileSidebarOpen) {
-      document.body.style.overflow = "hidden";
+      body.style.overflow = "hidden";
+      body.classList.add("sidebar-open"); // ADD THIS LINE
     } else {
-      document.body.style.overflow = "";
+      body.style.overflow = "";
+      body.classList.remove("sidebar-open"); // ADD THIS LINE
     }
+    
+    // Cleanup on unmount
+    return () => {
+      body.style.overflow = "";
+      body.classList.remove("sidebar-open");
+    };
   }, [isMobile, isMobileSidebarOpen]);
 
   /* =========================
      SIDEBAR TOGGLES
      ========================= */
   const toggleSidebar = () => {
+    console.log('📱 Toggle sidebar called, isMobile:', isMobile);
     if (isMobile) {
-      setMobileSidebarOpen(prev => !prev);
+      setMobileSidebarOpen(prev => {
+        console.log('📱 Mobile sidebar toggled to:', !prev);
+        return !prev;
+      });
     } else {
-      setSidebarCollapsed(prev => !prev);
+      setSidebarCollapsed(prev => {
+        console.log('💻 Desktop sidebar toggled to:', !prev);
+        return !prev;
+      });
     }
   };
 
   const closeMobileSidebar = () => {
+    console.log('📱 Closing mobile sidebar');
     if (isMobile) {
       setMobileSidebarOpen(false);
     }
   };
 
+  // Add click outside to close sidebar on mobile
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (isMobile && isMobileSidebarOpen) {
+        const sidebar = document.querySelector('.admin-sidebar');
+        const hamburger = document.querySelector('.mobile-sidebar-toggle');
+        
+        if (sidebar && !sidebar.contains(e.target) && 
+            hamburger && !hamburger.contains(e.target)) {
+          closeMobileSidebar();
+        }
+      }
+    };
+
+    if (isMobile && isMobileSidebarOpen) {
+      document.addEventListener('click', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [isMobile, isMobileSidebarOpen]);
+
   return (
-    <div className="admin-layout">
+    <div className={`admin-layout ${isMobile && isMobileSidebarOpen ? 'mobile-sidebar-open' : ''}`}>
       {/* ================= SIDEBAR ================= */}
       <AdminSidebar
         isCollapsed={!isMobile && isSidebarCollapsed}
@@ -75,7 +115,11 @@ const AdminLayout = () => {
         className={`admin-main-content
           ${!isMobile && isSidebarCollapsed ? "sidebar-collapsed" : ""}
         `}
-        onClick={closeMobileSidebar}
+        onClick={() => {
+          if (isMobile && isMobileSidebarOpen) {
+            closeMobileSidebar();
+          }
+        }}
       >
         <AdminHeader
           toggleSidebar={toggleSidebar}

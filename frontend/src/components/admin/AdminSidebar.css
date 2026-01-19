@@ -575,3 +575,40 @@
     display: none;
   }
 }
+/* ============================================
+   MOBILE CLOSE BUTTON (ADD THIS)
+   ============================================ */
+
+.sidebar-close-btn {
+  display: none;
+  position: absolute;
+  top: 20px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: #ff6b35;
+  font-size: 1.8rem;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.sidebar-close-btn:hover {
+  background: rgba(255, 107, 53, 0.1);
+}
+
+@media (max-width: 1023px) {
+  .sidebar-close-btn {
+    display: block;
+  }
+}
+
+/* Ensure sidebar stays on top on mobile */
+@media (max-width: 1023px) {
+  .admin-sidebar.mobile-open {
+    z-index: 1001;
+  }
+}
