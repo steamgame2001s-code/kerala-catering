@@ -1,4 +1,4 @@
-// backend/server.js - FINAL VERSION WITH CLOUDINARY INTEGRATION
+// backend/server.js - COMPLETE FIXED VERSION WITH ALL FIXES
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -6,7 +6,10 @@ const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const sgMail = require('@sendgrid/mail');
 
-// Import Cloudinary configuration from config file
+// ========== LOAD ENVIRONMENT VARIABLES FIRST ==========
+dotenv.config();
+
+// ========== IMPORT CLOUDINARY CONFIG (AFTER ENV VARS LOADED) ==========
 const { 
   cloudinary,
   uploadFestival, 
@@ -15,8 +18,6 @@ const {
   uploadGallery,
   deleteImage 
 } = require('./config/cloudinary');
-
-dotenv.config();
 
 // Initialize SendGrid if API key exists
 if (process.env.SENDGRID_API_KEY) {
@@ -83,8 +84,41 @@ console.log('Allowed origins:', allowedOrigins);
 console.log('+ All *.vercel.app domains');
 console.log('+ All localhost ports');
 
+// ========== REQUEST TIMEOUT HANDLING ==========
+app.use((req, res, next) => {
+  // Increase timeout for file uploads
+  req.setTimeout(120000); // 2 minutes
+  res.setTimeout(120000); // 2 minutes
+  next();
+});
+
+// ========== CLOUDINARY UPLOAD TIMEOUT FIX ==========
+const extendRequestTimeout = (req, res, next) => {
+  req.setTimeout(180000); // 3 minutes for Cloudinary uploads
+  res.setTimeout(180000);
+  next();
+};
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// ========== HTTP2 WORKAROUND FOR RENDER.COM ==========
+app.use((req, res, next) => {
+  // Disable HTTP/2 for file upload routes to prevent protocol errors on Render.com
+  if (req.url.includes('/admin/gallery') && req.method === 'POST') {
+    res.setHeader('Connection', 'close');
+  }
+  if (req.url.includes('/admin/food-items') && req.method === 'POST') {
+    res.setHeader('Connection', 'close');
+  }
+  if (req.url.includes('/admin/festivals') && req.method === 'POST') {
+    res.setHeader('Connection', 'close');
+  }
+  if (req.url.includes('/admin/festivals/') && req.url.includes('/menu-images') && req.method === 'POST') {
+    res.setHeader('Connection', 'close');
+  }
+  next();
+});
 
 // =================== MONGODB CONNECTION ===================
 console.log('🔄 Connecting to MongoDB Atlas...');
@@ -265,6 +299,42 @@ app.get('/api/test-cloudinary', async (req, res) => {
     });
   }
 });
+
+// =================== UPLOAD TEST ENDPOINT ===================
+app.post('/api/upload-test', 
+  extendRequestTimeout,
+  uploadFoodItem.single('image'),
+  (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'No file uploaded' 
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: '✅ File uploaded successfully to Cloudinary!',
+        file: {
+          path: req.file.path,
+          filename: req.file.filename,
+          size: req.file.size,
+          mimetype: req.file.mimetype,
+          cloudinary_url: req.file.path
+        },
+        note: 'Your Cloudinary is working! File uploaded to: ' + req.file.path
+      });
+    } catch (error) {
+      console.error('❌ Upload test error:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message,
+        note: 'Check file size (max 2MB) and format (JPG, PNG, WEBP)'
+      });
+    }
+  }
+);
 
 // =================== EMAIL TEST ENDPOINT ===================
 app.get('/api/email/test', async (req, res) => {
@@ -1108,6 +1178,7 @@ app.get('/api/admin/festivals/menu-management', authenticateAdmin, async (req, r
 // UPLOAD menu image for festival (to Cloudinary)
 app.post('/api/admin/festivals/:festivalId/menu-images',
   authenticateAdmin,
+  extendRequestTimeout,
   uploadFestivalMenu.single('image'),
   async (req, res) => {
     try {
@@ -1115,6 +1186,14 @@ app.post('/api/admin/festivals/:festivalId/menu-images',
       
       if (!req.file) {
         return res.status(400).json({ success: false, error: 'No image file provided' });
+      }
+      
+      // Check file size manually
+      if (req.file.size > 5 * 1024 * 1024) {
+        return res.status(400).json({
+          success: false,
+          error: 'Image file is too large. Maximum size is 5MB.'
+        });
       }
       
       const festival = await Festival.findById(req.params.festivalId);
@@ -1144,7 +1223,11 @@ app.post('/api/admin/festivals/:festivalId/menu-images',
       res.json({ success: true, festival, menuImage });
     } catch (error) {
       console.error('❌ Upload error:', error);
-      res.status(500).json({ success: false, error: error.message });
+      res.status(500).json({ 
+        success: false, 
+        error: error.message,
+        note: 'Try a smaller image file (max 5MB)'
+      });
     }
   }
 );
@@ -1209,7 +1292,8 @@ app.get('/api/admin/festivals', authenticateAdmin, async (req, res) => {
 
 // CREATE festival with image upload (to Cloudinary)
 app.post('/api/admin/festivals', 
-  authenticateAdmin, 
+  authenticateAdmin,
+  extendRequestTimeout,
   uploadFestival.fields([
     { name: 'image', maxCount: 1 },
     { name: 'bannerImage', maxCount: 1 }
@@ -1218,6 +1302,21 @@ app.post('/api/admin/festivals',
   async (req, res) => {
     try {
       console.log('📝 Creating festival with Cloudinary upload');
+      
+      // Check file sizes manually
+      if (req.files?.image && req.files.image[0].size > 3 * 1024 * 1024) {
+        return res.status(400).json({
+          success: false,
+          error: 'Main image is too large. Maximum size is 3MB.'
+        });
+      }
+      
+      if (req.files?.bannerImage && req.files.bannerImage[0].size > 3 * 1024 * 1024) {
+        return res.status(400).json({
+          success: false,
+          error: 'Banner image is too large. Maximum size is 3MB.'
+        });
+      }
       
       const festivalData = {
         name: req.body.name,
@@ -1327,6 +1426,7 @@ app.post('/api/admin/festivals',
 // UPDATE festival with optional image upload
 app.put('/api/admin/festivals/:id', 
   authenticateAdmin,
+  extendRequestTimeout,
   uploadFestival.fields([
     { name: 'image', maxCount: 1 },
     { name: 'bannerImage', maxCount: 1 }
@@ -1432,14 +1532,23 @@ app.get('/api/admin/food-items', authenticateAdmin, async (req, res) => {
   }
 });
 
-// CREATE food item with image upload (to Cloudinary)
+// CREATE food item with image upload (to Cloudinary) - FIXED VERSION
 app.post('/api/admin/food-items',
   authenticateAdmin,
+  extendRequestTimeout,
   uploadFoodItem.single('image'),
   debugFormData,
   async (req, res) => {
     try {
       console.log('📝 Creating food item with Cloudinary upload');
+      
+      // Check file size manually
+      if (req.file && req.file.size > 2 * 1024 * 1024) {
+        return res.status(400).json({
+          success: false,
+          error: 'Image file is too large. Maximum size is 2MB.'
+        });
+      }
       
       const foodItemData = {
         name: req.body.name,
@@ -1461,6 +1570,12 @@ app.post('/api/admin/food-items',
         foodItemData.image = req.file.path; // Cloudinary URL
         foodItemData.cloudinaryImageId = req.file.filename; // Cloudinary public ID
         console.log('✅ Food image uploaded to Cloudinary:', foodItemData.image);
+      } else if (!req.body.existingImage) {
+        console.log('⚠️ No image file provided for food item');
+        return res.status(400).json({
+          success: false,
+          error: 'Image is required for food items'
+        });
       }
       
       // Auto-generate slug
@@ -1496,13 +1611,18 @@ app.post('/api/admin/food-items',
       await foodItem.save();
       
       console.log(`✅ Food item created: ${foodItem.name} (ID: ${foodItem._id})`);
-      res.status(201).json({ success: true, foodItem });
+      res.status(201).json({ 
+        success: true, 
+        foodItem,
+        message: 'Food item created successfully with image uploaded to Cloudinary'
+      });
       
     } catch (error) {
       console.error('❌ Create food item error:', error);
       res.status(500).json({ 
         success: false, 
         error: error.message,
+        note: 'Try using a smaller image file (max 2MB)',
         receivedData: req.body 
       });
     }
@@ -1512,6 +1632,7 @@ app.post('/api/admin/food-items',
 // UPDATE food item with optional image upload
 app.put('/api/admin/food-items/:id',
   authenticateAdmin,
+  extendRequestTimeout,
   uploadFoodItem.single('image'),
   async (req, res) => {
     try {
@@ -1547,9 +1668,17 @@ app.put('/api/admin/food-items/:id',
         { new: true, runValidators: true }
       );
       
-      res.json({ success: true, foodItem: updatedFoodItem });
+      res.json({ 
+        success: true, 
+        foodItem: updatedFoodItem,
+        message: 'Food item updated successfully'
+      });
     } catch (error) {
-      res.status(500).json({ success: false, error: error.message });
+      res.status(500).json({ 
+        success: false, 
+        error: error.message,
+        note: 'Try using a smaller image file (max 2MB)'
+      });
     }
   }
 );
@@ -1569,7 +1698,11 @@ app.delete('/api/admin/food-items/:id', authenticateAdmin, async (req, res) => {
     
     await FoodItem.findByIdAndDelete(req.params.id);
     
-    res.json({ success: true, message: 'Food item deleted' });
+    res.json({ 
+      success: true, 
+      message: 'Food item deleted successfully',
+      note: 'Image has been deleted from Cloudinary'
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Server error' });
   }
@@ -1587,14 +1720,23 @@ app.get('/api/admin/gallery', authenticateAdmin, async (req, res) => {
   }
 });
 
-// CREATE gallery item with image upload (to Cloudinary)
+// CREATE gallery item with image upload (to Cloudinary) - FIXED VERSION
 app.post('/api/admin/gallery',
   authenticateAdmin,
+  extendRequestTimeout,
   uploadGallery.single('image'),
   debugFormData,
   async (req, res) => {
     try {
       console.log('📝 Creating gallery item with Cloudinary upload');
+      
+      // Check file size manually
+      if (req.file && req.file.size > 3 * 1024 * 1024) {
+        return res.status(400).json({
+          success: false,
+          error: 'Image file is too large. Maximum size is 3MB.'
+        });
+      }
       
       if (!req.file) {
         return res.status(400).json({ 
@@ -1636,13 +1778,18 @@ app.post('/api/admin/gallery',
       await galleryItem.save();
       
       console.log(`✅ Gallery item created: ${galleryItem.title} (ID: ${galleryItem._id})`);
-      res.status(201).json({ success: true, galleryItem });
+      res.status(201).json({ 
+        success: true, 
+        galleryItem,
+        message: 'Gallery item created successfully with image uploaded to Cloudinary'
+      });
       
     } catch (error) {
       console.error('❌ Create gallery error:', error);
       res.status(500).json({ 
         success: false, 
         error: error.message,
+        note: 'Try using a smaller image file (max 3MB)',
         receivedData: req.body
       });
     }
@@ -1652,6 +1799,7 @@ app.post('/api/admin/gallery',
 // UPDATE gallery item with optional image upload
 app.put('/api/admin/gallery/:id',
   authenticateAdmin,
+  extendRequestTimeout,
   uploadGallery.single('image'),
   async (req, res) => {
     try {
@@ -1687,9 +1835,17 @@ app.put('/api/admin/gallery/:id',
         { new: true, runValidators: true }
       );
       
-      res.json({ success: true, galleryItem: updatedGalleryItem });
+      res.json({ 
+        success: true, 
+        galleryItem: updatedGalleryItem,
+        message: 'Gallery item updated successfully'
+      });
     } catch (error) {
-      res.status(500).json({ success: false, error: error.message });
+      res.status(500).json({ 
+        success: false, 
+        error: error.message,
+        note: 'Try using a smaller image file (max 3MB)'
+      });
     }
   }
 );
@@ -1709,7 +1865,11 @@ app.delete('/api/admin/gallery/:id', authenticateAdmin, async (req, res) => {
     
     await Gallery.findByIdAndDelete(req.params.id);
     
-    res.json({ success: true, message: 'Gallery item deleted' });
+    res.json({ 
+      success: true, 
+      message: 'Gallery item deleted successfully',
+      note: 'Image has been deleted from Cloudinary'
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Server error' });
   }
@@ -1740,30 +1900,47 @@ app.get('/api/seed', async (req, res) => {
     });
     await admin.save();
 
+    // FIXED: Complete the festivals array with proper syntax
     const festivals = [
       {
         name: 'Christmas',
         slug: 'christmas',
         description: 'Experience the joy of Kerala Christmas with our traditional feast.',
         image: 'https://images.unsplash.com/photo-1541783245831-57d6fb0926d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        bannerImage: 'https://images.unsplash.com/photo-1577805947697-89e18249d767?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
         rating: 4.8,
-        reviewCount: 124,
-        categories: ['Biriyani', 'Roast', 'Fish Curry', 'Desserts'],
-        popularItems: ['Chicken Biriyani', 'Beef Roast', 'Fish Molee', 'Plum Cake'],
+        reviewCount: 120,
+        festivalDates: '24-26 Dec',
+        categories: ['christmas', 'traditional', 'festive'],
+        popularItems: ['Christmas Plum Cake', 'Duck Roast', 'Wine'],
+        highlights: ['Traditional Kerala Christmas feast', 'Special plum cake', 'Family style service'],
         isFeatured: true,
         isActive: true
       },
       {
         name: 'Onam',
         slug: 'onam',
-        description: 'Complete Onam Sadhya with 26+ traditional items served on banana leaf.',
+        description: 'Authentic Onam Sadhya with 26+ traditional dishes served on banana leaf.',
         image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        bannerImage: 'https://images.unsplash.com/photo-1567188040759-8c8916b4e6f5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
         rating: 4.9,
-        reviewCount: 218,
-        categories: ['Sadhya', 'Payasam', 'Pickles', 'Banana Chips'],
-        popularItems: ['Onam Sadhya', 'Avial', 'Sambar', 'Payasam'],
+        reviewCount: 245,
+        festivalDates: 'September',
+        categories: ['onam', 'sadhya', 'traditional'],
+        popularItems: ['Avial', 'Olan', 'Payasam'],
+        highlights: ['26+ traditional dishes', 'Served on banana leaf', 'Authentic Kerala style'],
+        isFeatured: true,
+        isActive: true
+      },
+      {
+        name: 'Easter',
+        slug: 'easter',
+        description: 'Celebrate Easter with special Kerala Christian delicacies.',
+        image: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        rating: 4.7,
+        reviewCount: 89,
+        festivalDates: 'March-April',
+        categories: ['easter', 'christian', 'festive'],
+        popularItems: ['Appam & Stew', 'Fish Molee', 'Easter Special Cake'],
+        highlights: ['Traditional Christian dishes', 'Special Easter cake', 'Family meals'],
         isFeatured: true,
         isActive: true
       }
@@ -1771,14 +1948,55 @@ app.get('/api/seed', async (req, res) => {
 
     const createdFestivals = await Festival.insertMany(festivals);
 
+    // Add sample food items
     const foodItems = [
       {
-        name: 'Chicken Biriyani',
-        slug: 'chicken-biriyani',
-        description: 'Traditional Kerala style biriyani',
-        category: 'non-veg',
+        name: 'Christmas Plum Cake',
+        slug: 'christmas-plum-cake',
+        description: 'Rich plum cake soaked in rum with dry fruits and nuts.',
+        originalPrice: 1200,
+        category: 'dessert',
         festival: 'christmas',
-        image: 'https://images.unsplash.com/photo-1563379091339-0326b3f5c8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        calories: 450,
+        prepTime: 120,
+        serves: 8,
+        spicyLevel: 0,
+        ingredients: ['Flour', 'Dry fruits', 'Rum', 'Butter', 'Sugar', 'Spices'],
+        isBestSeller: true,
+        isAvailable: true,
+        isActive: true
+      },
+      {
+        name: 'Onam Sadhya Set',
+        slug: 'onam-sadhya-set',
+        description: 'Complete Onam Sadhya with 26 traditional dishes.',
+        originalPrice: 2500,
+        category: 'traditional',
+        festival: 'onam',
+        image: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        calories: 1200,
+        prepTime: 180,
+        serves: 4,
+        spicyLevel: 2,
+        ingredients: ['Rice', 'Vegetables', 'Coconut', 'Spices', 'Yogurt', 'Pickles'],
+        isBestSeller: true,
+        isAvailable: true,
+        isActive: true
+      },
+      {
+        name: 'Appam & Chicken Stew',
+        slug: 'appam-chicken-stew',
+        description: 'Soft appam with creamy coconut chicken stew.',
+        originalPrice: 350,
+        category: 'breakfast',
+        festival: 'easter',
+        image: 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        calories: 600,
+        prepTime: 45,
+        serves: 2,
+        spicyLevel: 1,
+        ingredients: ['Rice flour', 'Coconut milk', 'Chicken', 'Onions', 'Ginger', 'Spices'],
         isBestSeller: true,
         isAvailable: true,
         isActive: true
@@ -1799,7 +2017,7 @@ app.get('/api/seed', async (req, res) => {
 
   } catch (error) {
     console.error('Seed error:', error);
-    res.status(500).json({ success: false, error: 'Seed failed' });
+    res.status(500).json({ success: false, error: 'Seed failed', details: error.message });
   }
 });
 

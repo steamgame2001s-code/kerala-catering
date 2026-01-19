@@ -157,12 +157,11 @@ const AdminLogin = () => {
                 </>
               ) : (
                 <>
-                  <FaSignInAlt /> Login to Dashboard
+                
                 </>
               )}
             </button>
-            
-            {/* Forgot Password Link */}
+                        {/* Forgot Password Link */}
             <div className="forgot-password-link">
               <Link to="/admin/forgot-password">
                 <FaKey /> Forgot Password?
