@@ -9,10 +9,11 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaHome,
-  FaFileImage
+  FaFileImage,
+  FaBars  // ← ADDED
 } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
-import "./AdminSidebar.css";  // Single CSS file
+import "./AdminSidebar.css";
 
 const AdminSidebar = ({
   isCollapsed,
@@ -33,7 +34,7 @@ const AdminSidebar = ({
   };
 
   const menuItems = [
-    { path: "/admin/dashboard", icon: <FaTachometerAlt />, label: "Dashboard" },
+    { path: "/admin/dashboard/home", icon: <FaTachometerAlt />, label: "Dashboard" },
     { path: "/admin/dashboard/festivals", icon: <FaCalendarAlt />, label: "Festivals" },
     {
       path: "/admin/dashboard/festival-menu",
@@ -47,17 +48,6 @@ const AdminSidebar = ({
 
   return (
     <>
-      {/* Mobile Sidebar Toggle Button */}
-      {isMobile && (
-        <button 
-          className="mobile-sidebar-toggle"
-          onClick={toggleCollapse}
-          aria-label="Toggle sidebar"
-        >
-          <FaBars />
-        </button>
-      )}
-      
       {/* Sidebar Overlay for Mobile */}
       {isMobile && isMobileOpen && (
         <div
@@ -99,7 +89,7 @@ const AdminSidebar = ({
             <NavLink
               key={item.path}
               to={item.path}
-              end={item.path === "/admin/dashboard"}
+              end={item.path === "/admin/dashboard/home"}
               className={({ isActive }) =>
                 `menu-item ${isActive ? "active" : ""}`
               }
