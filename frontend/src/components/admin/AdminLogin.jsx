@@ -1,9 +1,9 @@
-// frontend/src/components/admin/AdminLogin.jsx
+// frontend/src/components/admin/AdminLogin.jsx - UPDATED
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAdmin } from '../../context/AdminContext';
 import axiosInstance from '../../api/axiosConfig';
-import { FaLock, FaEnvelope, FaSignInAlt, FaArrowLeft, FaKey, FaExclamationCircle } from 'react-icons/fa';
+import { FaLock, FaEnvelope, FaSignInAlt, FaArrowLeft, FaKey, FaExclamationCircle, FaSpinner } from 'react-icons/fa';
 import './AdminLogin.css';
 
 const AdminLogin = () => {
@@ -17,9 +17,8 @@ const AdminLogin = () => {
   // Redirect if already logged in
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
-    const adminData = localStorage.getItem('adminData');
     
-    if (token && adminData) {
+    if (token) {
       navigate('/admin/dashboard');
     }
   }, [navigate]);
@@ -30,15 +29,14 @@ const AdminLogin = () => {
     setIsLoading(true);
     
     try {
+      console.log('Attempting login with:', { email });
+      
       const response = await axiosInstance.post('/admin/login', {
         email: email.trim().toLowerCase(),
         password: password
-      }, {
-        timeout: 15000,
-        headers: {
-          'Content-Type': 'application/json'
-        }
       });
+      
+      console.log('Login response:', response.data);
       
       if (response.data.success) {
         // Store in localStorage
@@ -46,29 +44,39 @@ const AdminLogin = () => {
         localStorage.setItem('adminData', JSON.stringify(response.data.admin));
         
         // Update context
-        const result = await login(email, password);
-        
-        if (result.success) {
-          setTimeout(() => {
-            navigate('/admin/dashboard');
-          }, 800);
-        } else {
-          setError('Login successful but session setup failed. Please try again.');
-          setIsLoading(false);
+        if (login) {
+          await login(email, password);
         }
+        
+        // Show success message
+        alert('Login successful! Redirecting to dashboard...');
+        
+        // Redirect to dashboard
+        setTimeout(() => {
+          navigate('/admin/dashboard/home');
+        }, 500);
+        
       } else {
-        setError(response.data.error || 'Invalid email or password. Please try again.');
+        setError(response.data.error || 'Invalid email or password.');
         setIsLoading(false);
       }
     } catch (err) {
+      console.error('Full login error:', err);
+      console.error('Response status:', err.response?.status);
+      console.error('Response data:', err.response?.data);
+      
       let errorMessage = 'Login failed. Please check your credentials.';
       
-      if (err.code === 'ECONNABORTED' || err.message === 'Network Error') {
-        errorMessage = 'Cannot connect to server. Please check your internet connection.';
+      if (err.code === 'ECONNABORTED') {
+        errorMessage = 'Server timeout. Please try again.';
+      } else if (err.message === 'Network Error') {
+        errorMessage = 'Cannot connect to server. Check your internet connection.';
       } else if (err.response?.status === 401) {
-        errorMessage = 'Invalid email or password. Please try again.';
+        errorMessage = 'Invalid email or password.';
       } else if (err.response?.data?.error) {
         errorMessage = err.response.data.error;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
       }
       
       setError(errorMessage);
@@ -144,9 +152,9 @@ const AdminLogin = () => {
               disabled={isLoading}
             >
               {isLoading ? (
-                <span className="loading">
-                  <span className="spinner"></span> Logging in...
-                </span>
+                <>
+                  <FaSpinner className="spin" /> Logging in...
+                </>
               ) : (
                 <>
                   <FaSignInAlt /> Login to Dashboard

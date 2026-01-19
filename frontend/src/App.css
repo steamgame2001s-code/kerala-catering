@@ -1,3 +1,4 @@
+
 /* ========== GLOBAL STYLES ========== */
 * {
   margin: 0;
@@ -408,4 +409,18 @@ html {
 .page-exit-active {
   opacity: 0;
   transition: opacity 300ms;
+}
+/* ========== IMPORT ADMIN STYLES ========== */
+@import './components/admin/AdminSidebar.css';
+@import './components/admin/AdminLogin.css';
+@import './components/admin/FestivalManagement.css';
+
+/* ========== SPIN ANIMATION ========== */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

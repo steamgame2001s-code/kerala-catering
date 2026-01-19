@@ -1,7 +1,7 @@
-// frontend/src/components/admin/AdminHeader.jsx - CLEAN VERSION (NO NOTIFICATIONS)
+// frontend/src/components/admin/AdminHeader.jsx - FIXED
 import React from 'react';
 import { FaUserCircle, FaBars } from 'react-icons/fa';
-import './AdminHeader.css';  // Single CSS file
+import './AdminHeader.css';
 
 const AdminHeader = ({ toggleSidebar, isMobile }) => {
   const adminName = localStorage.getItem('adminName') || 'Admin';
@@ -9,19 +9,14 @@ const AdminHeader = ({ toggleSidebar, isMobile }) => {
   return (
     <header className="admin-header">
       <div className="header-left">
-        {/* Mobile toggle button - shown only on mobile */}
-        {isMobile && (
-          <button className="mobile-sidebar-toggle" onClick={toggleSidebar}>
-            <FaBars />
-          </button>
-        )}
-        
-        {/* Desktop toggle button - shown only on desktop */}
-        {!isMobile && (
-          <button className="desktop-sidebar-toggle" onClick={toggleSidebar}>
-            <FaBars />
-          </button>
-        )}
+        {/* Sidebar Toggle Button - Works on both mobile and desktop */}
+        <button 
+          className={isMobile ? "mobile-sidebar-toggle" : "desktop-sidebar-toggle"} 
+          onClick={toggleSidebar}
+          aria-label="Toggle sidebar"
+        >
+          <FaBars />
+        </button>
         
         <div className="header-brand">
           <h1>Kerala Catering</h1>

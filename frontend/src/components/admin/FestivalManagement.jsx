@@ -1,8 +1,9 @@
-// frontend/src/components/admin/FestivalManagement.jsx
+// frontend/src/components/admin/FestivalManagement.jsx - UPDATED
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaSpinner, FaUpload } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaEye, FaSpinner, FaImage } from 'react-icons/fa';
 import FestivalCard from '../FestivalCard';
-import './FestivalManagement.css'; // Change from '../../components/admin/AdminPages.css'
+import axiosInstance from '../../api/axiosConfig';
+import './FestivalManagement.css';
 
 const FestivalManagement = () => {
   const [festivals, setFestivals] = useState([]);
@@ -34,24 +35,27 @@ const FestivalManagement = () => {
   const [imagePreview, setImagePreview] = useState('');
   const [bannerImagePreview, setBannerImagePreview] = useState('');
 
-  // FIXED: Get API URL from environment variable with fallback
-  const API_URL = process.env.REACT_APP_API_URL || 'https://your-backend-url.onrender.com';
+  // Local fallback images (SVG data URLs)
+  const FALLBACK_IMAGES = {
+    festival: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250'%3E%3Crect width='400' height='250' fill='%23ff6b35'/%3E%3Ctext x='50%25' y='45%25' font-family='Arial, sans-serif' font-size='24' fill='white' text-anchor='middle'%3EFestival%3C/text%3E%3Ctext x='50%25' y='60%25' font-family='Arial, sans-serif' font-size='18' fill='white' text-anchor='middle'%3EImage%3C/text%3E%3C/svg%3E",
+    banner: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='300' viewBox='0 0 600 300'%3E%3Crect width='600' height='300' fill='%23ff6b35'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial, sans-serif' font-size='24' fill='white' text-anchor='middle'%3EBanner Image Preview%3C/text%3E%3C/svg%3E"
+  };
 
   useEffect(() => {
     console.log('🎬 FestivalManagement component mounted');
-    console.log('🌐 API_URL:', API_URL);
     fetchFestivals();
   }, []);
 
   const getAbsoluteImageUrl = (url) => {
-    if (!url) return '';
+    if (!url) return FALLBACK_IMAGES.festival;
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
-    if (url.startsWith('/')) {
-      return `${API_URL}${url}`;
+    if (url.startsWith('/uploads/') || url.startsWith('/images/')) {
+      const baseURL = window.location.origin;
+      return `${baseURL}${url}`;
     }
-    return `${API_URL}/${url}`;
+    return url;
   };
 
   const fetchFestivals = async () => {
@@ -71,78 +75,35 @@ const FestivalManagement = () => {
         return;
       }
       
-      // FIXED: Try multiple possible route patterns
-      const possibleRoutes = [
-        '/api/admin/festivals',
-        '/api/festivals',
-        '/admin/festivals'
-      ];
+      console.log('🌐 Fetching festivals from:', axiosInstance.defaults.baseURL);
       
-      let response = null;
-      let successRoute = null;
+      const response = await axiosInstance.get('/admin/festivals');
       
-      for (const route of possibleRoutes) {
-        try {
-          console.log(`🌐 Trying route: ${API_URL}${route}`);
-          
-          const testResponse = await fetch(`${API_URL}${route}`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          });
-          
-          console.log(`📡 Response for ${route}: ${testResponse.status}`);
-          
-          if (testResponse.ok) {
-            response = testResponse;
-            successRoute = route;
-            break;
-          }
-        } catch (err) {
-          console.log(`❌ Route ${route} failed:`, err.message);
-          continue;
-        }
-      }
+      console.log('✅ API response:', response.data);
       
-      if (!response || !response.ok) {
-        if (!response) {
-          throw new Error('Could not connect to server. All routes failed.');
-        }
-        
-        if (response.status === 401) {
-          console.error('❌ 401 Unauthorized');
-          localStorage.removeItem('adminToken');
-          setError('Session expired. Please login again.');
-          setTimeout(() => {
-            window.location.href = '/admin/login';
-          }, 2000);
-          return;
-        }
-        
-        const errorText = await response.text();
-        console.error('❌ HTTP error:', response.status, errorText);
-        throw new Error(`Server error: ${response.status}`);
-      }
-      
-      console.log(`✅ Successfully connected using route: ${successRoute}`);
-      
-      const data = await response.json();
-      console.log('✅ API response success:', data.success);
-      console.log('🎉 Festivals count:', data.festivals?.length || 0);
-      
-      if (data.success) {
-        setFestivals(data.festivals || []);
+      if (response.data.success) {
+        const festivalsData = response.data.festivals || response.data.data || [];
+        console.log('🎉 Festivals loaded:', festivalsData.length);
+        setFestivals(festivalsData);
       } else {
-        setError(data.error || 'Failed to load festivals');
+        setError(response.data.message || 'Failed to load festivals');
       }
       
     } catch (error) {
-      console.error('💥 Network error:', error);
-      setError('Error: ' + error.message + '. Please check your backend URL in .env file.');
+      console.error('💥 Fetch error:', error);
+      
+      if (error.response?.status === 401) {
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminData');
+        setError('Session expired. Please login again.');
+        setTimeout(() => {
+          window.location.href = '/admin/login';
+        }, 2000);
+        return;
+      }
+      
+      setError(error.message || 'Failed to load festivals. Please check your connection.');
     } finally {
-      console.log('🏁 Loading complete');
       setLoading(false);
     }
   };
@@ -169,9 +130,14 @@ const FestivalManagement = () => {
     
     if (festival.image) {
       setImagePreview(getAbsoluteImageUrl(festival.image));
+    } else {
+      setImagePreview(FALLBACK_IMAGES.festival);
     }
+    
     if (festival.bannerImage) {
       setBannerImagePreview(getAbsoluteImageUrl(festival.bannerImage));
+    } else {
+      setBannerImagePreview(FALLBACK_IMAGES.banner);
     }
     
     setImageFile(null);
@@ -180,30 +146,22 @@ const FestivalManagement = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this festival? This will also remove all associated food items!')) {
+    if (!window.confirm('Are you sure you want to delete this festival? This action cannot be undone.')) {
       return;
     }
 
     try {
-      const token = localStorage.getItem('adminToken');
-      const response = await fetch(`${API_URL}/api/admin/festivals/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await axiosInstance.delete(`/admin/festivals/${id}`);
       
-      if (response.ok) {
+      if (response.data.success) {
         alert('Festival deleted successfully!');
         fetchFestivals();
       } else {
-        const errorData = await response.json();
-        alert(errorData.error || 'Failed to delete festival');
+        alert(response.data.message || 'Failed to delete festival');
       }
     } catch (error) {
       console.error('Failed to delete festival:', error);
-      alert('Failed to delete festival');
+      alert(error.response?.data?.message || 'Failed to delete festival');
     }
   };
 
@@ -225,12 +183,10 @@ const FestivalManagement = () => {
     setFormSubmitting(true);
 
     try {
-      const token = localStorage.getItem('adminToken');
-      
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
       formDataToSend.append('description', formData.description);
-      formDataToSend.append('slug', formData.slug || formData.name.toLowerCase().replace(/\s+/g, '-'));
+      formDataToSend.append('slug', formData.slug || formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''));
       formDataToSend.append('rating', formData.rating || '');
       formDataToSend.append('reviewCount', formData.reviewCount || '');
       formDataToSend.append('categories', formData.categories);
@@ -245,47 +201,37 @@ const FestivalManagement = () => {
       
       if (imageFile) {
         formDataToSend.append('image', imageFile);
-      } else if (editingFestival && editingFestival.image && !imageFile) {
-        formDataToSend.append('imageUrl', editingFestival.image);
       }
       
       if (bannerImageFile) {
         formDataToSend.append('bannerImage', bannerImageFile);
-      } else if (editingFestival && editingFestival.bannerImage && !bannerImageFile) {
-        formDataToSend.append('bannerImageUrl', editingFestival.bannerImage);
       }
 
-      let url, method;
+      let response;
       if (editingFestival) {
-        url = `${API_URL}/api/admin/festivals/${editingFestival._id}`;
-        method = 'PUT';
+        response = await axiosInstance.put(`/admin/festivals/${editingFestival._id}`, formDataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
       } else {
-        url = `${API_URL}/api/admin/festivals`;
-        method = 'POST';
+        response = await axiosInstance.post('/admin/festivals', formDataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
       }
-
-      const response = await fetch(url, {
-        method: method,
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formDataToSend
-      });
       
-      const data = await response.json();
+      console.log('Save response:', response.data);
       
-      if (data.success) {
+      if (response.data.success) {
         alert(editingFestival ? 'Festival updated successfully!' : 'Festival added successfully!');
         setShowForm(false);
         setEditingFestival(null);
         resetForm();
         fetchFestivals();
       } else {
-        alert(data.error || 'Failed to save festival');
+        alert(response.data.message || 'Failed to save festival');
       }
     } catch (error) {
       console.error('Failed to save festival:', error);
-      alert('Failed to save festival. Please try again.');
+      alert(error.response?.data?.message || 'Failed to save festival. Please try again.');
     } finally {
       setFormSubmitting(false);
     }
@@ -310,38 +256,17 @@ const FestivalManagement = () => {
     });
     setImageFile(null);
     setBannerImageFile(null);
-    setImagePreview('');
-    setBannerImagePreview('');
+    setImagePreview(FALLBACK_IMAGES.festival);
+    setBannerImagePreview(FALLBACK_IMAGES.banner);
   };
 
-  if (error) {
-    return (
-      <div className="admin-page">
-        <div className="error-container">
-          <h2>Error Loading Festivals</h2>
-          <p>{error}</p>
-          <div style={{ marginTop: '20px', padding: '15px', background: '#fff3cd', borderRadius: '8px' }}>
-            <p style={{ margin: 0, fontSize: '14px' }}>
-              <strong>Troubleshooting:</strong><br/>
-              1. Check your .env file has REACT_APP_API_URL={API_URL}<br/>
-              2. Verify your backend is running<br/>
-              3. Make sure the route exists in backend/routes/admin.js
-            </p>
-          </div>
-          <button className="btn-primary" onClick={fetchFestivals} style={{ marginTop: '15px' }}>
-            Try Again
-          </button>
-          <button 
-            className="btn-secondary" 
-            onClick={() => window.location.href = '/admin/login'}
-            style={{ marginLeft: '10px', marginTop: '15px' }}
-          >
-            Go to Login
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const handleFormClose = () => {
+    if (!formSubmitting) {
+      setShowForm(false);
+      setEditingFestival(null);
+      resetForm();
+    }
+  };
 
   if (loading) {
     return (
@@ -367,6 +292,12 @@ const FestivalManagement = () => {
           <FaPlus className="me-2" /> Add New Festival
         </button>
       </div>
+
+      {error && (
+        <div className="error-message" style={{ margin: '20px 0' }}>
+          {error}
+        </div>
+      )}
 
       <div className="stats-bar">
         <div className="stat-item">
@@ -416,13 +347,13 @@ const FestivalManagement = () => {
       </div>
 
       {showForm && (
-        <div className="modal-overlay" onClick={() => !formSubmitting && setShowForm(false)}>
+        <div className="modal-overlay" onClick={handleFormClose}>
           <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>{editingFestival ? 'Edit Festival' : 'Add New Festival'}</h3>
               <button 
                 className="modal-close"
-                onClick={() => setShowForm(false)}
+                onClick={handleFormClose}
                 disabled={formSubmitting}
               >
                 &times;
@@ -472,178 +403,48 @@ const FestivalManagement = () => {
                 <div className="form-row">
                   <div className="form-group">
                     <label>Main Image *</label>
-                    <div className="image-upload-container">
-                      <input
-                        type="file"
-                        className="form-control"
-                        accept="image/*"
-                        onChange={(e) => handleImageChange(e, 'main')}
-                        required={!editingFestival && !imagePreview}
-                      />
-                      
-                      {(imagePreview || (editingFestival && !imageFile)) && (
-                        <div className="image-preview-upload">
-                          <h6>Preview:</h6>
-                          <div className="preview-image-container">
-                            <img
-                              src={imagePreview || getAbsoluteImageUrl(editingFestival?.image)}
-                              alt="Main Preview"
-                              className="preview-image"
-                              onError={(e) => {
-                                e.target.src = 'https://via.placeholder.com/300x200?text=Preview+Not+Available';
-                              }}
-                            />
-                            {!imageFile && editingFestival && (
-                              <div className="current-image-note">
-                                <FaEye /> Current Image
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    <input
+                      type="file"
+                      className="form-control"
+                      accept="image/*"
+                      onChange={(e) => handleImageChange(e, 'main')}
+                      required={!editingFestival}
+                    />
+                    {(imagePreview || editingFestival) && (
+                      <div className="image-preview-upload">
+                        <img 
+                          src={imagePreview || FALLBACK_IMAGES.festival} 
+                          alt="Preview" 
+                          className="preview-image"
+                          onError={(e) => {
+                            e.target.src = FALLBACK_IMAGES.festival;
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                   
                   <div className="form-group">
                     <label>Banner Image (Optional)</label>
-                    <div className="image-upload-container">
-                      <input
-                        type="file"
-                        className="form-control"
-                        accept="image/*"
-                        onChange={(e) => handleImageChange(e, 'banner')}
-                      />
-                      
-                      {(bannerImagePreview || (editingFestival && !bannerImageFile)) && (
-                        <div className="image-preview-upload">
-                          <h6>Preview:</h6>
-                          <div className="preview-image-container">
-                            <img
-                              src={bannerImagePreview || getAbsoluteImageUrl(editingFestival?.bannerImage)}
-                              alt="Banner Preview"
-                              className="preview-image"
-                              onError={(e) => {
-                                e.target.src = 'https://via.placeholder.com/600x300?text=Banner+Preview';
-                              }}
-                            />
-                            {!bannerImageFile && editingFestival && (
-                              <div className="current-image-note">
-                                <FaEye /> Current Image
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Rating</label>
                     <input
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="5"
+                      type="file"
                       className="form-control"
-                      value={formData.rating}
-                      onChange={(e) => setFormData({...formData, rating: e.target.value})}
-                      placeholder="4.5"
+                      accept="image/*"
+                      onChange={(e) => handleImageChange(e, 'banner')}
                     />
+                    {bannerImagePreview && (
+                      <div className="image-preview-upload">
+                        <img 
+                          src={bannerImagePreview || FALLBACK_IMAGES.banner} 
+                          alt="Banner Preview" 
+                          className="preview-image"
+                          onError={(e) => {
+                            e.target.src = FALLBACK_IMAGES.banner;
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
-                  
-                  <div className="form-group">
-                    <label>Review Count</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      value={formData.reviewCount}
-                      onChange={(e) => setFormData({...formData, reviewCount: e.target.value})}
-                      placeholder="124"
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Categories (comma separated)</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.categories}
-                      onChange={(e) => setFormData({...formData, categories: e.target.value})}
-                      placeholder="Biriyani, Roast, Fish Curry, Desserts"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label>Popular Items (comma separated)</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.popularItems}
-                      onChange={(e) => setFormData({...formData, popularItems: e.target.value})}
-                      placeholder="Chicken Biriyani, Beef Roast, Plum Cake"
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Festival Dates</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.festivalDates}
-                      onChange={(e) => setFormData({...formData, festivalDates: e.target.value})}
-                      placeholder="Dec 24-26, 2024"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label>Delivery Info</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.deliveryInfo}
-                      onChange={(e) => setFormData({...formData, deliveryInfo: e.target.value})}
-                      placeholder="Free delivery on orders above ₹500"
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label>Special Note</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.specialNote}
-                    onChange={(e) => setFormData({...formData, specialNote: e.target.value})}
-                    placeholder="Order before Dec 20th for guaranteed delivery"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Highlights (comma separated)</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.highlights}
-                    onChange={(e) => setFormData({...formData, highlights: e.target.value})}
-                    placeholder="Traditional recipes, Fresh ingredients, Hygienic preparation"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Tags (comma separated)</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.tags}
-                    onChange={(e) => setFormData({...formData, tags: e.target.value})}
-                    placeholder="Festive Special, Traditional, Family Meal"
-                  />
                 </div>
 
                 <div className="form-check-group">
@@ -670,7 +471,7 @@ const FestivalManagement = () => {
                   <button 
                     type="button" 
                     className="btn-secondary"
-                    onClick={() => setShowForm(false)}
+                    onClick={handleFormClose}
                     disabled={formSubmitting}
                   >
                     Cancel
