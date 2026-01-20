@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { AdminProvider } from './context/AdminContext';
 import { CartProvider } from './context/CartContext';
@@ -36,6 +36,22 @@ import ResetPassword from './components/admin/ResetPassword';
 
 import './App.css';
 
+// ScrollToTop Component
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    // Scroll to top on every route change
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant' // 'smooth' for smooth scrolling
+    });
+  }, [pathname]);
+
+  return null;
+};
+
 function App() {
   // Debug: Check environment
   React.useEffect(() => {
@@ -54,6 +70,7 @@ function App() {
         <AdminProvider>
           <CartProvider>
             <div className="App">
+              <ScrollToTop /> {/* ADD THIS LINE */}
               <Routes>
                 {/* ========== PUBLIC ROUTES ========== */}
                 <Route path="/" element={

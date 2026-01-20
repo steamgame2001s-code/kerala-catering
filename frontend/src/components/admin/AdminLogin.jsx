@@ -3,12 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAdmin } from '../../context/AdminContext';
 import axiosInstance from '../../api/axiosConfig';
-import { FaLock, FaEnvelope, FaSignInAlt, FaArrowLeft, FaKey, FaExclamationCircle, FaSpinner } from 'react-icons/fa';
+import { FaLock, FaEnvelope, FaSignInAlt, FaArrowLeft, FaKey, FaExclamationCircle, FaSpinner, FaEye, FaEyeSlash } from 'react-icons/fa';
 import './AdminLogin.css';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('upasanacatering@gmail.com');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const { login } = useAdmin();
@@ -48,13 +49,11 @@ const AdminLogin = () => {
           await login(email, password);
         }
         
-        // Show success message
-        alert('Login successful! Redirecting to dashboard...');
-        
+        // REMOVED ALERT - Silent redirect
         // Redirect to dashboard
         setTimeout(() => {
           navigate('/admin/dashboard/home');
-        }, 500);
+        }, 100);
         
       } else {
         setError(response.data.error || 'Invalid email or password.');
@@ -82,6 +81,10 @@ const AdminLogin = () => {
       setError(errorMessage);
       setIsLoading(false);
     }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -131,43 +134,52 @@ const AdminLogin = () => {
             <label htmlFor="password">
               <FaLock className="icon" /> Password
             </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
-              required
-              className="form-input"
-              disabled={isLoading}
-              autoComplete="current-password"
-            />
-          </div>
-
-          {/* Action Buttons */}
-          <div className="action-buttons">
-            <button 
-              type="submit" 
-              className="login-btn"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <FaSpinner className="spin" /> Logging in...
-                </>
-              ) : (
-                <>
-                
-                </>
-              )}
-            </button>
-                        {/* Forgot Password Link */}
-            <div className="forgot-password-link">
-              <Link to="/admin/forgot-password">
-                <FaKey /> Forgot Password?
-              </Link>
+            <div className="password-input-container">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password"
+                required
+                className="form-input password-input"
+                disabled={isLoading}
+                autoComplete="current-password"
+              />
+              <button 
+                type="button"
+                className="password-toggle"
+                onClick={togglePasswordVisibility}
+                disabled={isLoading}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
           </div>
+
+          {/* Forgot Password Link */}
+          <div className="forgot-password-link">
+            <Link to="/admin/forgot-password">
+              <FaKey /> Forgot Password?
+            </Link>
+          </div>
+
+          {/* Login Button */}
+          <button 
+            type="submit" 
+            className="login-btn"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <FaSpinner className="spin" /> Logging in...
+              </>
+            ) : (
+              <>
+                <FaSignInAlt /> Login to Dashboard
+              </>
+            )}
+          </button>
         </form>
 
         {/* Simple Admin Note */}
