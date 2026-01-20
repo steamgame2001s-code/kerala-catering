@@ -7,7 +7,7 @@
    BASE CONTAINER
    ============================================ */
 
-.admin-page {
+.festival-menu-management {
   padding: 1.5rem;
   background: linear-gradient(135deg, #fef8f5 0%, #fff5f0 100%);
   min-height: calc(100vh - 70px);
@@ -43,17 +43,53 @@
 }
 
 /* ============================================
+   ERROR MESSAGE
+   ============================================ */
+
+.error-message {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #dc2626;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  border: 2px solid #fca5a5;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.error-retry-btn {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.error-retry-btn:hover {
+  background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+  transform: translateY(-1px);
+}
+
+/* ============================================
    LAYOUT GRID
    ============================================ */
 
-.row {
+.menu-management-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
   gap: 2rem;
   margin-bottom: 3rem;
 }
 
-.col-md-6 {
+.menu-management-col {
   width: 100%;
 }
 
@@ -68,15 +104,23 @@
   border: 2px solid rgba(255, 107, 53, 0.1);
   overflow: hidden;
   transition: all 0.3s ease;
+  height: 100%;
 }
 
 .admin-card:hover {
   box-shadow: 0 6px 20px rgba(255, 107, 53, 0.15);
 }
 
+.upload-form-card .card-header {
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(247, 147, 30, 0.08) 100%);
+}
+
+.current-images-card .card-header {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.08) 100%);
+}
+
 .card-header {
   padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(255, 107, 53, 0.05) 0%, transparent 100%);
   border-bottom: 2px solid rgba(255, 107, 53, 0.1);
 }
 
@@ -90,7 +134,7 @@
   gap: 0.75rem;
 }
 
-.card-header h3 svg {
+.header-icon {
   color: #ff6b35;
 }
 
@@ -140,11 +184,34 @@ select.form-control {
   padding-right: 3rem;
 }
 
+input[type="file"].form-control {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+input[type="file"].form-control::file-selector-button {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 1rem;
+}
+
+input[type="file"].form-control::file-selector-button:hover {
+  background: linear-gradient(135deg, #f7931e 0%, #ff6b35 100%);
+}
+
 .form-text {
   display: block;
   margin-top: 0.5rem;
   font-size: 0.875rem;
   color: #7f8c8d;
+  font-style: italic;
 }
 
 /* ============================================
@@ -170,11 +237,12 @@ select.form-control {
 
 .preview-image {
   width: 100%;
-  max-height: 250px;
-  object-fit: cover;
+  max-height: 200px;
+  object-fit: contain;
   border-radius: 10px;
   display: block;
   border: 2px solid rgba(255, 107, 53, 0.15);
+  background: linear-gradient(135deg, #f5f5f5 0%, #eeeeee 100%);
 }
 
 /* ============================================
@@ -209,10 +277,16 @@ select.form-control {
 }
 
 .btn-primary:disabled {
-  opacity: 0.5;
+  background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
   cursor: not-allowed;
   transform: none;
   box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+  opacity: 0.7;
+}
+
+.upload-btn {
+  width: 100%;
+  margin-top: 0.5rem;
 }
 
 .btn-delete-small {
@@ -228,6 +302,7 @@ select.form-control {
   justify-content: center;
   transition: all 0.3s ease;
   padding: 0;
+  flex-shrink: 0;
 }
 
 .btn-delete-small:hover {
@@ -235,7 +310,11 @@ select.form-control {
   transform: scale(1.1);
 }
 
-.spin {
+.btn-delete-small:active {
+  transform: scale(0.95);
+}
+
+.icon-spin {
   animation: spin 1s linear infinite;
 }
 
@@ -243,25 +322,27 @@ select.form-control {
   to { transform: rotate(360deg); }
 }
 
+.icon {
+  font-size: 1rem;
+}
+
 /* ============================================
    ALERTS
    ============================================ */
 
-.alert {
-  padding: 1rem 1.25rem;
-  border-radius: 10px;
-  margin-bottom: 1rem;
-  font-size: 0.95rem;
-}
-
-.alert-info {
+.festival-info-alert {
+  padding: 0.875rem 1rem;
   background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
   border: 2px solid #93c5fd;
+  border-radius: 10px;
   color: #1e40af;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
 }
 
-.alert-info strong {
+.festival-info-alert strong {
   font-weight: 700;
+  color: #1e3a8a;
 }
 
 /* ============================================
@@ -288,6 +369,11 @@ select.form-control {
   transform: translateY(-4px);
 }
 
+.menu-image-container {
+  position: relative;
+  overflow: hidden;
+}
+
 .menu-image {
   width: 100%;
   height: 180px;
@@ -312,6 +398,7 @@ select.form-control {
 .menu-image-info {
   flex: 1;
   min-width: 0;
+  margin-right: 1rem;
 }
 
 .menu-image-info strong {
@@ -361,14 +448,17 @@ select.form-control {
 }
 
 /* ============================================
-   FESTIVALS OVERVIEW
+   FESTIVALS OVERVIEW SECTION
    ============================================ */
 
-.mt-5 {
+.festivals-overview-section {
   margin-top: 3rem;
 }
 
-.mb-4 {
+.festivals-overview-section h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c3e50;
   margin-bottom: 1.5rem;
 }
 
@@ -405,13 +495,34 @@ select.form-control {
   gap: 1rem;
 }
 
+.festival-image-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
 .festival-overview-image {
   width: 60px;
   height: 60px;
   border-radius: 10px;
   object-fit: cover;
   border: 2px solid rgba(255, 107, 53, 0.2);
-  flex-shrink: 0;
+}
+
+.image-count-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(255, 107, 53, 0.3);
 }
 
 .festival-overview-info {
@@ -439,16 +550,17 @@ select.form-control {
    LOADING STATE
    ============================================ */
 
-.loading-container {
+.menu-management-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 400px;
   gap: 1.5rem;
+  padding: 2rem;
 }
 
-.loading-spinner {
+.menu-management-loading .loading-spinner {
   width: 60px;
   height: 60px;
   border: 5px solid rgba(255, 107, 53, 0.1);
@@ -457,26 +569,11 @@ select.form-control {
   animation: spin 1s linear infinite;
 }
 
-.loading-container p {
+.menu-management-loading p {
   font-size: 1rem;
   color: #7f8c8d;
   font-weight: 500;
-}
-
-/* ============================================
-   UTILITY CLASSES
-   ============================================ */
-
-.mt-3 {
-  margin-top: 1rem;
-}
-
-.mb-3 {
-  margin-bottom: 1rem;
-}
-
-.me-2 {
-  margin-right: 0.5rem;
+  margin: 0;
 }
 
 /* ============================================
@@ -484,7 +581,7 @@ select.form-control {
    ============================================ */
 
 @media (min-width: 1440px) {
-  .row {
+  .menu-management-row {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -498,7 +595,7 @@ select.form-control {
    ============================================ */
 
 @media (max-width: 1279px) {
-  .row {
+  .menu-management-row {
     grid-template-columns: 1fr;
   }
 }
@@ -508,7 +605,7 @@ select.form-control {
    ============================================ */
 
 @media (max-width: 1023px) {
-  .admin-page {
+  .festival-menu-management {
     padding: 1.25rem;
   }
 
@@ -516,9 +613,9 @@ select.form-control {
     font-size: 1.75rem;
   }
 
-  .row {
-    grid-template-columns: 1fr;
+  .menu-management-row {
     gap: 1.5rem;
+    margin-bottom: 2rem;
   }
 
   .card-header,
@@ -541,7 +638,7 @@ select.form-control {
    ============================================ */
 
 @media (max-width: 767px) {
-  .admin-page {
+  .festival-menu-management {
     padding: 1rem;
   }
 
@@ -558,9 +655,9 @@ select.form-control {
     font-size: 0.875rem;
   }
 
-  .row {
+  .menu-management-row {
     gap: 1.25rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
   }
 
   .card-header h3 {
@@ -602,6 +699,10 @@ select.form-control {
     font-size: 3rem;
   }
 
+  .festivals-overview-section h3 {
+    font-size: 1.25rem;
+  }
+
   .festivals-overview-grid {
     grid-template-columns: 1fr;
   }
@@ -622,6 +723,16 @@ select.form-control {
   .festival-overview-info small {
     font-size: 0.8rem;
   }
+
+  .menu-management-loading {
+    padding: 1.5rem;
+    min-height: 300px;
+  }
+
+  .menu-management-loading .loading-spinner {
+    width: 50px;
+    height: 50px;
+  }
 }
 
 /* ============================================
@@ -629,7 +740,7 @@ select.form-control {
    ============================================ */
 
 @media (max-width: 480px) {
-  .admin-page {
+  .festival-menu-management {
     padding: 0.875rem;
   }
 
@@ -637,12 +748,22 @@ select.form-control {
     font-size: 1.35rem;
   }
 
+  .error-message {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .error-retry-btn {
+    width: 100%;
+  }
+
   .card-header h3 {
     font-size: 1rem;
   }
 
   .preview-image {
-    max-height: 200px;
+    max-height: 180px;
   }
 
   .menu-image {
@@ -665,6 +786,12 @@ select.form-control {
   .festival-overview-image {
     width: 45px;
     height: 45px;
+  }
+
+  .image-count-badge {
+    width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
   }
 }
 
@@ -709,18 +836,29 @@ select.form-control {
 .btn-primary:focus-visible,
 .btn-delete-small:focus-visible,
 .form-control:focus-visible,
-.festival-overview-card:focus-visible {
+.festival-overview-card:focus-visible,
+input[type="file"]:focus-visible::file-selector-button {
   outline: 3px solid #ff6b35;
   outline-offset: 2px;
 }
 
+/* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .festival-menu-management,
+  .admin-card,
+  .menu-image-card,
+  .festival-overview-card,
+  .menu-image,
+  .icon-spin {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .btn-primary:hover,
+  .btn-delete-small:hover,
+  .festival-overview-card:hover,
+  .menu-image-card:hover {
+    transform: none;
   }
 }
 
@@ -729,12 +867,18 @@ select.form-control {
    ============================================ */
 
 @media print {
-  .admin-page {
+  .festival-menu-management {
     background: white;
+    padding: 0;
+  }
+
+  .page-header h2 {
+    -webkit-text-fill-color: #ff6b35;
   }
 
   .btn-primary,
-  .btn-delete-small {
+  .btn-delete-small,
+  input[type="file"] {
     display: none;
   }
 
@@ -743,9 +887,14 @@ select.form-control {
     box-shadow: none;
     border: 1px solid #ddd;
     page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   .card-header {
     background: #f5f5f5;
+  }
+
+  .festival-overview-card.selected {
+    background: #f0f0f0;
   }
 }

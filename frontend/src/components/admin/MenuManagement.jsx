@@ -1,6 +1,6 @@
 // frontend/src/components/admin/MenuManagement.jsx - FIXED
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaSpinner, FaUpload } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaEye, FaSpinner, FaTimes } from 'react-icons/fa';
 import axiosInstance from '../../api/axiosConfig';
 import './MenuManagement.css';
 
@@ -63,6 +63,11 @@ const MenuManagement = () => {
     if (!url) return FALLBACK_IMAGES.food;
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
+    }
+    // If it's a relative path, prepend with base URL
+    if (url.startsWith('/')) {
+      const baseUrl = process.env.REACT_APP_API_URL || window.location.origin;
+      return `${baseUrl}${url}`;
     }
     return url;
   };
@@ -128,12 +133,20 @@ const MenuManagement = () => {
     }
   };
 
+  const clearImagePreview = () => {
+    setImageFile(null);
+    setImagePreview('');
+    // Clear file input
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) fileInput.value = '';
+  };
+
   const prepareFormData = () => {
     const formDataToSend = new FormData();
     
     // Append all form fields
-    formDataToSend.append('name', formData.name);
-    formDataToSend.append('description', formData.description);
+    formDataToSend.append('name', formData.name.trim());
+    formDataToSend.append('description', formData.description?.trim() || '');
     formDataToSend.append('category', formData.category);
     formDataToSend.append('festival', formData.festival || '');
     formDataToSend.append('originalPrice', formData.originalPrice || '0');
@@ -141,7 +154,15 @@ const MenuManagement = () => {
     formDataToSend.append('prepTime', formData.prepTime || '');
     formDataToSend.append('serves', formData.serves || '');
     formDataToSend.append('spicyLevel', formData.spicyLevel);
-    formDataToSend.append('ingredients', formData.ingredients || '');
+    
+    // Handle ingredients - convert comma separated string to array
+    if (formData.ingredients.trim()) {
+      const ingredientsArray = formData.ingredients.split(',').map(item => item.trim()).filter(item => item);
+      formDataToSend.append('ingredients', JSON.stringify(ingredientsArray));
+    } else {
+      formDataToSend.append('ingredients', '[]');
+    }
+    
     formDataToSend.append('isBestSeller', formData.isBestSeller.toString());
     formDataToSend.append('isAvailable', formData.isAvailable.toString());
     formDataToSend.append('isActive', formData.isActive.toString());
@@ -149,6 +170,9 @@ const MenuManagement = () => {
     // Append image file if exists
     if (imageFile) {
       formDataToSend.append('image', imageFile);
+    } else if (editingItem && !imageFile && editingItem.image) {
+      // When editing without new image, send current image URL
+      formDataToSend.append('currentImageUrl', editingItem.image);
     }
     
     return formDataToSend;
@@ -156,6 +180,13 @@ const MenuManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.name.trim()) {
+      alert('❌ Food name is required');
+      return;
+    }
+    
     setFormSubmitting(true);
 
     try {
@@ -171,11 +202,7 @@ const MenuManagement = () => {
       }
 
       console.log(`📤 Sending ${method} request to: ${url}`);
-      console.log('📦 FormData entries:');
-      for (let [key, value] of formDataToSend.entries()) {
-        console.log(`  ${key}: ${value}`);
-      }
-
+      
       const response = await axiosInstance({
         method: method,
         url: url,
@@ -200,7 +227,6 @@ const MenuManagement = () => {
       console.error('❌ Failed to save food item:', error);
       console.error('❌ Error details:', error.response?.data || error.message);
       
-      // More specific error messages
       if (error.response?.status === 500) {
         alert('❌ Server error. Please check if the backend is running properly.');
       } else if (error.response?.status === 413) {
@@ -237,6 +263,14 @@ const MenuManagement = () => {
     setImagePreview('');
   };
 
+  const handleFormClose = () => {
+    if (!formSubmitting) {
+      setShowForm(false);
+      setEditingItem(null);
+      resetForm();
+    }
+  };
+
   if (loading) {
     return (
       <div className="admin-page">
@@ -252,7 +286,10 @@ const MenuManagement = () => {
     return (
       <div className="admin-page">
         <div className="page-header">
-          <h2>Menu Management</h2>
+          <div>
+            <h2>Menu Management</h2>
+            <p className="page-description">Manage your food menu items</p>
+          </div>
         </div>
         <div className="error-message">
           <p>{error}</p>
@@ -274,6 +311,7 @@ const MenuManagement = () => {
         <button 
           className="btn-primary" 
           onClick={() => { resetForm(); setEditingItem(null); setShowForm(true); }}
+          aria-label="Add new food item"
         >
           <FaPlus className="me-2" /> Add New Food Item
         </button>
@@ -315,6 +353,12 @@ const MenuManagement = () => {
                     <div className="empty-icon">🍽️</div>
                     <h3>No Food Items Found</h3>
                     <p>Add your first food item to get started!</p>
+                    <button 
+                      className="btn-primary mt-3" 
+                      onClick={() => { resetForm(); setEditingItem(null); setShowForm(true); }}
+                    >
+                      <FaPlus className="me-2" /> Add Food Item
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -363,7 +407,6 @@ const MenuManagement = () => {
                         className="btn-edit" 
                         onClick={() => handleEdit(item)} 
                         title="Edit"
-                        style={{ padding: '8px 12px' }}
                       >
                         <FaEdit /> Edit
                       </button>
@@ -371,7 +414,6 @@ const MenuManagement = () => {
                         className="btn-delete" 
                         onClick={() => handleDelete(item._id)} 
                         title="Delete"
-                        style={{ padding: '8px 12px' }}
                       >
                         <FaTrash /> Delete
                       </button>
@@ -385,16 +427,17 @@ const MenuManagement = () => {
       </div>
 
       {showForm && (
-        <div className="modal-overlay" onClick={() => !formSubmitting && setShowForm(false)}>
+        <div className="modal-overlay" onClick={handleFormClose}>
           <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>{editingItem ? 'Edit Food Item' : 'Add New Food Item'}</h3>
               <button 
                 className="modal-close" 
-                onClick={() => setShowForm(false)} 
+                onClick={handleFormClose} 
                 disabled={formSubmitting}
+                aria-label="Close modal"
               >
-                &times;
+                <FaTimes />
               </button>
             </div>
             
@@ -402,20 +445,23 @@ const MenuManagement = () => {
               <form onSubmit={handleSubmit}>
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Food Name *</label>
+                    <label htmlFor="name">Food Name *</label>
                     <input 
+                      id="name"
                       type="text" 
                       className="form-control" 
                       value={formData.name} 
                       onChange={(e) => setFormData({...formData, name: e.target.value})} 
                       required 
                       disabled={formSubmitting}
+                      placeholder="Enter food item name"
                     />
                   </div>
                   
                   <div className="form-group">
-                    <label>Category *</label>
+                    <label htmlFor="category">Category *</label>
                     <select 
+                      id="category"
                       className="form-control" 
                       value={formData.category} 
                       onChange={(e) => setFormData({...formData, category: e.target.value})} 
@@ -433,21 +479,24 @@ const MenuManagement = () => {
                 </div>
 
                 <div className="form-group">
-                  <label>Description *</label>
+                  <label htmlFor="description">Description *</label>
                   <textarea 
+                    id="description"
                     className="form-control" 
                     value={formData.description} 
                     onChange={(e) => setFormData({...formData, description: e.target.value})} 
                     rows="3" 
                     required 
                     disabled={formSubmitting}
+                    placeholder="Enter food description"
                   />
                 </div>
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Festival (Optional)</label>
+                    <label htmlFor="festival">Festival (Optional)</label>
                     <input 
+                      id="festival"
                       type="text" 
                       className="form-control" 
                       value={formData.festival} 
@@ -458,8 +507,9 @@ const MenuManagement = () => {
                   </div>
                   
                   <div className="form-group">
-                    <label>Original Price (₹) *</label>
+                    <label htmlFor="originalPrice">Original Price (₹) *</label>
                     <input 
+                      id="originalPrice"
                       type="number" 
                       className="form-control" 
                       value={formData.originalPrice} 
@@ -468,52 +518,60 @@ const MenuManagement = () => {
                       min="0"
                       step="0.01"
                       disabled={formSubmitting}
+                      placeholder="0.00"
                     />
                   </div>
                 </div>
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Calories (Optional)</label>
+                    <label htmlFor="calories">Calories (Optional)</label>
                     <input 
+                      id="calories"
                       type="number" 
                       className="form-control" 
                       value={formData.calories} 
                       onChange={(e) => setFormData({...formData, calories: e.target.value})} 
                       min="0"
                       disabled={formSubmitting}
+                      placeholder="e.g., 250"
                     />
                   </div>
                   
                   <div className="form-group">
-                    <label>Prep Time (minutes)</label>
+                    <label htmlFor="prepTime">Prep Time (minutes)</label>
                     <input 
+                      id="prepTime"
                       type="number" 
                       className="form-control" 
                       value={formData.prepTime} 
                       onChange={(e) => setFormData({...formData, prepTime: e.target.value})} 
                       min="0"
                       disabled={formSubmitting}
+                      placeholder="e.g., 30"
                     />
                   </div>
                 </div>
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Serves</label>
+                    <label htmlFor="serves">Serves</label>
                     <input 
+                      id="serves"
                       type="number" 
                       className="form-control" 
                       value={formData.serves} 
                       onChange={(e) => setFormData({...formData, serves: e.target.value})} 
                       min="1"
                       disabled={formSubmitting}
+                      placeholder="e.g., 4"
                     />
                   </div>
                   
                   <div className="form-group">
-                    <label>Spicy Level (1-5)</label>
+                    <label htmlFor="spicyLevel">Spicy Level (1-5)</label>
                     <select 
+                      id="spicyLevel"
                       className="form-control" 
                       value={formData.spicyLevel} 
                       onChange={(e) => setFormData({...formData, spicyLevel: e.target.value})}
@@ -529,8 +587,9 @@ const MenuManagement = () => {
                 </div>
 
                 <div className="form-group">
-                  <label>Ingredients (comma separated)</label>
+                  <label htmlFor="ingredients">Ingredients (comma separated)</label>
                   <input 
+                    id="ingredients"
                     type="text" 
                     className="form-control" 
                     value={formData.ingredients} 
@@ -538,12 +597,14 @@ const MenuManagement = () => {
                     placeholder="e.g., Rice, Chicken, Spices, Onion" 
                     disabled={formSubmitting}
                   />
+                  <small className="form-text">Separate ingredients with commas</small>
                 </div>
 
                 <div className="form-group">
-                  <label>Food Image *</label>
+                  <label htmlFor="image-upload">Food Image *</label>
                   <div className="image-upload-container">
                     <input 
+                      id="image-upload"
                       type="file" 
                       className="form-control" 
                       accept="image/*" 
@@ -553,12 +614,12 @@ const MenuManagement = () => {
                     />
                     <small className="form-text">Max size: 10MB | Formats: JPG, PNG, GIF, WEBP</small>
                     
-                    {(imagePreview || (editingItem && !imageFile)) && (
+                    {(imagePreview || (editingItem && editingItem.image)) && (
                       <div className="image-preview-upload mt-3">
                         <h6>Preview:</h6>
                         <div className="preview-image-container">
                           <img 
-                            src={imagePreview || editingItem?.image} 
+                            src={imagePreview || getAbsoluteImageUrl(editingItem.image)} 
                             alt="Preview" 
                             className="preview-image" 
                             onError={(e) => { 
@@ -566,12 +627,24 @@ const MenuManagement = () => {
                               e.target.onerror = null;
                             }} 
                           />
+                          <button
+                            type="button"
+                            className="preview-remove-btn"
+                            onClick={clearImagePreview}
+                            disabled={formSubmitting}
+                            aria-label="Remove image"
+                          >
+                            <FaTimes />
+                          </button>
                           {!imageFile && editingItem && (
                             <div className="current-image-note">
                               <FaEye /> Current Image
                             </div>
                           )}
                         </div>
+                        <small className="form-text mt-2">
+                          {imageFile ? 'New image selected' : 'Current image'}
+                        </small>
                       </div>
                     )}
                   </div>
@@ -613,7 +686,7 @@ const MenuManagement = () => {
                   <button 
                     type="button" 
                     className="btn-secondary" 
-                    onClick={() => setShowForm(false)} 
+                    onClick={handleFormClose} 
                     disabled={formSubmitting}
                   >
                     Cancel
@@ -627,7 +700,15 @@ const MenuManagement = () => {
                       <>
                         <FaSpinner className="me-2 spin" /> Saving...
                       </>
-                    ) : editingItem ? 'Update Food Item' : 'Add Food Item'}
+                    ) : editingItem ? (
+                      <>
+                        <FaEdit className="me-2" /> Update Food Item
+                      </>
+                    ) : (
+                      <>
+                        <FaPlus className="me-2" /> Add Food Item
+                      </>
+                    )}
                   </button>
                 </div>
               </form>

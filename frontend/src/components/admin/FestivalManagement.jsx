@@ -1,4 +1,4 @@
-// frontend/src/components/admin/FestivalManagement.jsx - UPDATED
+// frontend/src/components/admin/FestivalManagement.jsx - COMPLETE FIXED
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaEye, FaSpinner, FaImage } from 'react-icons/fa';
 import FestivalCard from '../FestivalCard';
@@ -270,7 +270,7 @@ const FestivalManagement = () => {
 
   if (loading) {
     return (
-      <div className="loading-container">
+      <div className="festival-management-loading">
         <div className="loading-spinner"></div>
         <p>Loading festivals...</p>
       </div>
@@ -289,7 +289,7 @@ const FestivalManagement = () => {
             setShowForm(true);
           }}
         >
-          <FaPlus className="me-2" /> Add New Festival
+          <FaPlus className="icon-spacing" /> Add New Festival
         </button>
       </div>
 
@@ -328,11 +328,11 @@ const FestivalManagement = () => {
               className="btn-primary"
               onClick={() => setShowForm(true)}
             >
-              <FaPlus className="me-2" /> Add First Festival
+              <FaPlus className="icon-spacing" /> Add First Festival
             </button>
           </div>
         ) : (
-          <div className="row">
+          <div className="festivals-row">
             {festivals.map((festival) => (
               <FestivalCard 
                 key={festival._id}
@@ -447,6 +447,116 @@ const FestivalManagement = () => {
                   </div>
                 </div>
 
+                {/* Additional Information Fields */}
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Rating</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={formData.rating}
+                      onChange={(e) => setFormData({...formData, rating: e.target.value})}
+                      placeholder="4.5"
+                      min="0"
+                      max="5"
+                      step="0.1"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Review Count</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={formData.reviewCount}
+                      onChange={(e) => setFormData({...formData, reviewCount: e.target.value})}
+                      placeholder="120"
+                      min="0"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Categories (comma separated)</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.categories}
+                      onChange={(e) => setFormData({...formData, categories: e.target.value})}
+                      placeholder="South Indian, Traditional, Vegetarian"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Popular Items (comma separated)</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.popularItems}
+                      onChange={(e) => setFormData({...formData, popularItems: e.target.value})}
+                      placeholder="Sadya, Payasam, Banana Chips"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Festival Dates</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={formData.festivalDates}
+                    onChange={(e) => setFormData({...formData, festivalDates: e.target.value})}
+                    placeholder="August 20-22, 2024"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Delivery Information</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={formData.deliveryInfo}
+                    onChange={(e) => setFormData({...formData, deliveryInfo: e.target.value})}
+                    placeholder="Free delivery within 5km"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Special Note</label>
+                  <textarea
+                    className="form-control"
+                    value={formData.specialNote}
+                    onChange={(e) => setFormData({...formData, specialNote: e.target.value})}
+                    rows="2"
+                    placeholder="Special instructions or notes"
+                  />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Highlights (comma separated)</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.highlights}
+                      onChange={(e) => setFormData({...formData, highlights: e.target.value})}
+                      placeholder="Traditional, Family Pack, Spicy"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Tags (comma separated)</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.tags}
+                      onChange={(e) => setFormData({...formData, tags: e.target.value})}
+                      placeholder="festival, food, catering, traditional"
+                    />
+                  </div>
+                </div>
+
                 <div className="form-check-group">
                   <label className="form-check">
                     <input
@@ -483,7 +593,7 @@ const FestivalManagement = () => {
                   >
                     {formSubmitting ? (
                       <>
-                        <FaSpinner className="me-2 spin" />
+                        <FaSpinner className="icon-spacing spin" />
                         Saving...
                       </>
                     ) : (

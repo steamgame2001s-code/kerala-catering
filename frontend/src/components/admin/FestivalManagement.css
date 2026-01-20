@@ -11,6 +11,16 @@
   padding: 1.5rem;
   background: linear-gradient(135deg, #fef8f5 0%, #fff5f0 100%);
   min-height: calc(100vh - 70px);
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* ============================================
@@ -38,6 +48,14 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: -0.5px;
+}
+
+/* ============================================
+   ICON SPACING
+   ============================================ */
+
+.icon-spacing {
+  margin-right: 0.5rem;
 }
 
 /* ============================================
@@ -103,6 +121,30 @@
 }
 
 /* ============================================
+   ERROR MESSAGE
+   ============================================ */
+
+.error-message {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #dc2626;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  border: 2px solid #fca5a5;
+  font-size: 0.95rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* ============================================
    STATS BAR
    ============================================ */
 
@@ -157,7 +199,7 @@
   margin-top: 2rem;
 }
 
-.festivals-grid .row {
+.festivals-row {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.5rem;
@@ -174,6 +216,18 @@
   border-radius: 16px;
   box-shadow: 0 4px 15px rgba(255, 107, 53, 0.08);
   border: 2px dashed rgba(255, 107, 53, 0.2);
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .empty-icon {
@@ -213,6 +267,16 @@
   z-index: 2000;
   padding: 1rem;
   overflow-y: auto;
+  animation: overlayFadeIn 0.3s ease-out;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-content {
@@ -254,6 +318,10 @@
   background: linear-gradient(180deg, #ff6b35 0%, #f7931e 100%);
   border-radius: 10px;
   border: 2px solid #f5f5f5;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #f7931e 0%, #ff6b35 100%);
 }
 
 .modal-header {
@@ -329,6 +397,12 @@
   margin-bottom: 0.5rem;
 }
 
+.form-group label::after {
+  content: attr(data-required);
+  color: #dc2626;
+  margin-left: 0.25rem;
+}
+
 .form-control {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -337,6 +411,7 @@
   font-size: 0.95rem;
   transition: all 0.3s ease;
   font-family: inherit;
+  background: white;
 }
 
 .form-control:focus {
@@ -345,36 +420,31 @@
   box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
 }
 
+.form-control::placeholder {
+  color: #9ca3af;
+}
+
 textarea.form-control {
   resize: vertical;
   min-height: 100px;
 }
 
-/* ============================================
-   IMAGE UPLOAD
-   ============================================ */
-
-.image-upload-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+input[type="number"].form-control {
+  appearance: textfield;
 }
+
+input[type="number"].form-control::-webkit-outer-spin-button,
+input[type="number"].form-control::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+/* ============================================
+   IMAGE UPLOAD & PREVIEW
+   ============================================ */
 
 .image-preview-upload {
   margin-top: 1rem;
-}
-
-.image-preview-upload h6 {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #7f8c8d;
-  margin-bottom: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.preview-image-container {
-  position: relative;
   border-radius: 12px;
   overflow: hidden;
   border: 2px solid rgba(255, 107, 53, 0.2);
@@ -384,25 +454,37 @@ textarea.form-control {
 .preview-image {
   width: 100%;
   height: auto;
-  max-height: 300px;
+  max-height: 200px;
   object-fit: cover;
   display: block;
+  transition: transform 0.3s ease;
 }
 
-.current-image-note {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+.preview-image:hover {
+  transform: scale(1.02);
+}
+
+/* File Input */
+input[type="file"].form-control {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+input[type="file"].form-control::file-selector-button {
   background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
   color: white;
-  padding: 0.4rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 1rem;
+}
+
+input[type="file"].form-control::file-selector-button:hover {
+  background: linear-gradient(135deg, #f7931e 0%, #ff6b35 100%);
 }
 
 /* ============================================
@@ -421,6 +503,7 @@ textarea.form-control {
   align-items: center;
   gap: 0.75rem;
   cursor: pointer;
+  user-select: none;
 }
 
 .form-check input[type="checkbox"] {
@@ -428,6 +511,14 @@ textarea.form-control {
   height: 20px;
   cursor: pointer;
   accent-color: #ff6b35;
+  border-radius: 6px;
+  border: 2px solid #d1d5db;
+  transition: all 0.3s ease;
+}
+
+.form-check input[type="checkbox"]:checked {
+  background-color: #ff6b35;
+  border-color: #ff6b35;
 }
 
 .form-check span {
@@ -440,13 +531,14 @@ textarea.form-control {
    LOADING STATES
    ============================================ */
 
-.loading-container {
+.festival-management-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 400px;
   gap: 1.5rem;
+  padding: 2rem;
 }
 
 .loading-spinner {
@@ -462,10 +554,11 @@ textarea.form-control {
   to { transform: rotate(360deg); }
 }
 
-.loading-container p {
+.festival-management-loading p {
   font-size: 1rem;
   color: #7f8c8d;
   font-weight: 500;
+  margin: 0;
 }
 
 .spin {
@@ -473,38 +566,11 @@ textarea.form-control {
 }
 
 /* ============================================
-   ERROR CONTAINER
-   ============================================ */
-
-.error-container {
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  border: 2px solid #fca5a5;
-  border-radius: 16px;
-  padding: 2rem;
-  margin: 2rem 0;
-  text-align: center;
-}
-
-.error-container h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #991b1b;
-  margin-bottom: 1rem;
-}
-
-.error-container p {
-  font-size: 1rem;
-  color: #dc2626;
-  margin-bottom: 1rem;
-  line-height: 1.6;
-}
-
-/* ============================================
    RESPONSIVE DESIGN - LARGE DESKTOP
    ============================================ */
 
 @media (min-width: 1440px) {
-  .festivals-grid .row {
+  .festivals-row {
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   }
 }
@@ -514,7 +580,7 @@ textarea.form-control {
    ============================================ */
 
 @media (max-width: 1279px) {
-  .festivals-grid .row {
+  .festivals-row {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   }
 }
@@ -531,6 +597,7 @@ textarea.form-control {
   .page-header {
     flex-direction: column;
     align-items: flex-start;
+    gap: 1.25rem;
   }
 
   .page-header h2 {
@@ -550,13 +617,17 @@ textarea.form-control {
     font-size: 2rem;
   }
 
-  .festivals-grid .row {
+  .festivals-row {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1.25rem;
   }
 
   .modal-content {
     max-width: 90%;
+  }
+
+  .modal-content.large-modal {
+    max-width: 95%;
   }
 
   .modal-header,
@@ -592,6 +663,16 @@ textarea.form-control {
   .btn-secondary {
     padding: 0.625rem 1.25rem;
     font-size: 0.875rem;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .error-message {
+    padding: 0.875rem 1.25rem;
+    font-size: 0.875rem;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
   }
 
   .stats-bar {
@@ -611,7 +692,7 @@ textarea.form-control {
     font-size: 0.8rem;
   }
 
-  .festivals-grid .row {
+  .festivals-row {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
@@ -637,6 +718,10 @@ textarea.form-control {
   .modal-content {
     max-width: 100%;
     border-radius: 16px;
+  }
+
+  .modal-content.large-modal {
+    max-width: 100%;
   }
 
   .modal-header {
@@ -665,7 +750,6 @@ textarea.form-control {
   .modal-footer .btn-primary,
   .modal-footer .btn-secondary {
     width: 100%;
-    justify-content: center;
   }
 
   .form-group {
@@ -687,7 +771,18 @@ textarea.form-control {
   }
 
   .preview-image {
-    max-height: 200px;
+    max-height: 180px;
+  }
+
+  .festival-management-loading {
+    min-height: 300px;
+    padding: 1.5rem;
+  }
+
+  .loading-spinner {
+    width: 50px;
+    height: 50px;
+    border-width: 4px;
   }
 }
 
@@ -726,29 +821,19 @@ textarea.form-control {
     font-size: 3.5rem;
   }
 
-  .error-container {
-    padding: 1.5rem;
+  .error-message {
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
   }
 
-  .error-container h2 {
-    font-size: 1.25rem;
+  .preview-image {
+    max-height: 150px;
   }
 }
 
 /* ============================================
-   ANIMATIONS
+   ANIMATIONS FOR GRID ITEMS
    ============================================ */
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 .stat-item,
 .empty-state {
@@ -766,577 +851,32 @@ textarea.form-control {
 .btn-primary:focus-visible,
 .btn-secondary:focus-visible,
 .form-control:focus-visible,
-.modal-close:focus-visible {
+.modal-close:focus-visible,
+.form-check input[type="checkbox"]:focus-visible {
   outline: 3px solid #ff6b35;
   outline-offset: 2px;
 }
 
+/* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .admin-page,
+  .modal-overlay,
+  .modal-content,
+  .stat-item,
+  .empty-state,
+  .loading-spinner,
+  .spin,
+  .error-message {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .stat-item:hover,
+  .btn-primary:hover,
+  .modal-close:hover {
+    transform: none;
   }
 }
-
-/* ============================================
-   FESTIVAL MENU IMAGES - SPECIFIC STYLES
-   ============================================ */
-
-/* Header Section */
-.festival-menu-header {
-  background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
-  padding: 1.75rem;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.1);
-  border: 2px solid rgba(255, 107, 53, 0.1);
-  margin-bottom: 2rem;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.festival-menu-header .back-btn {
-  padding: 0.75rem 1.25rem;
-  background: #ffffff;
-  color: #2c3e50;
-  border: 2px solid rgba(255, 107, 53, 0.2);
-  border-radius: 10px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.625rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.festival-menu-header .back-btn:hover {
-  background: rgba(255, 107, 53, 0.05);
-  border-color: rgba(255, 107, 53, 0.4);
-  transform: translateX(-4px);
-}
-
-.festival-menu-title {
-  margin: 0 0 0.375rem 0;
-  color: #2c3e50;
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-.festival-menu-subtitle {
-  margin: 0;
-  color: #7f8c8d;
-  font-size: 0.95rem;
-  font-weight: 500;
-}
-
-/* Grid Layout */
-.menu-images-grid {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 2rem;
-}
-
-/* Upload Card */
-.upload-card {
-  background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
-  padding: 1.75rem;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.1);
-  border: 2px solid rgba(255, 107, 53, 0.1);
-  height: fit-content;
-}
-
-.upload-card h3 {
-  margin-bottom: 1.5rem;
-  color: #2c3e50;
-  font-size: 1.25rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-}
-
-/* File Upload Button */
-.file-upload-btn {
-  width: 100%;
-  padding: 1.25rem;
-  background: linear-gradient(135deg, rgba(255, 107, 53, 0.05) 0%, rgba(247, 147, 30, 0.05) 100%);
-  border: 2px dashed rgba(255, 107, 53, 0.3);
-  border-radius: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  color: #ff6b35;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  margin-bottom: 0.625rem;
-}
-
-.file-upload-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(247, 147, 30, 0.1) 100%);
-  border-color: rgba(255, 107, 53, 0.5);
-  transform: translateY(-2px);
-}
-
-.file-upload-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.file-upload-hint {
-  display: block;
-  margin-top: 0.5rem;
-  color: #7f8c8d;
-  font-size: 0.875rem;
-}
-
-/* Image Preview Container */
-.image-preview-wrapper {
-  margin-bottom: 1.5rem;
-}
-
-.image-preview-wrapper label {
-  display: block;
-  margin-bottom: 0.625rem;
-  font-weight: 600;
-  color: #2c3e50;
-  font-size: 0.95rem;
-}
-
-.preview-container {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 2px solid rgba(255, 107, 53, 0.2);
-}
-
-.preview-container img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  display: block;
-}
-
-.preview-remove-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  color: #dc2626;
-  border: 2px solid #fca5a5;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 1.5rem;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  line-height: 1;
-}
-
-.preview-remove-btn:hover {
-  background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
-  transform: scale(1.1);
-}
-
-.file-info-badge {
-  margin-top: 0.625rem;
-  padding: 0.625rem 1rem;
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-  border-radius: 8px;
-  font-size: 0.875rem;
-  color: #065f46;
-  font-weight: 500;
-}
-
-/* Caption Input */
-.caption-group {
-  margin-bottom: 1.5rem;
-}
-
-.caption-group label {
-  display: block;
-  margin-bottom: 0.625rem;
-  font-weight: 600;
-  color: #2c3e50;
-  font-size: 0.95rem;
-}
-
-.caption-input {
-  width: 100%;
-  padding: 0.875rem 1rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  transition: all 0.3s ease;
-  font-family: inherit;
-}
-
-.caption-input:focus {
-  outline: none;
-  border-color: #ff6b35;
-  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
-}
-
-.caption-input:disabled {
-  background: #f5f5f5;
-  cursor: not-allowed;
-}
-
-/* Upload Button */
-.upload-submit-btn {
-  width: 100%;
-  padding: 1rem;
-  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
-}
-
-.upload-submit-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
-}
-
-.upload-submit-btn:disabled {
-  background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
-  cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
-}
-
-/* Max Upload Warning */
-.max-upload-warning {
-  padding: 1.5rem;
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  border-radius: 12px;
-  border-left: 4px solid #f59e0b;
-  text-align: center;
-}
-
-.max-upload-warning svg {
-  font-size: 3rem;
-  color: #f59e0b;
-  margin-bottom: 1rem;
-}
-
-.max-upload-warning p {
-  margin: 0;
-  font-weight: 600;
-  color: #92400e;
-  font-size: 0.95rem;
-}
-
-/* Current Images Card */
-.current-images-card {
-  background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
-  padding: 1.75rem;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.1);
-  border: 2px solid rgba(255, 107, 53, 0.1);
-}
-
-.current-images-card h3 {
-  margin-bottom: 1.5rem;
-  color: #2c3e50;
-  font-size: 1.25rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-}
-
-/* No Images State */
-.no-images-state {
-  text-align: center;
-  padding: 4rem 1.5rem;
-  background: linear-gradient(135deg, rgba(255, 107, 53, 0.02) 0%, rgba(247, 147, 30, 0.02) 100%);
-  border-radius: 12px;
-  border: 2px dashed rgba(255, 107, 53, 0.2);
-}
-
-.no-images-state svg {
-  font-size: 4rem;
-  color: rgba(255, 107, 53, 0.3);
-  margin-bottom: 1.25rem;
-}
-
-.no-images-state p {
-  color: #7f8c8d;
-  margin: 0;
-  font-size: 0.95rem;
-}
-
-/* Images Grid */
-.images-display-grid {
-  display: grid;
-  gap: 1.5rem;
-}
-
-/* Image Item */
-.menu-image-item {
-  border: 2px solid rgba(255, 107, 53, 0.15);
-  border-radius: 14px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.menu-image-item:hover {
-  border-color: rgba(255, 107, 53, 0.3);
-  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.15);
-  transform: translateY(-4px);
-}
-
-.menu-image-wrapper {
-  height: 220px;
-  position: relative;
-  overflow: hidden;
-  background: #f5f5f5;
-}
-
-.menu-image-wrapper img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.3s ease;
-}
-
-.menu-image-item:hover .menu-image-wrapper img {
-  transform: scale(1.05);
-}
-
-.delete-image-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  color: #dc2626;
-  border: 2px solid #fca5a5;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.delete-image-btn:hover {
-  background: linear-gradient(135deg, #fca5a5 0%, #f87171 100%);
-  transform: scale(1.1);
-}
-
-.menu-image-info {
-  padding: 1.25rem;
-  background: linear-gradient(135deg, rgba(255, 107, 53, 0.03) 0%, transparent 100%);
-}
-
-.menu-image-caption {
-  margin: 0 0 0.375rem 0;
-  color: #2c3e50;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.menu-image-path {
-  margin: 0;
-  font-size: 0.875rem;
-  color: #7f8c8d;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ============================================
-   RESPONSIVE - TABLET
-   ============================================ */
-
-@media (max-width: 1023px) {
-  .menu-images-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  .festival-menu-header {
-    padding: 1.5rem;
-    gap: 1.25rem;
-  }
-
-  .festival-menu-title {
-    font-size: 1.35rem;
-  }
-
-  .upload-card,
-  .current-images-card {
-    padding: 1.5rem;
-  }
-
-  .menu-image-wrapper {
-    height: 200px;
-  }
-
-  .images-display-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  }
-}
-
-/* ============================================
-   RESPONSIVE - MOBILE
-   ============================================ */
-
-@media (max-width: 767px) {
-  .festival-menu-header {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 1.25rem;
-  }
-
-  .festival-menu-header .back-btn {
-    padding: 0.625rem 1rem;
-    font-size: 0.875rem;
-  }
-
-  .festival-menu-title {
-    font-size: 1.25rem;
-  }
-
-  .festival-menu-subtitle {
-    font-size: 0.875rem;
-  }
-
-  .menu-images-grid {
-    gap: 1.25rem;
-  }
-
-  .upload-card,
-  .current-images-card {
-    padding: 1.25rem;
-  }
-
-  .upload-card h3,
-  .current-images-card h3 {
-    font-size: 1.125rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .file-upload-btn {
-    padding: 1rem;
-    font-size: 0.875rem;
-  }
-
-  .preview-container img {
-    height: 180px;
-  }
-
-  .menu-image-wrapper {
-    height: 180px;
-  }
-
-  .images-display-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .caption-input,
-  .upload-submit-btn {
-    font-size: 0.875rem;
-  }
-
-  .no-images-state {
-    padding: 3rem 1.25rem;
-  }
-
-  .no-images-state svg {
-    font-size: 3rem;
-  }
-}
-
-/* ============================================
-   RESPONSIVE - SMALL MOBILE
-   ============================================ */
-
-@media (max-width: 480px) {
-  .festival-menu-header {
-    padding: 1rem;
-  }
-
-  .festival-menu-title {
-    font-size: 1.125rem;
-  }
-
-  .upload-card,
-  .current-images-card {
-    padding: 1rem;
-  }
-
-  .file-upload-btn {
-    padding: 0.875rem;
-  }
-
-  .preview-container img,
-  .menu-image-wrapper {
-    height: 160px;
-  }
-
-  .menu-image-info {
-    padding: 1rem;
-  }
-
-  .menu-image-caption {
-    font-size: 0.9rem;
-  }
-
-  .menu-image-path {
-    font-size: 0.8rem;
-  }
-
-  .delete-image-btn {
-    width: 36px;
-    height: 36px;
-  }
-}
-
-/* ============================================
-   ANIMATIONS
-   ============================================ */
-
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.menu-image-item {
-  animation: fadeInScale 0.4s ease-out backwards;
-}
-
-.menu-image-item:nth-child(1) { animation-delay: 0.1s; }
-.menu-image-item:nth-child(2) { animation-delay: 0.2s; }
 
 /* ============================================
    PRINT STYLES
@@ -1345,14 +885,18 @@ textarea.form-control {
 @media print {
   .admin-page {
     background: white;
+    padding: 0;
+  }
+
+  .page-header h2 {
+    -webkit-text-fill-color: #ff6b35;
   }
 
   .btn-primary,
   .btn-secondary,
   .modal-overlay,
-  .back-btn,
-  .upload-card,
-  .delete-image-btn {
+  .modal-close,
+  input[type="file"] {
     display: none;
   }
 
@@ -1363,13 +907,26 @@ textarea.form-control {
     page-break-inside: avoid;
   }
 
-  .festival-menu-header {
-    border: 1px solid #ddd;
-    box-shadow: none;
+  .stat-number {
+    -webkit-text-fill-color: #ff6b35;
   }
 
-  .current-images-card {
-    border: 1px solid #ddd;
+  .form-check input[type="checkbox"] {
+    appearance: auto;
+  }
+
+  .modal-content {
     box-shadow: none;
+    border: 1px solid #ddd;
+    max-height: none;
+  }
+
+  .festivals-row {
+    display: block;
+  }
+
+  .festivals-row > * {
+    break-inside: avoid;
+    margin-bottom: 1rem;
   }
 }

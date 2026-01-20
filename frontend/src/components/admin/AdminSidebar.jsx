@@ -32,11 +32,11 @@ const AdminSidebar = ({
   };
 
   const menuItems = [
-    { path: "/admin/dashboard/home", icon: <FaTachometerAlt />, label: "Dashboard" },
-    { path: "/admin/dashboard/festivals", icon: <FaCalendarAlt />, label: "Festivals" },
-    { path: "/admin/dashboard/festival-menu", icon: <FaFileImage />, label: "Festival Menu" },
-    { path: "/admin/dashboard/menu", icon: <FaUtensils />, label: "Menu" },
-    { path: "/admin/dashboard/gallery", icon: <FaCamera />, label: "Gallery" }
+    { path: "/admin/dashboard/home", icon: <FaTachometerAlt />, label: "Dashboard", tooltip: "Dashboard" },
+    { path: "/admin/dashboard/festivals", icon: <FaCalendarAlt />, label: "Festivals", tooltip: "Festivals" },
+    { path: "/admin/dashboard/festival-menu", icon: <FaFileImage />, label: "Festival Menu", tooltip: "Festival Menu" },
+    { path: "/admin/dashboard/menu", icon: <FaUtensils />, label: "Menu", tooltip: "Menu" },
+    { path: "/admin/dashboard/gallery", icon: <FaCamera />, label: "Gallery", tooltip: "Gallery" }
   ];
 
   // Handle menu click
@@ -48,6 +48,11 @@ const AdminSidebar = ({
 
   return (
     <>
+      {/* Mobile Overlay */}
+      {isMobile && isMobileOpen && (
+        <div className="sidebar-overlay" onClick={onMobileClose} />
+      )}
+
       {/* Main Sidebar */}
       <aside
         className={`admin-sidebar
@@ -87,37 +92,45 @@ const AdminSidebar = ({
           )}
         </div>
 
-        {/* Menu */}
-        <nav className="sidebar-menu">
-          {menuItems.map(item => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.path === "/admin/dashboard/home"}
-              className={({ isActive }) => `menu-item ${isActive ? "active" : ""}`}
-              onClick={handleMenuItemClick}
+        {/* Scrollable Menu Container */}
+        <div className="sidebar-scroll-container">
+          <nav className="sidebar-menu">
+            {menuItems.map(item => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.path === "/admin/dashboard/home"}
+                className={({ isActive }) => `menu-item ${isActive ? "active" : ""}`}
+                onClick={handleMenuItemClick}
+                data-tooltip={isCollapsed && !isMobile ? item.tooltip : undefined}
+              >
+                <span className="menu-icon">{item.icon}</span>
+                {(!isCollapsed || isMobile) && <span className="menu-label">{item.label}</span>}
+              </NavLink>
+            ))}
+
+            {/* Home button */}
+            <button
+              className="menu-item home-btn"
+              onClick={() => {
+                handleMenuItemClick();
+                navigate("/");
+              }}
+              data-tooltip={isCollapsed && !isMobile ? "Back to Home" : undefined}
             >
-              <span className="menu-icon">{item.icon}</span>
-              {(!isCollapsed || isMobile) && <span className="menu-label">{item.label}</span>}
-            </NavLink>
-          ))}
+              <span className="menu-icon"><FaHome /></span>
+              {(!isCollapsed || isMobile) && <span className="menu-label">Back to Home</span>}
+            </button>
+          </nav>
+        </div>
 
-          {/* Home button */}
-          <button
-            className="menu-item home-btn"
-            onClick={() => {
-              handleMenuItemClick();
-              navigate("/");
-            }}
-          >
-            <span className="menu-icon"><FaHome /></span>
-            {(!isCollapsed || isMobile) && <span className="menu-label">Back to Home</span>}
-          </button>
-        </nav>
-
-        {/* Footer */}
+        {/* Footer - Always at bottom */}
         <div className="sidebar-footer">
-          <button className="logout-btn" onClick={handleLogout}>
+          <button 
+            className="logout-btn" 
+            onClick={handleLogout}
+            data-tooltip={isCollapsed && !isMobile ? "Logout" : undefined}
+          >
             <FaSignOutAlt />
             {(!isCollapsed || isMobile) && <span>Logout</span>}
           </button>

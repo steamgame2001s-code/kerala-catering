@@ -70,6 +70,7 @@
   font-size: 1rem;
   color: #dc2626;
   margin-bottom: 1.5rem;
+  line-height: 1.6;
 }
 
 .error-back-btn {
@@ -80,6 +81,7 @@
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
+  font-size: 0.95rem;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
@@ -87,6 +89,10 @@
 .error-back-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
+}
+
+.error-back-btn:active {
+  transform: translateY(0);
 }
 
 /* ============================================
@@ -103,6 +109,7 @@
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .back-btn {
@@ -126,11 +133,16 @@
   transform: translateX(-4px);
 }
 
+.back-btn:active {
+  transform: translateX(-2px);
+}
+
 .header-info h2 {
   margin: 0 0 0.375rem 0;
   color: #2c3e50;
   font-size: 1.5rem;
   font-weight: 700;
+  line-height: 1.3;
 }
 
 .header-info p {
@@ -254,6 +266,11 @@
   height: 200px;
   object-fit: cover;
   display: block;
+  transition: transform 0.3s ease;
+}
+
+.preview-container:hover img {
+  transform: scale(1.02);
 }
 
 .preview-remove-btn {
@@ -274,6 +291,7 @@
   justify-content: center;
   transition: all 0.3s ease;
   line-height: 1;
+  z-index: 10;
 }
 
 .preview-remove-btn:hover {
@@ -289,6 +307,9 @@
   font-size: 0.875rem;
   color: #065f46;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 /* ============================================
@@ -326,6 +347,7 @@
 .caption-input:disabled {
   background: #f5f5f5;
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
 /* ============================================
@@ -364,6 +386,7 @@
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
+  opacity: 0.7;
 }
 
 .upload-submit-btn .spin {
@@ -527,6 +550,7 @@
   color: #2c3e50;
   font-size: 1rem;
   font-weight: 600;
+  line-height: 1.4;
 }
 
 .menu-image-info p {
@@ -784,13 +808,28 @@
   outline-offset: 2px;
 }
 
+/* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .admin-page,
+  .festival-menu-header,
+  .upload-card,
+  .current-images-card,
+  .menu-image-item,
+  .loading-spinner,
+  .spin,
+  .preview-container img,
+  .menu-image-wrapper img {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .back-btn:hover,
+  .file-upload-btn:hover,
+  .upload-submit-btn:hover,
+  .delete-image-btn:hover,
+  .preview-remove-btn:hover,
+  .menu-image-item:hover {
+    transform: none;
   }
 }
 
@@ -806,7 +845,9 @@
   .back-btn,
   .upload-card,
   .delete-image-btn,
-  .upload-submit-btn {
+  .upload-submit-btn,
+  .file-upload-btn,
+  .preview-remove-btn {
     display: none;
   }
 
@@ -816,9 +857,14 @@
     box-shadow: none;
     border: 1px solid #ddd;
     page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   .menu-image-item:hover {
     transform: none;
+  }
+
+  .menu-image-wrapper img {
+    height: 150px;
   }
 }

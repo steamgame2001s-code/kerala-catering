@@ -1,8 +1,8 @@
-// frontend/src/components/admin/FestivalMenuImages.jsx
+// frontend/src/components/admin/FestivalMenuImages.jsx - COMPLETE FIXED
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaUpload, FaTrash, FaSpinner, FaImage, FaFileUpload } from 'react-icons/fa';
-import './FestivalMenuImages.css'; // This is correct
+import './FestivalMenuImages.css';
 
 const FestivalMenuImages = () => {
   const { id } = useParams();
@@ -231,16 +231,8 @@ const FestivalMenuImages = () => {
 
   if (loading) {
     return (
-      <div className="admin-page" style={{ textAlign: 'center', padding: '50px' }}>
-        <div style={{
-          width: '50px',
-          height: '50px',
-          border: '4px solid #FF6B35',
-          borderTop: '4px solid transparent',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-          margin: '0 auto 20px'
-        }}></div>
+      <div className="admin-page loading-container">
+        <div className="loading-spinner"></div>
         <p>Loading...</p>
       </div>
     );
@@ -248,20 +240,12 @@ const FestivalMenuImages = () => {
 
   if (error || !festival) {
     return (
-      <div className="admin-page" style={{ textAlign: 'center', padding: '50px' }}>
+      <div className="admin-page error-container">
         <h3>Error</h3>
         <p>{error || 'Festival not found'}</p>
         <button 
           onClick={() => navigate('/admin/dashboard/festival-menu')}
-          style={{
-            padding: '12px 24px',
-            background: '#FF6B35',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            marginTop: '20px'
-          }}
+          className="error-back-btn"
         >
           Back to Festivals
         </button>
@@ -275,60 +259,36 @@ const FestivalMenuImages = () => {
   return (
     <div className="admin-page">
       {/* Header */}
-      <div style={{
-        background: 'white',
-        padding: '25px',
-        borderRadius: '15px',
-        boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-        marginBottom: '30px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '20px'
-      }}>
+      <div className="festival-menu-header">
         <button 
           onClick={() => navigate('/admin/dashboard/festival-menu')}
-          style={{
-            padding: '10px 20px',
-            background: 'white',
-            color: '#2D3748',
-            border: '2px solid #e2e8f0',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
+          className="back-btn"
         >
           <FaArrowLeft /> Back
         </button>
-        <div>
-          <h2 style={{ margin: '0 0 5px 0', color: '#2D3748' }}>
+        <div className="header-info">
+          <h2>
             📋 {festival.name} - Menu Images
           </h2>
-          <p style={{ margin: 0, color: '#718096' }}>
+          <p>
             {currentImageCount}/2 images uploaded
           </p>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px' }}>
+      <div className="menu-images-grid">
         
         {/* UPLOAD FORM */}
-        <div style={{
-          background: 'white',
-          padding: '25px',
-          borderRadius: '15px',
-          boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
-        }}>
-          <h3 style={{ marginBottom: '20px', color: '#2D3748' }}>
+        <div className="upload-card">
+          <h3>
             📤 Upload Image
           </h3>
           
           {canUpload ? (
             <form onSubmit={handleUpload}>
               {/* File Input */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#4a5568' }}>
+              <div className="file-upload-section">
+                <label htmlFor="image-file-input">
                   Image File *
                 </label>
                 
@@ -339,100 +299,59 @@ const FestivalMenuImages = () => {
                   accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                   onChange={handleFileChange}
                   disabled={uploading}
-                  style={{ display: 'none' }}
                 />
                 
                 <button
                   type="button"
                   onClick={() => document.getElementById('image-file-input').click()}
                   disabled={uploading}
-                  style={{
-                    width: '100%',
-                    padding: '15px',
-                    background: '#f8fafc',
-                    border: '2px dashed #cbd5e1',
-                    borderRadius: '10px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    color: '#64748b',
-                    fontWeight: '600'
-                  }}
+                  className="file-upload-btn"
                 >
                   <FaFileUpload size={24} />
                   {imageFile ? 'Change Image' : 'Select Image'}
                 </button>
                 
-                <small style={{ display: 'block', marginTop: '5px', color: '#718096' }}>
+                <small className="file-upload-hint">
                   JPG, PNG, GIF, WEBP (Max 10MB)
                 </small>
               </div>
               
               {/* Preview */}
               {imagePreview && (
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
-                    Preview:
-                  </label>
-                  <div style={{ position: 'relative', borderRadius: '10px', overflow: 'hidden', border: '2px solid #e2e8f0' }}>
+                <div className="image-preview-section">
+                  <label>Preview:</label>
+                  <div className="preview-container">
                     <img 
                       src={imagePreview} 
                       alt="Preview"
-                      style={{ width: '100%', height: '200px', objectFit: 'cover' }}
                     />
                     <button
                       type="button"
                       onClick={clearFileSelection}
-                      style={{
-                        position: 'absolute',
-                        top: '10px',
-                        right: '10px',
-                        background: '#fee2e2',
-                        color: '#dc2626',
-                        border: '2px solid #fecaca',
-                        width: '35px',
-                        height: '35px',
-                        borderRadius: '50%',
-                        cursor: 'pointer',
-                        fontWeight: 'bold'
-                      }}
+                      className="preview-remove-btn"
                     >
                       ×
                     </button>
                   </div>
-                  <div style={{
-                    marginTop: '8px',
-                    padding: '8px 12px',
-                    background: '#f0fdf4',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    color: '#15803d'
-                  }}>
+                  <div className="file-info-badge">
                     ✓ {imageFile.name} ({(imageFile.size / 1024).toFixed(2)} KB)
                   </div>
                 </div>
               )}
               
               {/* Caption */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+              <div className="caption-section">
+                <label htmlFor="caption-input">
                   Caption (Optional)
                 </label>
                 <input
                   type="text"
+                  id="caption-input"
                   value={caption}
                   onChange={(e) => setCaption(e.target.value)}
                   placeholder="e.g., Lunch Menu, Dinner Menu"
                   disabled={uploading}
-                  style={{
-                    width: '100%',
-                    padding: '12px 15px',
-                    border: '2px solid #e2e8f0',
-                    borderRadius: '10px',
-                    fontSize: '16px'
-                  }}
+                  className="caption-input"
                 />
               </div>
               
@@ -440,20 +359,7 @@ const FestivalMenuImages = () => {
               <button 
                 type="submit" 
                 disabled={uploading || !imageFile}
-                style={{
-                  width: '100%',
-                  padding: '14px',
-                  background: uploading || !imageFile ? '#cbd5e1' : 'linear-gradient(135deg, #FF6B35, #FFA62B)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '10px',
-                  fontWeight: '600',
-                  cursor: uploading || !imageFile ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '10px'
-                }}
+                className="upload-submit-btn"
               >
                 {uploading ? (
                   <>
@@ -469,15 +375,9 @@ const FestivalMenuImages = () => {
               </button>
             </form>
           ) : (
-            <div style={{
-              padding: '20px',
-              background: '#fef3c7',
-              borderRadius: '10px',
-              borderLeft: '4px solid #D69E2E',
-              textAlign: 'center'
-            }}>
-              <FaImage style={{ fontSize: '48px', color: '#D69E2E', marginBottom: '15px' }} />
-              <p style={{ margin: 0, fontWeight: '600', color: '#92400e' }}>
+            <div className="max-upload-warning">
+              <FaImage />
+              <p>
                 Maximum 2 images reached
               </p>
             </div>
@@ -485,70 +385,40 @@ const FestivalMenuImages = () => {
         </div>
 
         {/* CURRENT IMAGES */}
-        <div style={{
-          background: 'white',
-          padding: '25px',
-          borderRadius: '15px',
-          boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
-        }}>
-          <h3 style={{ marginBottom: '20px', color: '#2D3748' }}>
+        <div className="current-images-card">
+          <h3>
             📷 Current Images ({currentImageCount}/2)
           </h3>
           
           {currentImageCount === 0 ? (
-            <div style={{
-              textAlign: 'center',
-              padding: '60px 20px',
-              background: '#f8fafc',
-              borderRadius: '10px',
-              border: '2px dashed #cbd5e1'
-            }}>
-              <FaImage style={{ fontSize: '64px', color: '#cbd5e1', marginBottom: '20px' }} />
-              <p style={{ color: '#718096' }}>No images uploaded yet</p>
+            <div className="no-images-state">
+              <FaImage />
+              <p>No images uploaded yet</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gap: '20px' }}>
+            <div className="images-display-grid">
               {festival.menuImages.map((image, index) => (
-                <div key={image._id || index} style={{
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '12px',
-                  overflow: 'hidden'
-                }}>
-                  <div style={{ height: '180px', position: 'relative' }}>
+                <div key={image._id || index} className="menu-image-item">
+                  <div className="menu-image-wrapper">
                     <img
                       src={getAbsoluteImageUrl(image.imageUrl)}
                       alt={`Menu ${index + 1}`}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       onError={(e) => {
                         e.target.src = 'https://via.placeholder.com/400x180/FF6B35/FFFFFF?text=Image';
                       }}
                     />
                     <button
                       onClick={() => handleDeleteImage(image._id)}
-                      style={{
-                        position: 'absolute',
-                        top: '15px',
-                        right: '15px',
-                        background: '#fee2e2',
-                        color: '#dc2626',
-                        border: '2px solid #fecaca',
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
+                      className="delete-image-btn"
                     >
                       <FaTrash />
                     </button>
                   </div>
-                  <div style={{ padding: '15px' }}>
-                    <h4 style={{ margin: '0 0 5px 0' }}>
+                  <div className="menu-image-info">
+                    <h4>
                       {image.caption || `Menu ${index + 1}`}
                     </h4>
-                    <p style={{ margin: 0, fontSize: '14px', color: '#718096' }}>
+                    <p>
                       {image.imageUrl}
                     </p>
                   </div>
