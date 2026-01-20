@@ -1,4 +1,4 @@
-// frontend/src/pages/FestivalDetailPage.jsx - FIXED VERSION
+// frontend/src/pages/FestivalDetailPage.jsx - FIXED VERSION WITH PROFESSIONAL GALLERY
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
@@ -19,8 +19,12 @@ const getAbsoluteImageUrl = (url) => {
   return `${apiUrl}/${url.replace(/^\//, '')}`;
 };
 
-// Menu Gallery Component
+// Menu Gallery Component with Modal
 const MenuGallery = ({ festival }) => {
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
   console.log('🖼️ MenuGallery rendering with festival:', festival?.name);
   console.log('📸 Menu images:', festival?.menuImages);
   
@@ -40,80 +44,214 @@ const MenuGallery = ({ festival }) => {
     );
   }
   
+  const openImageModal = (image, index) => {
+    setSelectedImage(image);
+    setCurrentIndex(index);
+    setModalOpen(true);
+    // Prevent background scroll when modal is open
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeImageModal = () => {
+    setModalOpen(false);
+    setSelectedImage(null);
+    document.body.style.overflow = 'auto';
+  };
+
+  const goToNextImage = () => {
+    const nextIndex = (currentIndex + 1) % festival.menuImages.length;
+    setSelectedImage(festival.menuImages[nextIndex]);
+    setCurrentIndex(nextIndex);
+  };
+
+  const goToPrevImage = () => {
+    const prevIndex = (currentIndex - 1 + festival.menuImages.length) % festival.menuImages.length;
+    setSelectedImage(festival.menuImages[prevIndex]);
+    setCurrentIndex(prevIndex);
+  };
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!modalOpen) return;
+      
+      if (e.key === 'Escape') {
+        closeImageModal();
+      } else if (e.key === 'ArrowRight') {
+        goToNextImage();
+      } else if (e.key === 'ArrowLeft') {
+        goToPrevImage();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [modalOpen, currentIndex]);
+
   console.log(`✅ Rendering ${festival.menuImages.length} menu images`);
   
   return (
-    <div className="menu-gallery mb-12">
-      <h3 className="text-3xl font-bold mb-6 text-gray-800">
-        Festival Menu Gallery
-      </h3>
-      <p className="text-gray-600 mb-6">
-        Explore our authentic {festival.name} menu selections
-      </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {festival.menuImages.map((menuImage, index) => {
-          const absoluteUrl = getAbsoluteImageUrl(menuImage.imageUrl);
-          
-          console.log(`🔗 Image ${index + 1}:`, {
-            original: menuImage.imageUrl,
-            absolute: absoluteUrl,
-            caption: menuImage.caption
-          });
-          
-          return (
-            <div 
-              key={menuImage._id || index} 
-              className="group cursor-pointer rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-4 border-orange-500 bg-white"
-              onClick={() => {
-                if (absoluteUrl) {
-                  window.open(absoluteUrl, '_blank');
-                }
-              }}
-            >
-              <div className="relative h-64">
-                {absoluteUrl ? (
-                  <img 
-                    src={absoluteUrl} 
-                    alt={menuImage.caption || `${festival.name} menu ${index + 1}`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      console.error('❌ Failed to load menu image:', menuImage.imageUrl);
-                      e.target.src = 'https://via.placeholder.com/600x400/FF6B35/FFFFFF?text=Menu+Image';
-                    }}
-                    onLoad={() => {
-                      console.log('✅ Menu image loaded successfully:', absoluteUrl);
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-500">Image not available</span>
+    <>
+      <div className="menu-gallery mb-12">
+        <h3 className="text-3xl font-bold mb-6 text-gray-800">
+          Festival Menu Gallery
+        </h3>
+        <p className="text-gray-600 mb-6">
+          Explore our authentic {festival.name} menu selections
+        </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {festival.menuImages.map((menuImage, index) => {
+            const absoluteUrl = getAbsoluteImageUrl(menuImage.imageUrl);
+            
+            console.log(`🔗 Image ${index + 1}:`, {
+              original: menuImage.imageUrl,
+              absolute: absoluteUrl,
+              caption: menuImage.caption
+            });
+            
+            return (
+              <div 
+                key={menuImage._id || index} 
+                className="group cursor-pointer rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border-4 border-orange-500 bg-white"
+                onClick={() => openImageModal(menuImage, index)}
+              >
+                <div className="relative h-80 md:h-96">
+                  {absoluteUrl ? (
+                    <img 
+                      src={absoluteUrl} 
+                      alt={menuImage.caption || `${festival.name} menu ${index + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      onError={(e) => {
+                        console.error('❌ Failed to load menu image:', menuImage.imageUrl);
+                        e.target.src = 'https://via.placeholder.com/800x600/FF6B35/FFFFFF?text=Menu+Image';
+                        e.target.className = "w-full h-full object-contain bg-gray-100 p-8";
+                      }}
+                      onLoad={() => {
+                        console.log('✅ Menu image loaded successfully:', absoluteUrl);
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <span className="text-gray-500">Image not available</span>
+                    </div>
+                  )}
+                  <div className="absolute top-4 left-4 bg-orange-500 text-white px-4 py-2 rounded-full font-bold shadow-lg">
+                    Menu {index + 1}
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end">
+                    <div className="p-6 text-white w-full">
+                      <p className="text-lg font-semibold mb-2">
+                        {menuImage.caption || `${festival.name} Menu`}
+                      </p>
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd"/>
+                        </svg>
+                        <span className="text-sm">Click to view full size</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {menuImage.caption && (
+                  <div className="p-6 bg-gradient-to-r from-orange-50 to-yellow-50">
+                    <p className="text-lg font-semibold text-gray-800">
+                      {menuImage.caption}
+                    </p>
+                    <div className="mt-2 flex items-center text-gray-600 text-sm">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"/>
+                      </svg>
+                      Click to enlarge
+                    </div>
                   </div>
                 )}
-                <div className="absolute top-4 left-4 bg-orange-500 text-white px-4 py-2 rounded-full font-bold shadow-lg">
-                  Menu {index + 1}
-                </div>
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 bg-white/90 rounded-full p-4">
-                    <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
-                    </svg>
-                  </div>
-                </div>
               </div>
-              {menuImage.caption && (
-                <div className="p-5 bg-gradient-to-r from-orange-50 to-yellow-50">
-                  <p className="text-lg font-semibold text-gray-800">
-                    {menuImage.caption}
-                  </p>
-                </div>
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+        
+        <div className="mt-10 mb-6 border-t-2 border-orange-200"></div>
       </div>
-      
-      <div className="mt-10 mb-6 border-t-2 border-orange-200"></div>
-    </div>
+
+      {/* Image Modal */}
+      {modalOpen && selectedImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4">
+          {/* Close button */}
+          <button
+            onClick={closeImageModal}
+            className="absolute top-4 right-4 z-10 p-2 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-sm transition-all duration-300"
+          >
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Navigation buttons */}
+          {festival.menuImages.length > 1 && (
+            <>
+              <button
+                onClick={goToPrevImage}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 p-3 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-sm transition-all duration-300"
+              >
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={goToNextImage}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 p-3 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-sm transition-all duration-300"
+              >
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </>
+          )}
+
+          {/* Image counter */}
+          <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-black/50 rounded-full text-white text-sm">
+            {currentIndex + 1} / {festival.menuImages.length}
+          </div>
+
+          {/* Main image */}
+          <div className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center">
+            <img
+              src={getAbsoluteImageUrl(selectedImage.imageUrl)}
+              alt={selectedImage.caption || `${festival.name} menu`}
+              className="max-w-full max-h-full object-contain rounded-lg"
+              onError={(e) => {
+                e.target.src = 'https://via.placeholder.com/1200x800/FF6B35/FFFFFF?text=Menu+Image';
+                e.target.className = "max-w-full max-h-full object-contain bg-gray-800 p-8 rounded-lg";
+              }}
+            />
+            
+            {/* Loading indicator */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </div>
+
+          {/* Caption */}
+          {selectedImage.caption && (
+            <div className="absolute bottom-4 left-0 right-0 mx-auto max-w-4xl bg-black/70 backdrop-blur-sm rounded-lg p-4">
+              <p className="text-white text-lg font-semibold text-center">
+                {selectedImage.caption}
+              </p>
+            </div>
+          )}
+
+          {/* Keyboard hint */}
+          <div className="absolute bottom-4 right-4 hidden md:block bg-black/50 rounded-lg p-2">
+            <p className="text-white/70 text-xs">
+              Use <span className="inline-block bg-white/20 px-2 py-1 rounded mx-1">←</span> and 
+              <span className="inline-block bg-white/20 px-2 py-1 rounded mx-1">→</span> to navigate • 
+              <span className="inline-block bg-white/20 px-2 py-1 rounded mx-1">ESC</span> to close
+            </p>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

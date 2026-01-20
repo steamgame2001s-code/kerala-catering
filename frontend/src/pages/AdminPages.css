@@ -326,11 +326,13 @@
     overflow: hidden;
     box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     border: 1px solid #e2e8f0;
+    overflow-x: auto;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 600px;
 }
 
 thead {
@@ -346,6 +348,7 @@ th {
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    white-space: nowrap;
 }
 
 td {
@@ -353,6 +356,7 @@ td {
     border-bottom: 1px solid #edf2f7;
     color: #4a5568;
     font-size: 14px;
+    vertical-align: middle;
 }
 
 tbody tr {
@@ -363,6 +367,33 @@ tbody tr:hover {
     background: #f7fafc;
 }
 
+/* Table cell specific styles */
+td:first-child {
+    font-weight: 500;
+}
+
+td:nth-child(2) { /* Status column */
+    min-width: 100px;
+}
+
+td:nth-child(3) { /* Test/Active/New column */
+    min-width: 120px;
+    font-weight: 500;
+}
+
+td:nth-child(4) { /* Slug column */
+    min-width: 150px;
+    color: #4299e1;
+    font-family: monospace;
+    font-size: 13px;
+}
+
+td:nth-child(5) { /* Rating column */
+    min-width: 80px;
+    font-weight: 600;
+    color: #d69e2e;
+}
+
 /* Status Badges */
 .status-badge {
     padding: 6px 12px;
@@ -370,21 +401,63 @@ tbody tr:hover {
     font-size: 12px;
     font-weight: 600;
     display: inline-block;
+    min-width: 80px;
+    text-align: center;
+    white-space: nowrap;
 }
 
 .status-badge.active {
     background: #c6f6d5;
     color: #22543d;
+    border: 1px solid #9ae6b4;
 }
 
 .status-badge.inactive {
     background: #fed7d7;
     color: #742a2a;
+    border: 1px solid #fc8181;
 }
 
 .status-badge.pending {
     background: #feebc8;
     color: #744210;
+    border: 1px solid #f6ad55;
+}
+
+.status-badge.draft {
+    background: #e2e8f0;
+    color: #4a5568;
+    border: 1px solid #cbd5e0;
+}
+
+/* Test/Status Labels */
+.status-label {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-label.test {
+    background: #e9d8fd;
+    color: #553c9a;
+    border: 1px solid #d6bcfa;
+}
+
+.status-label.active {
+    background: #c6f6d5;
+    color: #22543d;
+    border: 1px solid #9ae6b4;
+}
+
+.status-label.new {
+    background: #bee3f8;
+    color: #2c5282;
+    border: 1px solid #90cdf4;
 }
 
 /* ========== ACTION BUTTONS ========== */
@@ -871,9 +944,12 @@ tbody tr:hover {
         max-height: 60vh;
     }
     
-    table {
-        display: block;
+    .table-container {
         overflow-x: auto;
+    }
+    
+    table {
+        min-width: 800px;
     }
     
     .festivals-overview-grid {
@@ -900,6 +976,17 @@ tbody tr:hover {
     .stat-icon {
         margin-right: 0;
         margin-bottom: 15px;
+    }
+    
+    .status-label {
+        font-size: 10px;
+        padding: 3px 6px;
+    }
+    
+    .status-badge {
+        min-width: 70px;
+        padding: 4px 8px;
+        font-size: 11px;
     }
 }
 
@@ -996,4 +1083,109 @@ tbody tr:hover {
 .badge-info {
     background: #c3dafe;
     color: #434190;
+}
+
+/* ========== TABLE ROW HIGHLIGHTS ========== */
+.highlight-row {
+    background-color: #fff7ed !important;
+}
+
+.highlight-row:hover {
+    background-color: #feebc8 !important;
+}
+
+/* ========== TEXT STYLES FOR SPECIFIC COLUMNS ========== */
+.slug-text {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 13px;
+    color: #4299e1;
+    background: #f7fafc;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+}
+
+.rating-text {
+    font-weight: 600;
+    color: #d69e2e;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.rating-text::after {
+    content: '★';
+    color: #ecc94b;
+}
+
+/* ========== ALIGNMENT HELPERS ========== */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.align-middle {
+    vertical-align: middle;
+}
+
+/* ========== TABLE CELL SPECIFIC STYLES ========== */
+.table-cell-compact {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+.table-cell-expand {
+    min-width: 200px;
+    white-space: normal;
+}
+
+/* ========== ADMIN CARD STYLES ========== */
+.admin-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+}
+
+.admin-card .card-header {
+    margin: -20px -20px 20px -20px;
+    padding: 20px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f7fafc;
+    border-radius: 12px 12px 0 0;
+}
+
+.admin-card .card-content {
+    padding: 0;
+}
+
+/* Row and Column Layout */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -15px;
+}
+
+.col-md-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+    padding: 0 15px;
+}
+
+@media (max-width: 768px) {
+    .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
 }
