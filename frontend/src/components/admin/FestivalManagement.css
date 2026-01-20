@@ -1,3 +1,4 @@
+/* frontend/src/components/admin/FestivalManagement.css */
 /* ============================================
    FESTIVAL MANAGEMENT - PROFESSIONAL ORANGE & WHITE
    FULLY RESPONSIVE FOR ALL DEVICES
@@ -51,14 +52,6 @@
 }
 
 /* ============================================
-   ICON SPACING
-   ============================================ */
-
-.icon-spacing {
-  margin-right: 0.5rem;
-}
-
-/* ============================================
    BUTTONS
    ============================================ */
 
@@ -79,12 +72,12 @@
   white-space: nowrap;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
 }
 
-.btn-primary:active {
+.btn-primary:active:not(:disabled) {
   transform: translateY(0);
 }
 
@@ -110,7 +103,7 @@
   white-space: nowrap;
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
   background: #eeeeee;
   border-color: #d0d0d0;
 }
@@ -118,6 +111,62 @@
 .btn-secondary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.btn-delete {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #dc2626;
+  padding: 0.5rem 1rem;
+  border: 2px solid #fca5a5;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  transition: all 0.3s ease;
+}
+
+.btn-delete:hover {
+  background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+  transform: translateY(-2px);
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1e40af;
+  padding: 0.5rem 1rem;
+  border: 2px solid #93c5fd;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  transition: all 0.3s ease;
+}
+
+.btn-edit:hover {
+  background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   ICON SPACING
+   ============================================ */
+
+.icon-spacing {
+  margin-right: 0.5rem;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* ============================================
@@ -135,13 +184,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  animation: shake 0.5s ease-in-out;
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
+  animation: fadeInUp 0.5s ease-out;
 }
 
 /* ============================================
@@ -163,6 +206,7 @@
   border: 2px solid rgba(255, 107, 53, 0.1);
   text-align: center;
   transition: all 0.3s ease;
+  animation: fadeInUp 0.5s ease-out backwards;
 }
 
 .stat-item:hover {
@@ -191,6 +235,11 @@
   letter-spacing: 0.5px;
 }
 
+/* Animation delays for stats */
+.stat-item:nth-child(1) { animation-delay: 0.1s; }
+.stat-item:nth-child(2) { animation-delay: 0.2s; }
+.stat-item:nth-child(3) { animation-delay: 0.3s; }
+
 /* ============================================
    FESTIVALS GRID
    ============================================ */
@@ -205,6 +254,112 @@
   gap: 1.5rem;
 }
 
+/* Festival Card Styles */
+.festival-card {
+  background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.1);
+  border: 2px solid rgba(255, 107, 53, 0.1);
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.5s ease-out backwards;
+}
+
+.festival-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.2);
+  border-color: rgba(255, 107, 53, 0.3);
+}
+
+.festival-image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.festival-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.festival-card:hover .festival-image img {
+  transform: scale(1.05);
+}
+
+.festival-content {
+  padding: 1.25rem;
+}
+
+.festival-content h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.festival-description {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.festival-meta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.festival-badge {
+  padding: 0.375rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.festival-badge.featured {
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(247, 147, 30, 0.15) 100%);
+  color: #ff6b35;
+  border: 1px solid rgba(255, 107, 53, 0.3);
+}
+
+.status-badge {
+  padding: 0.375rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.status-badge.active {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.status-badge.inactive {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.festival-actions {
+  display: flex;
+  gap: 0.625rem;
+  padding-top: 1rem;
+  border-top: 2px solid rgba(255, 107, 53, 0.1);
+}
+
 /* ============================================
    EMPTY STATE
    ============================================ */
@@ -217,17 +372,6 @@
   box-shadow: 0 4px 15px rgba(255, 107, 53, 0.08);
   border: 2px dashed rgba(255, 107, 53, 0.2);
   animation: fadeInUp 0.5s ease-out;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .empty-icon {
@@ -397,12 +541,6 @@
   margin-bottom: 0.5rem;
 }
 
-.form-group label::after {
-  content: attr(data-required);
-  color: #dc2626;
-  margin-left: 0.25rem;
-}
-
 .form-control {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -429,14 +567,13 @@ textarea.form-control {
   min-height: 100px;
 }
 
-input[type="number"].form-control {
-  appearance: textfield;
-}
-
-input[type="number"].form-control::-webkit-outer-spin-button,
-input[type="number"].form-control::-webkit-inner-spin-button {
+select.form-control {
+  cursor: pointer;
   appearance: none;
-  margin: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ff6b35' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 3rem;
 }
 
 /* ============================================
@@ -445,10 +582,17 @@ input[type="number"].form-control::-webkit-inner-spin-button {
 
 .image-preview-upload {
   margin-top: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.03) 0%, transparent 100%);
+  border-radius: 12px;
+  border: 2px solid rgba(255, 107, 53, 0.1);
+}
+
+.preview-image-container {
+  position: relative;
   border-radius: 12px;
   overflow: hidden;
   border: 2px solid rgba(255, 107, 53, 0.2);
-  background: #f5f5f5;
 }
 
 .preview-image {
@@ -457,20 +601,48 @@ input[type="number"].form-control::-webkit-inner-spin-button {
   max-height: 200px;
   object-fit: cover;
   display: block;
-  transition: transform 0.3s ease;
 }
 
-.preview-image:hover {
-  transform: scale(1.02);
-}
-
-/* File Input */
-input[type="file"].form-control {
-  padding: 0.5rem;
+.preview-remove-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(220, 38, 38, 0.9);
+  color: white;
+  border: none;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all 0.3s ease;
 }
 
-input[type="file"].form-control::file-selector-button {
+.preview-remove-btn:hover {
+  background: rgba(220, 38, 38, 1);
+  transform: scale(1.1);
+}
+
+/* File Input Styling */
+input[type="file"] {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px dashed #e0e0e0;
+  border-radius: 10px;
+  background: #fafafa;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+input[type="file"]:hover {
+  border-color: #ff6b35;
+  background: #fff5f0;
+}
+
+input[type="file"]::file-selector-button {
   background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
   color: white;
   padding: 0.5rem 1rem;
@@ -483,8 +655,9 @@ input[type="file"].form-control::file-selector-button {
   margin-right: 1rem;
 }
 
-input[type="file"].form-control::file-selector-button:hover {
-  background: linear-gradient(135deg, #f7931e 0%, #ff6b35 100%);
+input[type="file"]::file-selector-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
 }
 
 /* ============================================
@@ -541,6 +714,15 @@ input[type="file"].form-control::file-selector-button:hover {
   padding: 2rem;
 }
 
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1.5rem;
+}
+
 .loading-spinner {
   width: 60px;
   height: 60px;
@@ -550,10 +732,7 @@ input[type="file"].form-control::file-selector-button:hover {
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
+.loading-container p,
 .festival-management-loading p {
   font-size: 1rem;
   color: #7f8c8d;
@@ -561,8 +740,53 @@ input[type="file"].form-control::file-selector-button:hover {
   margin: 0;
 }
 
-.spin {
-  animation: spin 1s linear infinite;
+.error-container {
+  text-align: center;
+  padding: 4rem 2rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.error-container h3 {
+  color: #dc2626;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.error-container p {
+  color: #7f8c8d;
+  margin-bottom: 2rem;
+}
+
+.error-back-btn {
+  background: #ff6b35;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.error-back-btn:hover {
+  background: #f7931e;
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   UTILITY ANIMATIONS
+   ============================================ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ============================================
@@ -572,16 +796,6 @@ input[type="file"].form-control::file-selector-button:hover {
 @media (min-width: 1440px) {
   .festivals-row {
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  }
-}
-
-/* ============================================
-   RESPONSIVE DESIGN - DESKTOP
-   ============================================ */
-
-@media (max-width: 1279px) {
-  .festivals-row {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   }
 }
 
@@ -774,7 +988,8 @@ input[type="file"].form-control::file-selector-button:hover {
     max-height: 180px;
   }
 
-  .festival-management-loading {
+  .festival-management-loading,
+  .loading-container {
     min-height: 300px;
     padding: 1.5rem;
   }
@@ -832,19 +1047,6 @@ input[type="file"].form-control::file-selector-button:hover {
 }
 
 /* ============================================
-   ANIMATIONS FOR GRID ITEMS
-   ============================================ */
-
-.stat-item,
-.empty-state {
-  animation: fadeInUp 0.5s ease-out backwards;
-}
-
-.stat-item:nth-child(1) { animation-delay: 0.1s; }
-.stat-item:nth-child(2) { animation-delay: 0.2s; }
-.stat-item:nth-child(3) { animation-delay: 0.3s; }
-
-/* ============================================
    ACCESSIBILITY
    ============================================ */
 
@@ -859,21 +1061,18 @@ input[type="file"].form-control::file-selector-button:hover {
 
 /* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
-  .admin-page,
-  .modal-overlay,
-  .modal-content,
-  .stat-item,
-  .empty-state,
-  .loading-spinner,
-  .spin,
-  .error-message {
-    animation: none !important;
-    transition: none !important;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
   
   .stat-item:hover,
   .btn-primary:hover,
-  .modal-close:hover {
+  .modal-close:hover,
+  .preview-remove-btn:hover {
     transform: none;
   }
 }
@@ -894,6 +1093,8 @@ input[type="file"].form-control::file-selector-button:hover {
 
   .btn-primary,
   .btn-secondary,
+  .btn-edit,
+  .btn-delete,
   .modal-overlay,
   .modal-close,
   input[type="file"] {
@@ -901,7 +1102,8 @@ input[type="file"].form-control::file-selector-button:hover {
   }
 
   .stat-item,
-  .empty-state {
+  .empty-state,
+  .festival-card {
     box-shadow: none;
     border: 1px solid #ddd;
     page-break-inside: avoid;
