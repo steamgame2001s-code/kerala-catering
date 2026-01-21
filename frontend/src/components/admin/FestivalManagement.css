@@ -167,7 +167,72 @@
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.5rem;
 }
+/* FestivalManagement.css - ADD THESE STYLES */
 
+/* Banner badge */
+.festival-badge.banner {
+  background-color: #3b82f6;
+}
+
+/* Remove image button */
+.remove-image-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.remove-image-btn:hover {
+  background: #dc2626;
+}
+
+/* Current image note */
+.current-image-note {
+  background: #f3f4f6;
+  border-radius: 4px;
+  padding: 8px;
+  margin-top: 5px;
+}
+
+.current-image-note small {
+  color: #6b7280;
+}
+
+/* Image preview label */
+.image-preview-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  font-size: 12px;
+}
+
+/* Banner stats */
+.stat-item .stat-label {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Form help text */
+.form-help {
+  color: #6b7280;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
 /* ============================================
    FESTIVAL CARD - FIXED LAYOUT
    ============================================ */

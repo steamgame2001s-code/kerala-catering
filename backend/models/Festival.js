@@ -1,4 +1,4 @@
-// backend/models/Festival.js - UPDATED WITH CLOUDINARY FIELDS
+// backend/models/Festival.js - UPDATED WITH BANNER IMAGE FIXES
 const mongoose = require('mongoose');
 
 const festivalSchema = new mongoose.Schema({
@@ -22,17 +22,17 @@ const festivalSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
-  // NEW: Cloudinary public ID for main image
   cloudinaryImageId: { 
     type: String 
   },
   
   bannerImage: { 
-    type: String 
+    type: String,
+    default: null  // Explicitly set default to null
   },
-  // NEW: Cloudinary public ID for banner image
   cloudinaryBannerId: { 
-    type: String 
+    type: String,
+    default: null 
   },
   
   // MENU IMAGES - Maximum 2 per festival
@@ -41,7 +41,6 @@ const festivalSchema = new mongoose.Schema({
       type: String, 
       required: true 
     },
-    // NEW: Cloudinary public ID for menu images
     cloudinaryPublicId: { 
       type: String 
     },
@@ -133,8 +132,21 @@ festivalSchema.pre('save', function(next) {
   next();
 });
 
+// Create a virtual property for banner image URL with fallback
+festivalSchema.virtual('bannerImageUrl').get(function() {
+  if (this.bannerImage) {
+    return this.bannerImage;
+  }
+  // Fallback to main image if no banner
+  return this.image;
+});
+
 // Index for performance
 festivalSchema.index({ slug: 1 });
 festivalSchema.index({ isActive: 1, isFeatured: -1 });
+
+// Ensure virtuals are included in JSON responses
+festivalSchema.set('toJSON', { virtuals: true });
+festivalSchema.set('toObject', { virtuals: true });
 
 module.exports = mongoose.models.Festival || mongoose.model('Festival', festivalSchema);

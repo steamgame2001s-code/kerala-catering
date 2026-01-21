@@ -76,7 +76,7 @@ const AboutPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6 text-gray-700 leading-relaxed">
               <p className="text-lg">
-                Founded in 1998 in the heart of Kerala, <span className="font-semibold text-gray-900">Upasana Catering</span> was established by <span className="font-semibold text-gray-900">Mr. J. R. Ajith</span> with a clear vision—to deliver authentic Kerala cuisine prepared with care, consistency, and respect for tradition. What began as a small, dedicated kitchen has steadily grown into a trusted catering service known across Kerala.
+                Founded in 1998 in the heart of Kerala, <span className="font-semibold text-gray-900">Upasana Catering</span> was established by <span className="font-semibold text-gray-900">Mr. J. R. Ajith Kartha </span> with a clear vision—to deliver authentic Kerala cuisine prepared with care, consistency, and respect for tradition. What began as a small, dedicated kitchen has steadily grown into a trusted catering service known across Kerala.
               </p>
 
               <p className="text-lg">
@@ -88,7 +88,7 @@ const AboutPage = () => {
               </p>
 
               <p className="text-lg">
-                The business entered its next phase of growth when <span className="font-semibold text-gray-900">Arun A.</span>, son of Mr. J. R. Ajith, joined the organization in 2015. Bringing a modern perspective to operations and customer engagement, Arun A. works closely with the founder to strengthen the brand while maintaining the values and standards established since inception.
+                The business entered its next phase of growth when <span className="font-semibold text-gray-900">Arun Ajith.</span>, son of Mr. J. R. Ajith Kartha, joined the organization in 2015. Bringing a modern perspective to operations and customer engagement, Arun Ajith. works closely with the founder to strengthen the brand while maintaining the values and standards established since inception.
               </p>
 
               <p className="text-lg">
@@ -161,7 +161,6 @@ const AboutPage = () => {
                 icon: "🧼",
                 title: "Hygiene & Cleanliness",
                 items: [
-                  "FDA-approved kitchen facilities",
                   "Regular health inspections and certifications",
                   "Daily staff hygiene training",
                   "Sanitized equipment and cooking utensils",
@@ -235,11 +234,11 @@ const AboutPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-white rounded-xl p-8 border-2 border-orange-200 shadow-lg transform hover:-translate-y-2 transition-all duration-300">
               <div className="text-7xl mb-6 text-center">👨‍🍳</div>
-              <h3 className="text-2xl font-bold text-gray-900 text-center mb-2">J.R. Ajith</h3>
-              <p className="text-orange-600 font-semibold text-center mb-6">Founder & Master Chef (Third Generation)</p>
+              <h3 className="text-2xl font-bold text-gray-900 text-center mb-2">J.R. Ajith Kartha</h3>
+              <p className="text-orange-600 font-semibold text-center mb-6">Founder & Master Chef</p>
               <div className="space-y-4 text-gray-700">
                 <p className="leading-relaxed">
-                  Continuing a family culinary tradition, Mr. Ajith represents the third generation of chefs in his family. With decades of experience, he founded Upasana Catering in 1998 to share authentic Kerala recipes.
+                  Continuing a family culinary tradition. With decades of experience, he founded Upasana Catering in 1998 to share authentic Kerala recipes.
                 </p>
                 <p className="leading-relaxed">
                   <span className="font-semibold text-gray-900">Family Legacy:</span> Continuing a culinary tradition passed through generations
@@ -252,11 +251,11 @@ const AboutPage = () => {
             
             <div className="bg-white rounded-xl p-8 border-2 border-orange-200 shadow-lg transform hover:-translate-y-2 transition-all duration-300">
               <div className="text-7xl mb-6 text-center">👨‍💼</div>
-              <h3 className="text-2xl font-bold text-gray-900 text-center mb-2">Arun A.</h3>
-              <p className="text-orange-600 font-semibold text-center mb-6">Director & Operations Head (Fourth Generation)</p>
+              <h3 className="text-2xl font-bold text-gray-900 text-center mb-2">Arun Ajith.</h3>
+              <p className="text-orange-600 font-semibold text-center mb-6">Director & Operations Head</p>
               <div className="space-y-4 text-gray-700">
                 <p className="leading-relaxed">
-                  As the son of founder J.R. Ajith, he represents the fourth generation of the family's culinary tradition. Joining the family business in 2015, he bridges traditional culinary arts with modern catering management.
+                  As the son of founder J.R. Ajith Kartha, he represents the fourth generation of the family's culinary tradition. Joining the family business in 2020, he bridges traditional culinary arts with modern catering management.
                 </p>
                 <p className="leading-relaxed">
                   <span className="font-semibold text-gray-900">Role:</span> Combines family recipes with contemporary business practices

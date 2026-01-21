@@ -1,3 +1,4 @@
+/* frontend/src/pages/FoodMenu.css - COMPLETELY FIXED */
 /* Updated FoodMenu.css - Unified Orange & White Theme */
 
 /* Color Variables */
@@ -20,16 +21,29 @@
   --gray-900: #111827;
 }
 
-/* Remove old header-section styles and replace with these: */
+/* RESET & BASE STYLES */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-/* Container - make it full width for the banner */
+body {
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Container - FIXED for mobile */
 .food-menu-container {
   width: 100%;
   min-height: 100vh;
   background-color: var(--gray-50);
+  overflow-x: hidden; /* PREVENTS HORIZONTAL SCROLLING */
+  position: relative;
 }
 
-/* New Banner Section */
+/* New Banner Section - FIXED */
 .relative {
   position: relative;
 }
@@ -85,10 +99,12 @@
 /* Typography classes */
 .text-5xl {
   font-size: 3rem;
+  line-height: 1.2;
 }
 
 .text-6xl {
   font-size: 3.75rem;
+  line-height: 1.2;
 }
 
 .font-bold {
@@ -117,17 +133,6 @@
   padding-bottom: 5rem;
 }
 
-/* Responsive text sizes */
-@media (min-width: 768px) {
-  .md\:text-6xl {
-    font-size: 3.75rem;
-  }
-  
-  .md\:text-2xl {
-    font-size: 1.5rem;
-  }
-}
-
 /* Category Filters - adjust spacing for new banner */
 .category-filters {
   display: flex;
@@ -148,6 +153,8 @@
   cursor: pointer;
   transition: all 0.3s;
   font-weight: 600;
+  white-space: nowrap;
+  font-size: 0.95rem;
 }
 
 .category-btn.active,
@@ -165,6 +172,7 @@
   margin-left: auto;
   margin-right: auto;
   padding: 0 20px;
+  width: 100%;
 }
 
 .festival-name {
@@ -174,13 +182,15 @@
   margin-bottom: 20px;
   font-size: 1.8rem;
   font-weight: 700;
+  line-height: 1.3;
 }
 
-/* Menu Items Grid */
+/* Menu Items Grid - FIXED FOR MOBILE */
 .menu-items-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 25px;
+  width: 100%;
 }
 
 .menu-item-card {
@@ -190,6 +200,9 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: all 0.3s;
   border: 1px solid var(--gray-200);
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* ENSURES ALL CARDS ARE SAME HEIGHT */
 }
 
 .menu-item-card:hover {
@@ -202,6 +215,8 @@
   height: 200px;
   overflow: hidden;
   position: relative;
+  width: 100%;
+  flex-shrink: 0;
 }
 
 .menu-item-image::after {
@@ -219,14 +234,44 @@
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s;
+  display: block;
 }
 
 .menu-item-card:hover .menu-item-image img {
   transform: scale(1.05);
 }
 
+/* FALLBACK FOR BROKEN IMAGES */
+.menu-item-image img::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+}
+
+.menu-item-image img::after {
+  content: 'Food Image';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-weight: 600;
+}
+
 .menu-item-content {
   padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .menu-item-header {
@@ -234,6 +279,7 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 10px;
+  flex-shrink: 0;
 }
 
 .menu-item-name {
@@ -241,6 +287,9 @@
   color: var(--gray-800);
   margin: 0;
   font-weight: 700;
+  line-height: 1.3;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 
@@ -248,6 +297,9 @@
   color: var(--gray-600);
   margin-bottom: 12px;
   line-height: 1.6;
+  flex: 1;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .menu-item-category {
@@ -259,15 +311,19 @@
   font-size: 0.85rem;
   margin-bottom: 15px;
   font-weight: 600;
+  white-space: nowrap;
+  align-self: flex-start;
+  flex-shrink: 0;
 }
 
 .menu-item-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 15px;
+  margin-top: auto;
   padding-top: 15px;
   border-top: 1px solid var(--gray-200);
+  flex-shrink: 0;
 }
 
 .conditions-note {
@@ -275,6 +331,7 @@
   font-size: 0.9rem;
   margin: 0;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .talk-to-us-btn {
@@ -286,6 +343,8 @@
   cursor: pointer;
   transition: all 0.3s;
   font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .talk-to-us-btn:hover:not(:disabled) {
@@ -308,6 +367,13 @@
   border: 2px dashed var(--gray-300);
   max-width: 1200px;
   margin: 0 auto 40px;
+  width: calc(100% - 40px);
+}
+
+.no-items-message p {
+  color: var(--gray-600);
+  margin-bottom: 20px;
+  font-size: 1.1rem;
 }
 
 .no-items-message button {
@@ -335,6 +401,7 @@
   margin: 40px auto;
   border-left: 4px solid var(--primary-orange);
   max-width: 1200px;
+  width: calc(100% - 40px);
 }
 
 .conditions-section h3 {
@@ -342,6 +409,7 @@
   margin-bottom: 20px;
   font-size: 1.5rem;
   font-weight: 700;
+  line-height: 1.3;
 }
 
 .conditions-list {
@@ -355,6 +423,8 @@
   position: relative;
   color: var(--gray-700);
   line-height: 1.6;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .conditions-list li:before {
@@ -367,15 +437,16 @@
   font-weight: bold;
 }
 
-/* Contact Form Section */
+/* Contact Form Section - FIXED FOR MOBILE */
 .contact-section {
   background: var(--white);
-  padding: 50px;
+  padding: 40px;
   border-radius: 15px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--gray-200);
   max-width: 1200px;
   margin: 40px auto;
+  width: calc(100% - 40px);
 }
 
 .contact-header {
@@ -388,21 +459,28 @@
   margin-bottom: 10px;
   font-size: 2rem;
   font-weight: 700;
+  line-height: 1.3;
 }
 
 .contact-subtitle {
   color: var(--gray-600);
   font-size: 1.2rem;
+  line-height: 1.5;
 }
 
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 24px;
+  width: 100%;
 }
 
 .form-group.full-width {
   grid-column: 1 / -1;
+}
+
+.form-group {
+  width: 100%;
 }
 
 .form-group label {
@@ -410,6 +488,7 @@
   margin-bottom: 8px;
   color: var(--gray-800);
   font-weight: 600;
+  line-height: 1.4;
 }
 
 .required {
@@ -426,6 +505,8 @@
   font-size: 1rem;
   transition: all 0.3s;
   background-color: var(--white);
+  font-family: inherit;
+  line-height: 1.5;
 }
 
 .form-group input:focus,
@@ -436,6 +517,7 @@
   box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
 }
 
+/* Submit Button - FIXED */
 .submit-btn {
   width: 100%;
   background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-dark));
@@ -448,6 +530,8 @@
   transition: all 0.3s;
   margin-top: 24px;
   font-weight: 700;
+  max-width: 100%;
+  display: block;
 }
 
 .submit-btn:hover:not(:disabled) {
@@ -460,13 +544,58 @@
   cursor: not-allowed;
 }
 
+/* Alternative Contact Styles */
+.alternative-contact {
+  margin-top: 30px;
+  width: 100%;
+}
+
+.alternative-contact p {
+  text-align: center;
+  color: var(--gray-600);
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+.flex {
+  display: flex;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+/* Alternative Contact Buttons */
+.bg-green-500 {
+  background-color: #22c55e !important;
+}
+
+.bg-blue-500 {
+  background-color: #3b82f6 !important;
+}
+
+.hover\:bg-green-600:hover {
+  background-color: #16a34a !important;
+}
+
+.hover\:bg-blue-600:hover {
+  background-color: #2563eb !important;
+}
+
 .privacy-note {
   margin-top: 24px;
+  width: 100%;
 }
 
 .privacy-note p {
   color: var(--gray-500);
   text-align: center;
+  line-height: 1.5;
+  font-size: 0.9rem;
 }
 
 /* Loading & Error States */
@@ -476,6 +605,7 @@
   align-items: center;
   justify-content: center;
   min-height: 400px;
+  width: 100%;
 }
 
 .spinner {
@@ -500,12 +630,20 @@
   border: 2px solid var(--gray-200);
   max-width: 1200px;
   margin: 40px auto;
+  width: calc(100% - 40px);
 }
 
 .error-container h2 {
   color: var(--primary-orange);
   margin-bottom: 15px;
   font-weight: 700;
+  line-height: 1.3;
+}
+
+.error-container p {
+  color: var(--gray-600);
+  margin-bottom: 20px;
+  line-height: 1.5;
 }
 
 .error-container button {
@@ -525,27 +663,42 @@
   transform: translateY(-2px);
 }
 
-/* Responsive */
+/* Responsive Design - FIXED FOR MOBILE */
+@media (max-width: 1024px) {
+  .menu-items-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+  }
+}
+
 @media (max-width: 768px) {
+  /* FIX FOR MOBILE SCROLLING */
+  .food-menu-container {
+    overflow-x: hidden;
+  }
+  
   .form-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
   
   .menu-items-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
   
   .contact-section {
     padding: 30px 20px;
+    width: calc(100% - 30px);
   }
 
   /* Updated banner responsive styles */
   .text-5xl {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
   }
 
   .text-6xl {
-    font-size: 3rem;
+    font-size: 2.8rem;
   }
 
   .py-20 {
@@ -554,21 +707,16 @@
   }
 
   .conditions-section,
-  .contact-section,
   .no-items-message,
   .festival-menu-group {
     margin-left: 15px;
     margin-right: 15px;
+    width: calc(100% - 30px);
     padding: 20px;
   }
 
   .category-filters {
     padding: 0 15px;
-  }
-}
-
-@media (max-width: 480px) {
-  .category-filters {
     gap: 8px;
   }
   
@@ -576,31 +724,118 @@
     padding: 8px 16px;
     font-size: 0.9rem;
   }
-}
-/* Update button styles if needed */
-.submit-btn {
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-  color: white;
-  padding: 14px 28px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-  display: block;
+  
+  /* Alternative contact buttons on mobile */
+  .flex {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+  
+  .alternative-contact button {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
 }
 
-.submit-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
-  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+@media (max-width: 480px) {
+  .category-filters {
+    gap: 6px;
+  }
+  
+  .category-btn {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+  }
+  
+  .menu-item-image {
+    height: 180px;
+  }
+  
+  .menu-item-content {
+    padding: 15px;
+  }
+  
+  .menu-item-name {
+    font-size: 1.1rem;
+  }
+  
+  .menu-item-actions {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+  
+  .talk-to-us-btn {
+    width: 100%;
+  }
+  
+  .conditions-note {
+    text-align: center;
+  }
+  
+  /* Smaller padding for very small screens */
+  .contact-section,
+  .conditions-section,
+  .no-items-message {
+    padding: 20px 15px;
+  }
+  
+  .festival-name {
+    font-size: 1.5rem;
+  }
+  
+  .contact-header h2 {
+    font-size: 1.8rem;
+  }
 }
 
-.submit-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+/* Prevent horizontal scrolling on very small devices */
+@media (max-width: 360px) {
+  .food-menu-container {
+    font-size: 14px;
+  }
+  
+  .text-5xl {
+    font-size: 1.8rem;
+  }
+  
+  .menu-items-grid {
+    gap: 15px;
+  }
+  
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 12px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Fix for iOS Safari viewport */
+@supports (-webkit-touch-callout: none) {
+  .food-menu-container {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Fix for sticky hover on mobile */
+@media (hover: none) and (pointer: coarse) {
+  .category-btn:hover,
+  .talk-to-us-btn:hover,
+  .submit-btn:hover,
+  .menu-item-card:hover {
+    transform: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  
+  .menu-item-card:hover .menu-item-image img {
+    transform: none;
+  }
 }

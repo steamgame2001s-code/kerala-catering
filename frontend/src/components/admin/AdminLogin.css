@@ -1,4 +1,6 @@
 /* frontend/src/components/admin/AdminLogin.css */
+
+/* ==================== CONTAINER ==================== */
 .admin-login-container {
   min-height: 100vh;
   display: flex;
@@ -9,6 +11,7 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* ==================== CARD ==================== */
 .admin-login-card {
   background: white;
   border-radius: 20px;
@@ -17,35 +20,56 @@
   max-width: 450px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   position: relative;
+  animation: fadeInUp 0.5s ease-out;
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==================== BACK TO HOME ==================== */
 .back-to-home {
   position: absolute;
   top: 20px;
   left: 20px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   color: #666;
   text-decoration: none;
   font-size: 14px;
-  transition: color 0.3s;
+  transition: all 0.3s ease;
   background: #f8f9fa;
   padding: 8px 15px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid #e1e5e9;
+  z-index: 10;
+  white-space: nowrap;
 }
 
 .back-to-home:hover {
   color: #ff7e30;
   background: #fff;
   border-color: #ff7e30;
+  transform: translateX(-3px);
 }
 
+.back-to-home svg {
+  font-size: 14px;
+}
+
+/* ==================== LOGO SECTION ==================== */
 .logo-section {
   text-align: center;
   margin-bottom: 40px;
-  margin-top: 20px;
+  margin-top: 40px;
 }
 
 .logo-circle {
@@ -58,21 +82,30 @@
   justify-content: center;
   margin: 0 auto 20px;
   color: white;
+  box-shadow: 0 8px 20px rgba(255, 126, 48, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.logo-circle:hover {
+  transform: scale(1.05);
 }
 
 .logo-section h1 {
   color: #333;
   margin: 0 0 10px;
-  font-size: 28px;
+  font-size: clamp(24px, 5vw, 28px);
   font-weight: 700;
+  line-height: 1.2;
 }
 
 .subtitle {
   color: #666;
   margin: 0;
-  font-size: 14px;
+  font-size: clamp(13px, 2.5vw, 14px);
+  line-height: 1.4;
 }
 
+/* ==================== ERROR MESSAGE ==================== */
 .error-message {
   background: #fee;
   border: 1px solid #fcc;
@@ -84,8 +117,22 @@
   align-items: center;
   gap: 10px;
   font-size: 14px;
+  animation: shake 0.5s ease-in-out;
+  line-height: 1.5;
 }
 
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+.error-message svg {
+  flex-shrink: 0;
+  font-size: 16px;
+}
+
+/* ==================== FORM ==================== */
 .login-form {
   margin-bottom: 30px;
 }
@@ -106,6 +153,7 @@
 
 .form-group label .icon {
   color: #ff7e30;
+  flex-shrink: 0;
 }
 
 .form-input {
@@ -114,9 +162,10 @@
   border: 2px solid #e1e5e9;
   border-radius: 10px;
   font-size: 16px;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
   background: #f8fafc;
   color: #333;
+  box-sizing: border-box;
 }
 
 .form-input:focus {
@@ -130,9 +179,17 @@
   color: #999;
 }
 
-/* Password Input Container */
+.form-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f1f3f5;
+}
+
+/* ==================== PASSWORD INPUT ==================== */
 .password-input-container {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .password-input {
@@ -141,23 +198,27 @@
 
 .password-toggle {
   position: absolute;
-  right: 15px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   background: transparent;
   border: none;
   color: #666;
   cursor: pointer;
-  padding: 5px;
+  padding: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
-  transition: color 0.3s;
+  transition: all 0.3s ease;
+  border-radius: 6px;
+  min-width: 36px;
+  min-height: 36px;
 }
 
-.password-toggle:hover {
+.password-toggle:hover:not(:disabled) {
   color: #ff7e30;
+  background: rgba(255, 126, 48, 0.1);
 }
 
 .password-toggle:disabled {
@@ -165,7 +226,11 @@
   cursor: not-allowed;
 }
 
-/* Forgot Password Link */
+.password-toggle:active:not(:disabled) {
+  transform: translateY(-50%) scale(0.95);
+}
+
+/* ==================== FORGOT PASSWORD ==================== */
 .forgot-password-link {
   text-align: right;
   margin: -10px 0 25px;
@@ -178,16 +243,21 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: color 0.3s;
-  padding: 5px;
+  transition: all 0.3s ease;
+  padding: 5px 8px;
+  border-radius: 6px;
 }
 
 .forgot-password-link a:hover {
   color: #ea580c;
-  text-decoration: underline;
+  background: rgba(249, 115, 22, 0.1);
 }
 
-/* Login Button */
+.forgot-password-link a svg {
+  font-size: 13px;
+}
+
+/* ==================== LOGIN BUTTON ==================== */
 .login-btn {
   width: 100%;
   padding: 17px;
@@ -202,13 +272,19 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
   margin-top: 10px;
+  box-shadow: 0 4px 15px rgba(255, 126, 48, 0.2);
+  min-height: 54px;
 }
 
 .login-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(255, 126, 48, 0.3);
+}
+
+.login-btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .login-btn:disabled {
@@ -217,7 +293,11 @@
   transform: none;
 }
 
-/* Spinner Animation */
+.login-btn svg {
+  font-size: 18px;
+}
+
+/* ==================== SPINNER ==================== */
 .spin {
   animation: spin 1s linear infinite;
 }
@@ -227,7 +307,7 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Admin Note */
+/* ==================== ADMIN NOTE ==================== */
 .admin-note {
   text-align: center;
   color: #666;
@@ -235,28 +315,261 @@
   padding-top: 20px;
   border-top: 1px solid #e1e5e9;
   margin-top: 20px;
+  line-height: 1.6;
 }
 
 .admin-note p {
   margin: 0;
 }
 
-/* Responsive */
+/* ==================== RESPONSIVE - TABLETS ==================== */
+@media (max-width: 768px) {
+  .admin-login-container {
+    padding: 16px;
+  }
+
+  .admin-login-card {
+    padding: 35px 25px;
+    max-width: 100%;
+  }
+
+  .logo-section {
+    margin-top: 35px;
+    margin-bottom: 35px;
+  }
+
+  .logo-circle {
+    width: 70px;
+    height: 70px;
+  }
+
+  .logo-circle svg {
+    font-size: 24px;
+  }
+
+  .form-input {
+    padding: 14px;
+    font-size: 16px;
+  }
+
+  .login-btn {
+    padding: 16px;
+    font-size: 15px;
+  }
+}
+
+/* ==================== RESPONSIVE - MOBILE ==================== */
 @media (max-width: 576px) {
+  .admin-login-container {
+    padding: 12px;
+    align-items: flex-start;
+    padding-top: 20px;
+  }
+
   .admin-login-card {
     padding: 30px 20px;
-    margin: 10px;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
   }
-  
+
+  /* Make back button relative on mobile */
   .back-to-home {
     position: relative;
     top: 0;
     left: 0;
     margin-bottom: 20px;
     display: inline-flex;
+    font-size: 13px;
+    padding: 8px 12px;
   }
-  
+
   .logo-section {
-    margin-top: 0;
+    margin-top: 10px;
+    margin-bottom: 30px;
+  }
+
+  .logo-circle {
+    width: 65px;
+    height: 65px;
+  }
+
+  .logo-circle svg {
+    font-size: 22px;
+  }
+
+  .logo-section h1 {
+    font-size: 24px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    padding: 0 10px;
+  }
+
+  .error-message {
+    padding: 10px 12px;
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    font-size: 13px;
+    gap: 8px;
+  }
+
+  .form-input {
+    padding: 13px;
+    font-size: 16px; /* Keep 16px to prevent iOS zoom */
+    border-radius: 8px;
+  }
+
+  .password-toggle {
+    right: 10px;
+    padding: 6px;
+    min-width: 40px;
+    min-height: 40px;
+    font-size: 16px;
+  }
+
+  .forgot-password-link {
+    margin: -8px 0 20px;
+  }
+
+  .forgot-password-link a {
+    font-size: 13px;
+    gap: 5px;
+  }
+
+  .login-btn {
+    padding: 15px;
+    font-size: 15px;
+    border-radius: 8px;
+    min-height: 50px;
+  }
+
+  .admin-note {
+    font-size: 12px;
+    padding-top: 16px;
+    margin-top: 16px;
+  }
+}
+
+/* ==================== RESPONSIVE - SMALL MOBILE ==================== */
+@media (max-width: 400px) {
+  .admin-login-container {
+    padding: 10px;
+  }
+
+  .admin-login-card {
+    padding: 25px 16px;
+  }
+
+  .back-to-home {
+    font-size: 12px;
+    padding: 7px 10px;
+    gap: 6px;
+  }
+
+  .logo-circle {
+    width: 60px;
+    height: 60px;
+  }
+
+  .logo-circle svg {
+    font-size: 20px;
+  }
+
+  .logo-section h1 {
+    font-size: 22px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+  }
+
+  .form-group label {
+    font-size: 12px;
+  }
+
+  .form-input {
+    padding: 12px;
+  }
+
+  .password-input {
+    padding-right: 45px;
+  }
+
+  .password-toggle {
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .login-btn {
+    padding: 14px;
+    font-size: 14px;
+  }
+}
+
+/* ==================== ACCESSIBILITY ==================== */
+.form-input:focus-visible,
+.login-btn:focus-visible,
+.password-toggle:focus-visible,
+.back-to-home:focus-visible,
+.forgot-password-link a:focus-visible {
+  outline: 2px solid #ff7e30;
+  outline-offset: 2px;
+}
+
+/* ==================== TOUCH OPTIMIZATIONS ==================== */
+@media (hover: none) and (pointer: coarse) {
+  .back-to-home,
+  .password-toggle,
+  .forgot-password-link a,
+  .login-btn {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .form-input {
+    font-size: 16px; /* Prevent iOS zoom */
+  }
+
+  /* Remove hover effects on touch devices */
+  .back-to-home:hover,
+  .password-toggle:hover,
+  .login-btn:hover {
+    transform: none;
+  }
+}
+
+/* ==================== LANDSCAPE MOBILE ==================== */
+@media (max-width: 812px) and (orientation: landscape) {
+  .admin-login-container {
+    padding: 16px;
+    align-items: center;
+  }
+
+  .admin-login-card {
+    margin: 10px auto;
+  }
+
+  .logo-section {
+    margin-top: 20px;
+    margin-bottom: 25px;
+  }
+
+  .logo-circle {
+    width: 60px;
+    height: 60px;
+  }
+
+  .form-group {
+    margin-bottom: 18px;
   }
 }

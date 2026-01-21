@@ -1447,6 +1447,7 @@ app.post('/api/admin/festivals',
 );
 
 // UPDATE festival with optional image upload
+// backend/server.js - FIXED FESTIVAL PUT ROUTE
 app.put('/api/admin/festivals/:id', 
   authenticateAdmin,
   extendRequestTimeout,
@@ -1456,91 +1457,294 @@ app.put('/api/admin/festivals/:id',
   ]),
   async (req, res) => {
     try {
+      console.log('🔄 PUT /api/admin/festivals/:id - Updating festival:', req.params.id);
+      console.log('📊 Body keys:', Object.keys(req.body));
+      console.log('📁 Files received:', req.files ? Object.keys(req.files) : 'No files');
+      
+      // Debug log for files
+      if (req.files) {
+        Object.keys(req.files).forEach(key => {
+          console.log(`  ${key}:`, req.files[key].map(f => ({
+            originalname: f.originalname,
+            fieldname: f.fieldname,
+            size: f.size
+          })));
+        });
+      }
+      
       const festival = await Festival.findById(req.params.id);
       if (!festival) {
-        return res.status(404).json({ success: false, error: 'Festival not found' });
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Festival not found' 
+        });
       }
       
       const festivalData = { ...req.body };
       
-      // Handle new image upload
-      if (req.files?.image) {
+      // FIX 1: Handle new main image upload PROPERLY
+      if (req.files?.image && req.files.image[0]) {
+        console.log('📸 New main image uploaded:', req.files.image[0].originalname);
+        
         // Delete old image from Cloudinary if exists
         if (festival.image && festival.image.includes('cloudinary.com')) {
-          await deleteImage(festival.image);
+          try {
+            await deleteImage(festival.image);
+            console.log('🗑️ Old main image deleted from Cloudinary');
+          } catch (deleteError) {
+            console.log('⚠️ Could not delete old image:', deleteError.message);
+          }
         }
         
         festivalData.image = req.files.image[0].path;
         festivalData.cloudinaryImageId = req.files.image[0].filename;
+        console.log('✅ Main image updated to:', festivalData.image);
+      } else {
+        console.log('🔄 Keeping existing main image');
       }
       
-      // Handle new banner image upload
-      if (req.files?.bannerImage) {
+      // FIX 2: Handle banner image upload PROPERLY
+      if (req.files?.bannerImage && req.files.bannerImage[0]) {
+        console.log('📸 New banner image uploaded:', req.files.bannerImage[0].originalname);
+        
         // Delete old banner image from Cloudinary if exists
         if (festival.bannerImage && festival.bannerImage.includes('cloudinary.com')) {
-          await deleteImage(festival.bannerImage);
+          try {
+            await deleteImage(festival.bannerImage);
+            console.log('🗑️ Old banner image deleted from Cloudinary');
+          } catch (deleteError) {
+            console.log('⚠️ Could not delete old banner image:', deleteError.message);
+          }
         }
         
         festivalData.bannerImage = req.files.bannerImage[0].path;
         festivalData.cloudinaryBannerId = req.files.bannerImage[0].filename;
+        console.log('✅ Banner image updated to:', festivalData.bannerImage);
+      } else if (req.body.removeBanner === 'true') {
+        // FIX 3: Handle banner image removal when user clears it
+        console.log('🗑️ Removing banner image as requested');
+        
+        // Delete old banner image from Cloudinary if exists
+        if (festival.bannerImage && festival.bannerImage.includes('cloudinary.com')) {
+          try {
+            await deleteImage(festival.bannerImage);
+            console.log('✅ Old banner image deleted from Cloudinary');
+          } catch (deleteError) {
+            console.log('⚠️ Could not delete old banner image:', deleteError.message);
+          }
+        }
+        
+        festivalData.bannerImage = null;
+        festivalData.cloudinaryBannerId = null;
+      } else {
+        console.log('🔄 Keeping existing banner image (if any)');
+        // Keep existing banner image if not updating
+        if (!festivalData.bannerImage && festival.bannerImage) {
+          festivalData.bannerImage = festival.bannerImage;
+          festivalData.cloudinaryBannerId = festival.cloudinaryBannerId;
+        }
       }
       
-      // Parse array fields
-      if (typeof festivalData.categories === 'string') {
-        festivalData.categories = festivalData.categories.split(',').map(c => c.trim()).filter(Boolean);
+      // FIX 4: Parse ALL array fields properly
+      const arrayFields = ['categories', 'popularItems', 'highlights', 'tags'];
+      arrayFields.forEach(field => {
+        if (festivalData[field]) {
+          if (typeof festivalData[field] === 'string') {
+            festivalData[field] = festivalData[field]
+              .split(',')
+              .map(item => item.trim())
+              .filter(Boolean);
+          } else if (Array.isArray(festivalData[field])) {
+            // Already an array, keep as is
+            festivalData[field] = festivalData[field].filter(Boolean);
+          }
+        } else {
+          // If field is not provided, keep existing value
+          festivalData[field] = festival[field];
+        }
+      });
+      
+      // FIX 5: Parse numeric fields
+      if (festivalData.rating) {
+        festivalData.rating = parseFloat(festivalData.rating);
       }
-      if (typeof festivalData.popularItems === 'string') {
-        festivalData.popularItems = festivalData.popularItems.split(',').map(p => p.trim()).filter(Boolean);
+      
+      if (festivalData.reviewCount) {
+        festivalData.reviewCount = parseInt(festivalData.reviewCount);
       }
+      
+      // FIX 6: Handle boolean fields properly
+      if (festivalData.isFeatured !== undefined) {
+        festivalData.isFeatured = festivalData.isFeatured === 'true' || festivalData.isFeatured === true;
+      }
+      
+      if (festivalData.isActive !== undefined) {
+        festivalData.isActive = festivalData.isActive !== 'false' && festivalData.isActive !== false;
+      }
+      
+      // FIX 7: Ensure slug is unique and lowercase
+      if (festivalData.slug) {
+        festivalData.slug = festivalData.slug.toLowerCase().trim();
+      }
+      
+      console.log('📝 Final update data:', {
+        name: festivalData.name,
+        hasBannerImage: !!festivalData.bannerImage,
+        isFeatured: festivalData.isFeatured,
+        isActive: festivalData.isActive
+      });
       
       const updatedFestival = await Festival.findByIdAndUpdate(
         req.params.id,
         festivalData,
-        { new: true, runValidators: true }
+        { 
+          new: true, 
+          runValidators: true,
+          context: 'query' 
+        }
       );
       
-      res.json({ success: true, festival: updatedFestival });
+      console.log('✅ Festival updated successfully:', updatedFestival.name);
+      console.log('📸 Banner image status:', updatedFestival.bannerImage ? 'Has banner' : 'No banner');
+      
+      res.json({ 
+        success: true, 
+        festival: updatedFestival,
+        message: 'Festival updated successfully'
+      });
+      
     } catch (error) {
-      res.status(500).json({ success: false, error: error.message });
+      console.error('❌ Update festival error:', error);
+      console.error('Error stack:', error.stack);
+      
+      // Handle validation errors
+      if (error.name === 'ValidationError') {
+        const errors = Object.values(error.errors).map(e => e.message);
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Validation Error',
+          details: errors
+        });
+      }
+      
+      // Handle duplicate key error (slug)
+      if (error.code === 11000) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Slug already exists',
+          message: 'Please use a different slug'
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        error: error.message || 'Internal server error',
+        details: 'Failed to update festival'
+      });
     }
   }
 );
 
-// DELETE festival (and images from Cloudinary)
+// FIXED DELETE festival route
 app.delete('/api/admin/festivals/:id', authenticateAdmin, async (req, res) => {
   try {
+    console.log('🗑️ DELETE /api/admin/festivals/:id - Deleting festival:', req.params.id);
+    
     const festival = await Festival.findById(req.params.id);
     if (!festival) {
-      return res.status(404).json({ success: false, error: 'Festival not found' });
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Festival not found' 
+      });
     }
     
-    // Delete images from Cloudinary
+    console.log(`Deleting festival: ${festival.name}`);
+    
+    // FIX: Delete images from Cloudinary with better error handling
+    const deletePromises = [];
+    
+    // Delete main image
     if (festival.image && festival.image.includes('cloudinary.com')) {
-      await deleteImage(festival.image);
+      deletePromises.push(
+        deleteImage(festival.image).then(result => {
+          if (result) {
+            console.log('✅ Main image deleted from Cloudinary');
+          } else {
+            console.log('⚠️ Main image deletion may have failed');
+          }
+        }).catch(err => {
+          console.error('❌ Error deleting main image:', err.message);
+        })
+      );
     }
     
+    // Delete banner image
     if (festival.bannerImage && festival.bannerImage.includes('cloudinary.com')) {
-      await deleteImage(festival.bannerImage);
+      deletePromises.push(
+        deleteImage(festival.bannerImage).then(result => {
+          if (result) {
+            console.log('✅ Banner image deleted from Cloudinary');
+          } else {
+            console.log('⚠️ Banner image deletion may have failed');
+          }
+        }).catch(err => {
+          console.error('❌ Error deleting banner image:', err.message);
+        })
+      );
     }
     
     // Also delete menu images if any
     if (festival.menuImages && festival.menuImages.length > 0) {
-      for (const menuImage of festival.menuImages) {
+      festival.menuImages.forEach((menuImage, index) => {
         if (menuImage.imageUrl && menuImage.imageUrl.includes('cloudinary.com')) {
-          await deleteImage(menuImage.imageUrl);
+          deletePromises.push(
+            deleteImage(menuImage.imageUrl).then(result => {
+              if (result) {
+                console.log(`✅ Menu image ${index + 1} deleted from Cloudinary`);
+              } else {
+                console.log(`⚠️ Menu image ${index + 1} deletion may have failed`);
+              }
+            }).catch(err => {
+              console.error(`❌ Error deleting menu image ${index + 1}:`, err.message);
+            })
+          );
         }
-      }
+      });
     }
     
-    // Delete festival from database
-    await Festival.findByIdAndDelete(req.params.id);
+    // Wait for all image deletions to complete
+    await Promise.allSettled(deletePromises);
     
-    res.json({ success: true, message: 'Festival deleted' });
+    // Delete festival from database
+    const deletedFestival = await Festival.findByIdAndDelete(req.params.id);
+    
+    if (!deletedFestival) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Festival not found after deletion attempt' 
+      });
+    }
+    
+    console.log(`✅ Festival "${festival.name}" deleted successfully`);
+    
+    res.json({ 
+      success: true, 
+      message: 'Festival deleted successfully',
+      deletedFestival: {
+        id: deletedFestival._id,
+        name: deletedFestival.name
+      }
+    });
+    
   } catch (error) {
-    res.status(500).json({ success: false, error: 'Server error' });
+    console.error('❌ Delete festival error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message || 'Server error',
+      details: 'Failed to delete festival'
+    });
   }
 });
-
 // =================== FOOD ITEM ROUTES (WITH CLOUDINARY) ===================
 app.get('/api/admin/food-items', authenticateAdmin, async (req, res) => {
   try {
