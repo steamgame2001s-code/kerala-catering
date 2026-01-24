@@ -1,4 +1,3 @@
-// frontend/src/components/admin/FestivalManagement.jsx - COMPLETE FIXED VERSION
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaSpinner, FaStar, FaImage, FaTimes } from 'react-icons/fa';
 import axiosInstance from '../../api/axiosConfig';
@@ -43,24 +42,17 @@ const FestivalManagement = () => {
     fetchFestivals();
   }, []);
 
-  // Helper to get absolute image URL
-  const getAbsoluteImageUrl = (url) => {
+  // Helper to generate absolute URL
+  const getAbsoluteUrl = (url) => {
     if (!url) return FALLBACK_IMAGES.festival;
     
-    // If it's already a full URL or Cloudinary URL
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
     
-    // If it's a relative path
-    if (url.startsWith('/uploads/') || url.startsWith('/images/')) {
+    if (url.startsWith('/uploads/')) {
       const baseURL = window.location.origin;
       return `${baseURL}${url}`;
-    }
-    
-    // Return as-is (Cloudinary URL without protocol)
-    if (url.includes('cloudinary.com')) {
-      return `https://${url.replace(/^\/\//, '')}`;
     }
     
     return url;
@@ -71,25 +63,18 @@ const FestivalManagement = () => {
       setLoading(true);
       setError('');
       
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
-        setError('Not logged in as admin');
-        window.location.href = '/admin/login';
-        return;
-      }
-      
       console.log('📋 Fetching festivals...');
       const response = await axiosInstance.get('/admin/festivals');
       
       if (response.data.success) {
-        const festivalsData = response.data.festivals || response.data.data || [];
+        const festivalsData = response.data.festivals || [];
         console.log(`✅ Found ${festivalsData.length} festivals`);
         
-        // Log banner image status for debugging
+        // Log banner status for debugging
         festivalsData.forEach(festival => {
           console.log(`🎪 ${festival.name}:`, {
-            hasBannerImage: !!festival.bannerImage,
-            bannerImage: festival.bannerImage,
+            hasBanner: !!festival.bannerImage,
+            bannerUrl: festival.bannerImage,
             mainImage: festival.image
           });
         });
@@ -100,13 +85,17 @@ const FestivalManagement = () => {
       }
     } catch (error) {
       console.error('❌ Error fetching festivals:', error);
+      
       if (error.response?.status === 401) {
         localStorage.removeItem('adminToken');
         localStorage.removeItem('adminData');
         setError('Session expired. Please login again.');
-        setTimeout(() => window.location.href = '/admin/login', 2000);
+        setTimeout(() => {
+          window.location.href = '/admin/login';
+        }, 2000);
         return;
       }
+      
       setError(error.message || 'Failed to load festivals');
     } finally {
       setLoading(false);
@@ -115,7 +104,7 @@ const FestivalManagement = () => {
 
   const handleEdit = (festival) => {
     console.log('✏️ Editing festival:', festival.name);
-    console.log('📸 Banner image:', festival.bannerImage);
+    console.log('📸 Current banner:', festival.bannerImage);
     
     setEditingFestival(festival);
     setFormData({
@@ -135,9 +124,9 @@ const FestivalManagement = () => {
       isActive: festival.isActive !== false
     });
     
-    // Set image previews
-    setImagePreview(festival.image ? getAbsoluteImageUrl(festival.image) : FALLBACK_IMAGES.festival);
-    setBannerImagePreview(festival.bannerImage ? getAbsoluteImageUrl(festival.bannerImage) : '');
+    // Set previews
+    setImagePreview(festival.image ? getAbsoluteUrl(festival.image) : FALLBACK_IMAGES.festival);
+    setBannerImagePreview(festival.bannerImage ? getAbsoluteUrl(festival.bannerImage) : '');
     
     // Clear file inputs
     setImageFile(null);
@@ -147,11 +136,14 @@ const FestivalManagement = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this festival?')) return;
+    if (!window.confirm('Are you sure you want to delete this festival? This action cannot be undone.')) {
+      return;
+    }
 
     try {
       console.log('🗑️ Deleting festival:', id);
       const response = await axiosInstance.delete(`/admin/festivals/${id}`);
+      
       if (response.data.success) {
         alert('Festival deleted successfully!');
         fetchFestivals();
@@ -169,6 +161,21 @@ const FestivalManagement = () => {
     if (file) {
       console.log(`📁 ${type} image selected:`, file.name, file.type);
       
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB');
+        e.target.value = '';
+        return;
+      }
+      
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+      if (!validTypes.includes(file.type)) {
+        alert('Please select a valid image file (JPG, PNG, WEBP, GIF)');
+        e.target.value = '';
+        return;
+      }
+      
       if (type === 'main') {
         setImageFile(file);
         setImagePreview(URL.createObjectURL(file));
@@ -183,7 +190,6 @@ const FestivalManagement = () => {
     setBannerImageFile(null);
     setBannerImagePreview('');
     
-    // If editing and there was a banner image, we'll clear it on save
     if (editingFestival?.bannerImage) {
       console.log('🗑️ Banner image will be removed on save');
     }
@@ -194,14 +200,21 @@ const FestivalManagement = () => {
     setFormSubmitting(true);
 
     try {
+      // Create FormData
       const formDataToSend = new FormData();
       
       // Add text fields
       formDataToSend.append('name', formData.name);
       formDataToSend.append('description', formData.description);
-      formDataToSend.append('slug', formData.slug || formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''));
       
-      // Add optional fields (only if they have value)
+      // Generate slug if not provided
+      const slug = formData.slug || formData.name
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '');
+      formDataToSend.append('slug', slug);
+      
+      // Add other fields
       if (formData.rating) formDataToSend.append('rating', formData.rating);
       if (formData.reviewCount) formDataToSend.append('reviewCount', formData.reviewCount);
       if (formData.categories) formDataToSend.append('categories', formData.categories);
@@ -215,27 +228,25 @@ const FestivalManagement = () => {
       formDataToSend.append('isFeatured', formData.isFeatured);
       formDataToSend.append('isActive', formData.isActive);
       
-      // Handle main image
+      // CRITICAL FIX: Handle images properly
       if (imageFile) {
         formDataToSend.append('image', imageFile);
-        console.log('📤 Uploading main image:', imageFile.name);
-      } else if (editingFestival && editingFestival.image) {
-        // Keep existing image
-        console.log('🔄 Keeping existing main image');
-      } else if (!editingFestival) {
-        alert('Main image is required for new festivals!');
-        setFormSubmitting(false);
-        return;
+        console.log('📤 Main image file added');
+      } else if (editingFestival && !imageFile) {
+        // When editing without new image, send the existing image URL
+        formDataToSend.append('existingImage', editingFestival.image);
       }
       
-      // Handle banner image
       if (bannerImageFile) {
         formDataToSend.append('bannerImage', bannerImageFile);
-        console.log('📤 Uploading banner image:', bannerImageFile.name);
+        console.log('📤 Banner image file added');
       } else if (!bannerImagePreview && editingFestival) {
-        // If banner preview is cleared and we're editing, send empty to remove banner
-        formDataToSend.append('removeBanner', 'true');
-        console.log('🗑️ Removing banner image');
+        // If banner preview is cleared, send empty string to remove banner
+        formDataToSend.append('bannerImage', '');
+        console.log('🗑️ Banner image will be removed');
+      } else if (bannerImagePreview && editingFestival?.bannerImage && !bannerImageFile) {
+        // Keep existing banner when editing without new file
+        formDataToSend.append('existingBannerImage', editingFestival.bannerImage);
       }
       
       // Debug what we're sending
@@ -244,17 +255,26 @@ const FestivalManagement = () => {
         console.log(`  ${key}:`, value instanceof File ? `${value.name} (${value.type})` : value);
       }
       
+      // Make API call
       let response;
       if (editingFestival) {
         console.log(`🔄 Updating festival: ${editingFestival._id}`);
-        response = await axiosInstance.put(`/admin/festivals/${editingFestival._id}`, formDataToSend, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        response = await axiosInstance.put(
+          `/admin/festivals/${editingFestival._id}`, 
+          formDataToSend, 
+          {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          }
+        );
       } else {
         console.log('➕ Creating new festival');
-        response = await axiosInstance.post('/admin/festivals', formDataToSend, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        response = await axiosInstance.post(
+          '/admin/festivals', 
+          formDataToSend, 
+          {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          }
+        );
       }
       
       console.log('✅ Server response:', response.data);
@@ -270,10 +290,20 @@ const FestivalManagement = () => {
       }
     } catch (error) {
       console.error('❌ Submission error:', error);
+      
+      // Detailed error messages
       if (error.response?.data?.error?.includes('Too many files')) {
-        alert('Error: Too many files uploaded. Please upload one image at a time.');
-      } else if (error.response?.data?.error) {
-        alert(`Error: ${error.response.data.error}`);
+        alert('Error: Please upload only one main image and one banner image at a time.');
+      } else if (error.response?.data?.error?.includes('already exists')) {
+        alert(`Error: ${error.response.data.error}. Please use a different slug.`);
+      } else if (error.response?.status === 400) {
+        alert(`Error: ${error.response.data.error || 'Invalid data provided'}`);
+      } else if (error.response?.status === 401) {
+        alert('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/admin/login';
+      } else if (error.message.includes('Network Error')) {
+        alert('Network Error: Please check your internet connection and ensure backend is running.');
       } else {
         alert(error.response?.data?.message || error.message || 'Failed to save festival');
       }
@@ -307,7 +337,14 @@ const FestivalManagement = () => {
     <div className="admin-page">
       <div className="page-header">
         <h2>Festival Management</h2>
-        <button className="btn-primary" onClick={() => { resetForm(); setEditingFestival(null); setShowForm(true); }}>
+        <button 
+          className="btn-primary" 
+          onClick={() => { 
+            resetForm(); 
+            setEditingFestival(null); 
+            setShowForm(true); 
+          }}
+        >
           <FaPlus className="icon-spacing" /> Add New Festival
         </button>
       </div>
@@ -339,7 +376,10 @@ const FestivalManagement = () => {
             <div className="empty-icon">🎉</div>
             <h3>No Festivals Found</h3>
             <p>Add your first festival to get started!</p>
-            <button className="btn-primary" onClick={() => setShowForm(true)}>
+            <button 
+              className="btn-primary" 
+              onClick={() => setShowForm(true)}
+            >
               <FaPlus className="icon-spacing" /> Add First Festival
             </button>
           </div>
@@ -349,22 +389,27 @@ const FestivalManagement = () => {
               <div key={festival._id} className="festival-card">
                 <div className="festival-image">
                   <img
-                    src={getAbsoluteImageUrl(festival.image)}
+                    src={getAbsoluteUrl(festival.image)}
                     alt={festival.name}
-                    onError={(e) => { e.target.src = FALLBACK_IMAGES.festival; }}
+                    onError={(e) => { 
+                      e.target.src = FALLBACK_IMAGES.festival; 
+                    }}
                   />
                   <div className="festival-badges-overlay">
-                    {festival.isFeatured && <span className="festival-badge featured">Featured</span>}
+                    {festival.isFeatured && (
+                      <span className="festival-badge featured">Featured</span>
+                    )}
                     <span className={`status-badge ${festival.isActive ? 'active' : 'inactive'}`}>
                       {festival.isActive ? 'Active' : 'Inactive'}
                     </span>
-                    {festival.bannerImage && <span className="festival-badge banner">Has Banner</span>}
+                    {festival.bannerImage && (
+                      <span className="festival-badge banner">Has Banner</span>
+                    )}
                   </div>
                 </div>
                 
                 <div className="festival-content">
                   <h3>{festival.name}</h3>
-                  
                   <p className="festival-description">{festival.description}</p>
                   
                   <div className="festival-meta-info">
@@ -377,7 +422,9 @@ const FestivalManagement = () => {
                       <div className="festival-rating">
                         <FaStar className="star-icon" />
                         <span>{festival.rating}/5</span>
-                        {festival.reviewCount && <span className="review-count">({festival.reviewCount} reviews)</span>}
+                        {festival.reviewCount && (
+                          <span className="review-count">({festival.reviewCount} reviews)</span>
+                        )}
                       </div>
                     )}
                   </div>
@@ -389,17 +436,25 @@ const FestivalManagement = () => {
                           <span key={idx} className="item-tag">{item}</span>
                         ))}
                         {festival.popularItems.length > 3 && (
-                          <span className="item-tag more">+{festival.popularItems.length - 3} more</span>
+                          <span className="item-tag more">
+                            +{festival.popularItems.length - 3} more
+                          </span>
                         )}
                       </div>
                     </div>
                   )}
                   
                   <div className="festival-actions">
-                    <button className="btn-edit" onClick={() => handleEdit(festival)}>
+                    <button 
+                      className="btn-edit" 
+                      onClick={() => handleEdit(festival)}
+                    >
                       <FaEdit /> Edit
                     </button>
-                    <button className="btn-delete" onClick={() => handleDelete(festival._id)}>
+                    <button 
+                      className="btn-delete" 
+                      onClick={() => handleDelete(festival._id)}
+                    >
                       <FaTrash /> Delete
                     </button>
                   </div>
@@ -415,7 +470,11 @@ const FestivalManagement = () => {
           <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>{editingFestival ? 'Edit Festival' : 'Add New Festival'}</h3>
-              <button className="modal-close" onClick={() => !formSubmitting && setShowForm(false)} disabled={formSubmitting}>
+              <button 
+                className="modal-close" 
+                onClick={() => !formSubmitting && setShowForm(false)} 
+                disabled={formSubmitting}
+              >
                 &times;
               </button>
             </div>
@@ -445,6 +504,9 @@ const FestivalManagement = () => {
                       required 
                       placeholder="christmas, onam, vishu" 
                     />
+                    <small className="form-help">
+                      URL-friendly version of the name
+                    </small>
                   </div>
                 </div>
 
@@ -476,7 +538,9 @@ const FestivalManagement = () => {
                           src={imagePreview} 
                           alt="Preview" 
                           className="preview-image"
-                          onError={(e) => { e.target.src = FALLBACK_IMAGES.festival; }} 
+                          onError={(e) => { 
+                            e.target.src = FALLBACK_IMAGES.festival; 
+                          }} 
                         />
                         <div className="image-preview-label">
                           <FaImage /> Main Image Preview
@@ -502,7 +566,9 @@ const FestivalManagement = () => {
                           src={bannerImagePreview} 
                           alt="Banner Preview" 
                           className="preview-image"
-                          onError={(e) => { e.target.src = FALLBACK_IMAGES.banner; }} 
+                          onError={(e) => { 
+                            e.target.src = FALLBACK_IMAGES.banner; 
+                          }} 
                         />
                         <div className="image-preview-label">
                           <FaImage /> Banner Image Preview
@@ -671,7 +737,7 @@ const FestivalManagement = () => {
                     disabled={formSubmitting}
                   >
                     {formSubmitting ? (
-                      <><FaSpinner className="icon-spacing spin" />Saving...</>
+                      <><FaSpinner className="icon-spacing spin" /> Saving...</>
                     ) : (
                       editingFestival ? 'Update Festival' : 'Add Festival'
                     )}

@@ -233,6 +233,84 @@
   margin-top: 4px;
   display: block;
 }
+
+/* Image preview styles */
+.image-preview-upload {
+  margin-top: 10px;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f9f9f9;
+}
+
+.preview-image {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.image-preview-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666;
+}
+
+.remove-image-btn {
+  background: #ff4444;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.remove-image-btn:hover {
+  background: #cc0000;
+}
+
+.current-image-note {
+  margin-top: 5px;
+  padding: 8px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 4px;
+  color: #856404;
+  font-size: 12px;
+}
+
+/* Banner badge */
+.festival-badge.banner {
+  background: #4CAF50 !important;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.festival-management-loading {
+  text-align: center;
+  padding: 50px;
+}
 /* ============================================
    FESTIVAL CARD - FIXED LAYOUT
    ============================================ */
