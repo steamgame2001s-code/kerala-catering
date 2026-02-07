@@ -39,7 +39,7 @@
   background: var(--white);
   box-shadow: var(--shadow);
   z-index: 1000;
-  height: 75px;
+  height: 80px;
 }
 
 .navbar-container {
@@ -50,7 +50,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
-  gap: 1.5rem;
+  gap: 2rem;
 }
 
 /* ==================== LOGO SECTION ==================== */
@@ -70,7 +70,7 @@
 }
 
 .logo-image {
-  height: 50px;
+  height: 55px;
   width: auto;
   object-fit: contain;
 }
@@ -81,7 +81,7 @@
 }
 
 .logo-main {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   color: var(--orange);
   line-height: 1;
@@ -91,9 +91,9 @@
 .logo-sub {
   font-size: 11px;
   color: var(--gray);
-  letter-spacing: 1.2px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  margin-top: 2px;
+  margin-top: 3px;
   font-weight: 500;
 }
 
@@ -108,7 +108,7 @@
 .nav-list {
   display: flex;
   list-style: none;
-  gap: 4px;
+  gap: 6px;
 }
 
 .nav-item {
@@ -123,7 +123,7 @@
   color: var(--dark);
   font-weight: 500;
   font-size: 15px;
-  padding: 10px 18px;
+  padding: 10px 20px;
   border-radius: 8px;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -131,7 +131,7 @@
 
 .nav-link i {
   color: var(--orange);
-  font-size: 14px;
+  font-size: 15px;
   width: 16px;
   text-align: center;
 }
@@ -145,11 +145,11 @@
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 15px;
   flex-shrink: 0;
 }
 
-/* ==================== SEARCH CONTAINER - FIXED ==================== */
+/* ==================== SEARCH CONTAINER - PROFESSIONAL SIZE ==================== */
 .search-container {
   position: relative;
 }
@@ -159,24 +159,24 @@
   align-items: center;
   background: var(--light-gray);
   border: 2px solid var(--border);
-  border-radius: 25px;
-  overflow: visible; /* CHANGED from hidden */
+  border-radius: 30px;
+  overflow: visible;
   transition: all 0.3s ease;
-  width: 240px;
-  height: 44px;
+  width: 280px; /* INCREASED from 240px */
+  height: 48px; /* INCREASED from 44px */
 }
 
 .search-form:focus-within {
   border-color: var(--orange);
   background: var(--white);
-  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+  box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
 }
 
 .search-input {
   flex: 1;
   border: none;
-  padding: 10px 16px;
-  font-size: 14px;
+  padding: 12px 20px; /* INCREASED padding */
+  font-size: 15px; /* INCREASED from 14px */
   color: var(--dark);
   background: transparent;
   outline: none;
@@ -188,13 +188,13 @@
   color: var(--gray);
 }
 
-/* SEARCH BUTTON - FIXED STYLING */
+/* SEARCH BUTTON - PROFESSIONAL SIZE */
 .search-btn {
   background: var(--orange);
   border: none;
   color: white;
-  width: 44px;
-  height: 44px;
+  width: 48px; /* INCREASED from 44px */
+  height: 48px; /* INCREASED from 44px */
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -202,19 +202,19 @@
   cursor: pointer;
   transition: all 0.3s ease;
   flex-shrink: 0;
-  margin-right: -2px; /* Align with border */
+  margin-right: -2px;
   position: relative;
   z-index: 1;
 }
 
 .search-btn:hover {
   background: var(--orange-dark);
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  transform: scale(1.08);
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
 }
 
 .search-btn i {
-  font-size: 16px;
+  font-size: 18px; /* INCREASED from 16px */
 }
 
 /* Login Icon Button */
@@ -222,21 +222,21 @@
   background: none;
   border: none;
   color: var(--orange);
-  font-size: 24px;
+  font-size: 26px; /* INCREASED from 24px */
   cursor: pointer;
-  padding: 8px;
+  padding: 10px;
   border-radius: 50%;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 46px; /* INCREASED from 40px */
+  height: 46px; /* INCREASED from 40px */
 }
 
 .login-icon-btn:hover {
   background: var(--orange-light);
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
 .login-icon-btn i {
@@ -247,21 +247,21 @@
   color: var(--orange-dark);
 }
 
-/* Action Buttons */
+/* Action Buttons - PROFESSIONAL SIZE */
 .action-buttons {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .btn-whatsapp,
 .btn-call {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
+  gap: 10px;
+  padding: 12px 24px; /* INCREASED from 10px 20px */
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 10px;
+  font-size: 15px; /* INCREASED from 14px */
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -277,7 +277,7 @@
 .btn-whatsapp:hover {
   background: #128C7E;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+  box-shadow: 0 6px 16px rgba(37, 211, 102, 0.4);
 }
 
 .btn-call {
@@ -288,12 +288,12 @@
 .btn-call:hover {
   background: var(--orange-dark);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
 }
 
 .btn-whatsapp i,
 .btn-call i {
-  font-size: 16px;
+  font-size: 17px; /* INCREASED from 16px */
 }
 
 /* ==================== MOBILE TOGGLE ==================== */
@@ -309,8 +309,8 @@
 .hamburger {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  width: 24px;
+  gap: 5px;
+  width: 26px;
 }
 
 .hamburger-line {
@@ -334,14 +334,14 @@
 }
 
 .mobile-menu {
-  width: 320px;
+  width: 340px;
   height: 100%;
   background: var(--white);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   animation: slideIn 0.3s ease;
-  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
 }
 
 @keyframes slideIn {
@@ -349,18 +349,19 @@
   to { transform: translateX(0); }
 }
 
-/* Mobile Header */
+/* Mobile Header - REMOVED TOP GAP */
 .mobile-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 20px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
   background: var(--light-gray);
+  margin: 0; /* ENSURE no margin */
 }
 
 .mobile-menu-title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--dark);
   margin: 0;
@@ -369,14 +370,14 @@
 .mobile-close {
   background: var(--white);
   border: none;
-  font-size: 24px;
+  font-size: 26px;
   color: var(--dark);
   cursor: pointer;
-  padding: 8px;
+  padding: 10px;
   border-radius: 50%;
   transition: all 0.3s ease;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -385,26 +386,28 @@
 .mobile-close:hover {
   background: var(--orange-light);
   color: var(--orange);
+  transform: rotate(90deg);
 }
 
 .mobile-close i {
   line-height: 1;
 }
 
-/* Mobile Search */
+/* Mobile Search - REMOVED TOP GAP */
 .mobile-search-form {
   display: flex;
-  padding: 20px;
+  padding: 20px; /* Keep padding but ensure no extra margin */
+  margin: 0; /* ENSURE no margin */
   border-bottom: 1px solid var(--border);
-  gap: 8px;
+  gap: 10px;
 }
 
 .mobile-search-input {
   flex: 1;
-  padding: 12px 16px;
+  padding: 14px 18px;
   border: 2px solid var(--border);
   border-radius: 25px;
-  font-size: 14px;
+  font-size: 15px;
   outline: none;
   transition: all 0.3s ease;
   background: var(--light-gray);
@@ -413,15 +416,15 @@
 .mobile-search-input:focus {
   border-color: var(--orange);
   background: var(--white);
-  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+  box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
 }
 
 .mobile-search-btn {
   background: var(--orange);
   border: none;
   color: white;
-  width: 46px;
-  height: 46px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -433,27 +436,29 @@
 
 .mobile-search-btn:hover {
   background: var(--orange-dark);
-  transform: scale(1.05);
+  transform: scale(1.08);
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
 }
 
 .mobile-search-btn i {
-  font-size: 16px;
+  font-size: 18px;
 }
 
 /* Mobile Navigation */
 .mobile-nav {
   flex: 1;
   padding: 10px 0;
+  margin: 0; /* ENSURE no margin */
 }
 
 .mobile-nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 24px;
+  gap: 14px;
+  padding: 18px 24px;
   text-decoration: none;
   color: var(--dark);
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 500;
   transition: all 0.2s ease;
   border: none;
@@ -465,9 +470,10 @@
 
 .mobile-nav-item i {
   color: var(--orange);
-  width: 20px;
+  width: 22px;
   text-align: center;
   flex-shrink: 0;
+  font-size: 18px;
 }
 
 .mobile-nav-item:hover {
@@ -478,26 +484,27 @@
 /* Mobile Contact */
 .mobile-contact {
   padding: 20px;
-  border-top: 1px solid var(--border);
+  margin: 0; /* ENSURE no margin */
+  border-top: 2px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   background: var(--light-gray);
 }
 
 .mobile-btn-whatsapp,
 .mobile-btn-call {
-  padding: 14px;
+  padding: 16px;
   border: none;
   border-radius: 25px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   text-decoration: none;
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -510,7 +517,7 @@
 .mobile-btn-whatsapp:hover {
   background: #128C7E;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+  box-shadow: 0 6px 16px rgba(37, 211, 102, 0.4);
 }
 
 .mobile-btn-call {
@@ -521,17 +528,17 @@
 .mobile-btn-call:hover {
   background: var(--orange-dark);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
 }
 
 .mobile-btn-whatsapp i,
 .mobile-btn-call i {
-  font-size: 18px;
+  font-size: 20px;
 }
 
 /* Spacer */
 .nav-spacer {
-  height: 75px;
+  height: 80px;
 }
 
 /* ==================== RESPONSIVE DESIGN ==================== */
@@ -544,7 +551,7 @@
   }
   
   .search-form {
-    width: 280px;
+    width: 320px;
   }
 }
 
@@ -552,22 +559,22 @@
 @media (min-width: 993px) and (max-width: 1440px) {
   .navbar-container {
     padding: 0 1.5rem;
-    gap: 1rem;
+    gap: 1.5rem;
   }
   
   .search-form {
-    width: 200px;
+    width: 240px;
   }
   
   .nav-link {
-    padding: 8px 14px;
+    padding: 9px 16px;
     font-size: 14px;
   }
   
   .btn-whatsapp,
   .btn-call {
-    padding: 8px 16px;
-    font-size: 13px;
+    padding: 10px 20px;
+    font-size: 14px;
   }
 }
 
@@ -587,11 +594,11 @@
   }
   
   .logo-image {
-    height: 45px;
+    height: 48px;
   }
   
   .logo-main {
-    font-size: 20px;
+    font-size: 22px;
   }
   
   .logo-sub {
@@ -609,18 +616,26 @@
   }
   
   .navbar-professional {
-    height: 65px;
+    height: 70px;
   }
   
   .nav-spacer {
-    height: 65px;
+    height: 70px;
+  }
+  
+  .logo-image {
+    height: 45px;
+  }
+  
+  .logo-main {
+    font-size: 20px;
   }
 }
 
 /* Small Mobile */
 @media (max-width: 480px) {
   .logo-image {
-    height: 40px;
+    height: 42px;
   }
   
   .logo-main {
@@ -632,11 +647,15 @@
   }
   
   .navbar-professional {
-    height: 60px;
+    height: 65px;
   }
   
   .nav-spacer {
-    height: 60px;
+    height: 65px;
+  }
+  
+  .mobile-menu {
+    width: 100%;
   }
 }
 
