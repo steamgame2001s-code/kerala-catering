@@ -1,32 +1,27 @@
-/* VideoBanner.css - FIXED for Laptop/Desktop Full Coverage */
+/* VideoBanner.css - FINAL FIX */
+
 .video-banner-container {
   position: relative;
-  width: 100%;
-  /* FIX: Remove max-height that was causing the gap */
+  width: 100vw;
   height: 100vh;
-  min-height: 600px; /* Increased for better laptop display */
+  margin: 0;
+  padding: 0;
   overflow: hidden;
   background-color: #000;
-  margin: 0; /* Ensure no margin */
-  padding: 0; /* Ensure no padding */
 }
 
-/* FIX: Ensure video covers EXACTLY the container */
+/* Ensure video fills entire container */
 .background-video {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1;
   object-fit: cover;
-  /* Slight scale to prevent black edges */
-  min-width: 100%;
-  min-height: 100%;
+  z-index: 1;
 }
 
-/* FIX: Improved overlay for better coverage */
+/* Overlay for better text readability */
 .video-overlay {
   position: absolute;
   top: 0;
@@ -35,15 +30,14 @@
   bottom: 0;
   background: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.4) 0%,
-    rgba(0, 0, 0, 0.2) 20%,
-    rgba(0, 0, 0, 0.2) 80%,
-    rgba(0, 0, 0, 0.4) 100%
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0.2) 50%,
+    rgba(0, 0, 0, 0.5) 100%
   );
   z-index: 2;
 }
 
-/* Content positioning */
+/* Content overlay */
 .video-content {
   position: absolute;
   top: 50%;
@@ -53,30 +47,27 @@
   color: white;
   z-index: 3;
   width: 90%;
-  max-width: 900px;
-  padding: 0 2rem;
+  max-width: 1000px;
+  padding: 2rem;
 }
 
 .video-title {
-  font-size: 3.5rem;
+  font-size: clamp(2rem, 5vw, 4rem);
   font-weight: 700;
   margin-bottom: 1rem;
-  text-shadow: 2px 2px 12px rgba(0, 0, 0, 0.7);
+  text-shadow: 2px 2px 20px rgba(0, 0, 0, 0.8);
   color: #ffffff;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   animation: fadeInDown 1s ease;
 }
 
 .video-subtitle {
-  font-size: 1.8rem;
+  font-size: clamp(1.2rem, 2.5vw, 2rem);
   opacity: 0.95;
-  margin-bottom: 2rem;
-  text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.7);
+  text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.8);
   font-weight: 300;
   animation: fadeInUp 1s ease 0.3s both;
 }
 
-/* Animations */
 @keyframes fadeInDown {
   from {
     opacity: 0;
@@ -99,131 +90,27 @@
   }
 }
 
-/* Navbar gradient overlay */
-.video-banner-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 100px;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
-  z-index: 4;
-  pointer-events: none;
-}
-
-/* Responsive Design */
-
-/* Large Desktops & Laptops (1200px - 1920px) */
-@media (min-width: 1200px) and (max-width: 1920px) {
-  .video-banner-container {
-    height: 100vh; /* Full viewport height */
-    min-height: 700px; /* Ensure minimum height for laptops */
-  }
-  
-  .video-title {
-    font-size: 3.5rem;
-  }
-  
-  .video-subtitle {
-    font-size: 1.8rem;
-  }
-}
-
-/* Standard Laptops (992px - 1199px) */
-@media (min-width: 992px) and (max-width: 1199px) {
+/* Mobile adjustments */
+@media (max-width: 768px) {
   .video-banner-container {
     height: 100vh;
-    min-height: 650px;
   }
   
-  .video-title {
-    font-size: 3rem;
-  }
-  
-  .video-subtitle {
-    font-size: 1.6rem;
+  .video-content {
+    padding: 1rem;
   }
 }
 
-/* Tablets (768px - 991px) */
-@media (min-width: 768px) and (max-width: 991px) {
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
   .video-banner-container {
     height: 100vh;
-    min-height: 550px;
-  }
-  
-  .video-title {
-    font-size: 2.5rem;
-  }
-  
-  .video-subtitle {
-    font-size: 1.4rem;
   }
 }
 
-/* Mobile Landscape & Small Tablets (576px - 767px) */
-@media (min-width: 576px) and (max-width: 767px) {
+/* Desktop adjustments */
+@media (min-width: 1025px) {
   .video-banner-container {
     height: 100vh;
-    min-height: 450px;
   }
-  
-  .video-title {
-    font-size: 2.2rem;
-    padding: 0 1.5rem;
-  }
-  
-  .video-subtitle {
-    font-size: 1.2rem;
-    padding: 0 1.5rem;
-  }
-}
-
-/* Mobile Portrait (up to 575px) */
-@media (max-width: 575px) {
-  .video-banner-container {
-    height: 100vh;
-    min-height: 400px;
-  }
-  
-  .video-title {
-    font-size: 2rem;
-    padding: 0 1rem;
-  }
-  
-  .video-subtitle {
-    font-size: 1.1rem;
-    padding: 0 1rem;
-  }
-}
-
-/* Ultra-wide monitors (1920px+) */
-@media (min-width: 1920px) {
-  .video-banner-container {
-    height: 100vh;
-    min-height: 800px;
-  }
-  
-  .video-title {
-    font-size: 4rem;
-  }
-  
-  .video-subtitle {
-    font-size: 2rem;
-  }
-}
-
-/* Fix for Safari iOS/macOS */
-@supports (-webkit-touch-callout: none) {
-  .video-banner-container {
-    height: -webkit-fill-available;
-  }
-}
-
-/* Ensure no unwanted margins/padding in parent elements */
-body, html {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
 }
