@@ -1,14 +1,17 @@
-/* VideoBanner.css - Full Viewport Height Version */
+/* VideoBanner.css - FIXED Full Viewport Coverage */
 .video-banner-container {
   position: relative;
   width: 100%;
-  /* Fill entire viewport height below navbar */
-  height: calc(100vh - 70px); /* 70px is navbar height */
-  min-height: 400px;
+  /* FIX: Use 100vh without subtracting navbar - let navbar overlay */
+  height: 100vh;
+  min-height: 500px;
+  max-height: 1000px; /* Prevent stretching on huge screens */
   overflow: hidden;
-  background-color: #ffffff; /* Fallback background */
+  background-color: #000; /* Black fallback for video gaps */
+  margin-top: 0; /* Ensure no margin */
 }
 
+/* FIX: Ensure video covers EXACTLY the container */
 .background-video {
   position: absolute;
   top: 0;
@@ -16,26 +19,34 @@
   width: 100%;
   height: 100%;
   z-index: 1;
-  object-fit: cover; /* Ensures video covers entire container */
-  /* Prevent black lines at edges */
-  transform: scale(1.01);
+  /* FIX: Use 'cover' but with a slight scale to prevent black edges */
+  object-fit: cover;
+  /* FIX: Slightly scale up to eliminate any black edges */
+  transform: scale(1.02);
+  /* FIX: Ensure no aspect ratio issues */
+  min-width: 100%;
+  min-height: 100%;
 }
 
+/* FIX: Improved overlay for better coverage */
 .video-overlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  /* Lighter overlay for better text readability */
+  /* FIX: Darker gradient at edges, lighter in middle */
   background: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.3) 0%,
-    rgba(0, 0, 0, 0.5) 100%
+    rgba(0, 0, 0, 0.4) 0%,
+    rgba(0, 0, 0, 0.2) 20%,
+    rgba(0, 0, 0, 0.2) 80%,
+    rgba(0, 0, 0, 0.4) 100%
   );
   z-index: 2;
 }
 
+/* FIX: Make content positioning more flexible */
 .video-content {
   position: absolute;
   top: 50%;
@@ -44,9 +55,9 @@
   text-align: center;
   color: white;
   z-index: 3;
-  width: 100%;
-  padding: 0 2rem;
+  width: 90%;
   max-width: 900px;
+  padding: 0 2rem;
 }
 
 .video-title {
@@ -66,31 +77,6 @@
   text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.7);
   font-weight: 300;
   animation: fadeInUp 1s ease 0.3s both;
-}
-
-/* Optional mute button if you want to add it back */
-.mute-toggle {
-  position: absolute;
-  bottom: 30px;
-  right: 30px;
-  background: rgba(0, 0, 0, 0.5);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 4;
-  transition: all 0.3s ease;
-}
-
-.mute-toggle:hover {
-  background: rgba(198, 40, 40, 0.7);
-  border-color: #ffffff;
-  transform: scale(1.1);
 }
 
 /* Animations */
@@ -116,6 +102,19 @@
   }
 }
 
+/* IMPORTANT FIX: Ensure video container sits behind navbar */
+.video-banner-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100px; /* Adjust based on your navbar height */
+  background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+  z-index: 4;
+  pointer-events: none;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
   .video-title {
@@ -129,7 +128,8 @@
 
 @media (max-width: 992px) {
   .video-banner-container {
-    height: calc(100vh - 70px); /* Adjust based on your navbar responsive height */
+    height: 100vh; /* Still full viewport */
+    min-height: 450px;
   }
   
   .video-title {
@@ -143,7 +143,8 @@
 
 @media (max-width: 768px) {
   .video-banner-container {
-    height: calc(100vh - 65px); /* Adjust for mobile navbar height */
+    height: 100vh;
+    min-height: 400px;
   }
   
   .video-title {
@@ -155,16 +156,11 @@
     font-size: 1.2rem;
     padding: 0 1.5rem;
   }
-  
-  .mute-toggle {
-    bottom: 20px;
-    right: 20px;
-  }
 }
 
 @media (max-width: 576px) {
   .video-banner-container {
-    height: calc(100vh - 60px); /* Adjust for small mobile */
+    height: 100vh;
     min-height: 350px;
   }
   
@@ -177,18 +173,25 @@
     font-size: 1.1rem;
     padding: 0 1rem;
   }
+}
+
+/* Ultra-wide monitor fix */
+@media (min-width: 1920px) {
+  .video-banner-container {
+    max-height: 1200px;
+  }
   
-  .mute-toggle {
-    bottom: 15px;
-    right: 15px;
-    width: 45px;
-    height: 45px;
+  .background-video {
+    /* On ultra-wide, ensure horizontal coverage */
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 }
 
-/* For very tall screens (ultra-wide monitors) */
-@media (min-height: 1000px) {
+/* Fix for Safari iOS/macOS */
+@supports (-webkit-touch-callout: none) {
   .video-banner-container {
-    max-height: 900px; /* Prevent excessive stretching on very tall screens */
+    height: -webkit-fill-available;
   }
 }
