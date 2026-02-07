@@ -22,7 +22,7 @@ const HomePage = () => {
     {
       icon: <FaShippingFast />,
       title: "Free Delivery",
-      description: "Free delivery on orders above ₹2000"
+      description: "Free delivery on orders above ₹5000"
     },
     {
       icon: <FaCreditCard />,

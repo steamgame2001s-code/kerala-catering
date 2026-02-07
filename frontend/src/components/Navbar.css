@@ -149,7 +149,7 @@
   flex-shrink: 0;
 }
 
-/* Search Container */
+/* ==================== SEARCH CONTAINER - FIXED ==================== */
 .search-container {
   position: relative;
 }
@@ -157,16 +157,18 @@
 .search-form {
   display: flex;
   align-items: center;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 30px;
-  overflow: hidden;
+  background: var(--light-gray);
+  border: 2px solid var(--border);
+  border-radius: 25px;
+  overflow: visible; /* CHANGED from hidden */
   transition: all 0.3s ease;
-  width: 220px;
+  width: 240px;
+  height: 44px;
 }
 
 .search-form:focus-within {
   border-color: var(--orange);
+  background: var(--white);
   box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
 }
 
@@ -179,33 +181,40 @@
   background: transparent;
   outline: none;
   min-width: 0;
+  height: 100%;
 }
 
 .search-input::placeholder {
   color: var(--gray);
 }
 
+/* SEARCH BUTTON - FIXED STYLING */
 .search-btn {
   background: var(--orange);
   border: none;
   color: white;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
   flex-shrink: 0;
-  margin-right: 1px;
+  margin-right: -2px; /* Align with border */
+  position: relative;
+  z-index: 1;
 }
 
 .search-btn:hover {
   background: var(--orange-dark);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
 
 .search-btn i {
-  font-size: 15px;
+  font-size: 16px;
 }
 
 /* Login Icon Button */
@@ -332,6 +341,7 @@
   display: flex;
   flex-direction: column;
   animation: slideIn 0.3s ease;
+  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
 }
 
 @keyframes slideIn {
@@ -339,13 +349,14 @@
   to { transform: translateX(0); }
 }
 
-/* Mobile Header - NO DUPLICATE LOGO */
+/* Mobile Header */
 .mobile-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 20px;
   border-bottom: 1px solid var(--border);
+  background: var(--light-gray);
 }
 
 .mobile-menu-title {
@@ -356,7 +367,7 @@
 }
 
 .mobile-close {
-  background: none;
+  background: var(--white);
   border: none;
   font-size: 24px;
   color: var(--dark);
@@ -364,10 +375,16 @@
   padding: 8px;
   border-radius: 50%;
   transition: all 0.3s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mobile-close:hover {
-  background: var(--light-gray);
+  background: var(--orange-light);
+  color: var(--orange);
 }
 
 .mobile-close i {
@@ -385,15 +402,17 @@
 .mobile-search-input {
   flex: 1;
   padding: 12px 16px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: 2px solid var(--border);
+  border-radius: 25px;
   font-size: 14px;
   outline: none;
   transition: all 0.3s ease;
+  background: var(--light-gray);
 }
 
 .mobile-search-input:focus {
   border-color: var(--orange);
+  background: var(--white);
   box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
 }
 
@@ -402,16 +421,19 @@
   border: none;
   color: white;
   width: 46px;
-  border-radius: 8px;
+  height: 46px;
+  border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .mobile-search-btn:hover {
   background: var(--orange-dark);
+  transform: scale(1.05);
 }
 
 .mobile-search-btn i {
@@ -460,13 +482,14 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  background: var(--light-gray);
 }
 
 .mobile-btn-whatsapp,
 .mobile-btn-call {
   padding: 14px;
   border: none;
-  border-radius: 8px;
+  border-radius: 25px;
   font-size: 15px;
   font-weight: 600;
   text-decoration: none;
@@ -487,6 +510,7 @@
 .mobile-btn-whatsapp:hover {
   background: #128C7E;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
 }
 
 .mobile-btn-call {
@@ -497,6 +521,7 @@
 .mobile-btn-call:hover {
   background: var(--orange-dark);
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
 
 .mobile-btn-whatsapp i,
@@ -519,7 +544,7 @@
   }
   
   .search-form {
-    width: 260px;
+    width: 280px;
   }
 }
 
@@ -531,12 +556,18 @@
   }
   
   .search-form {
-    width: 180px;
+    width: 200px;
   }
   
   .nav-link {
     padding: 8px 14px;
     font-size: 14px;
+  }
+  
+  .btn-whatsapp,
+  .btn-call {
+    padding: 8px 16px;
+    font-size: 13px;
   }
 }
 
