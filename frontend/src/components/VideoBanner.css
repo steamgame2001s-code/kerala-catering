@@ -1,29 +1,27 @@
-/* VideoBanner.css - FIXED Full Viewport Coverage */
+/* VideoBanner.css - FIXED for Laptop/Desktop Full Coverage */
 .video-banner-container {
   position: relative;
   width: 100%;
-  /* FIX: Use 100vh without subtracting navbar - let navbar overlay */
+  /* FIX: Remove max-height that was causing the gap */
   height: 100vh;
-  min-height: 500px;
-  max-height: 1000px; /* Prevent stretching on huge screens */
+  min-height: 600px; /* Increased for better laptop display */
   overflow: hidden;
-  background-color: #000; /* Black fallback for video gaps */
-  margin-top: 0; /* Ensure no margin */
+  background-color: #000;
+  margin: 0; /* Ensure no margin */
+  padding: 0; /* Ensure no padding */
 }
 
 /* FIX: Ensure video covers EXACTLY the container */
 .background-video {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 100%;
   height: 100%;
   z-index: 1;
-  /* FIX: Use 'cover' but with a slight scale to prevent black edges */
   object-fit: cover;
-  /* FIX: Slightly scale up to eliminate any black edges */
-  transform: scale(1.02);
-  /* FIX: Ensure no aspect ratio issues */
+  /* Slight scale to prevent black edges */
   min-width: 100%;
   min-height: 100%;
 }
@@ -35,7 +33,6 @@
   left: 0;
   right: 0;
   bottom: 0;
-  /* FIX: Darker gradient at edges, lighter in middle */
   background: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0.4) 0%,
@@ -46,7 +43,7 @@
   z-index: 2;
 }
 
-/* FIX: Make content positioning more flexible */
+/* Content positioning */
 .video-content {
   position: absolute;
   top: 50%;
@@ -102,21 +99,44 @@
   }
 }
 
-/* IMPORTANT FIX: Ensure video container sits behind navbar */
+/* Navbar gradient overlay */
 .video-banner-container::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 100px; /* Adjust based on your navbar height */
+  height: 100px;
   background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
   z-index: 4;
   pointer-events: none;
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
+
+/* Large Desktops & Laptops (1200px - 1920px) */
+@media (min-width: 1200px) and (max-width: 1920px) {
+  .video-banner-container {
+    height: 100vh; /* Full viewport height */
+    min-height: 700px; /* Ensure minimum height for laptops */
+  }
+  
+  .video-title {
+    font-size: 3.5rem;
+  }
+  
+  .video-subtitle {
+    font-size: 1.8rem;
+  }
+}
+
+/* Standard Laptops (992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .video-banner-container {
+    height: 100vh;
+    min-height: 650px;
+  }
+  
   .video-title {
     font-size: 3rem;
   }
@@ -126,10 +146,11 @@
   }
 }
 
-@media (max-width: 992px) {
+/* Tablets (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
   .video-banner-container {
-    height: 100vh; /* Still full viewport */
-    min-height: 450px;
+    height: 100vh;
+    min-height: 550px;
   }
   
   .video-title {
@@ -141,10 +162,11 @@
   }
 }
 
-@media (max-width: 768px) {
+/* Mobile Landscape & Small Tablets (576px - 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
   .video-banner-container {
     height: 100vh;
-    min-height: 400px;
+    min-height: 450px;
   }
   
   .video-title {
@@ -158,10 +180,11 @@
   }
 }
 
-@media (max-width: 576px) {
+/* Mobile Portrait (up to 575px) */
+@media (max-width: 575px) {
   .video-banner-container {
     height: 100vh;
-    min-height: 350px;
+    min-height: 400px;
   }
   
   .video-title {
@@ -175,17 +198,19 @@
   }
 }
 
-/* Ultra-wide monitor fix */
+/* Ultra-wide monitors (1920px+) */
 @media (min-width: 1920px) {
   .video-banner-container {
-    max-height: 1200px;
+    height: 100vh;
+    min-height: 800px;
   }
   
-  .background-video {
-    /* On ultra-wide, ensure horizontal coverage */
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  .video-title {
+    font-size: 4rem;
+  }
+  
+  .video-subtitle {
+    font-size: 2rem;
   }
 }
 
@@ -194,4 +219,11 @@
   .video-banner-container {
     height: -webkit-fill-available;
   }
+}
+
+/* Ensure no unwanted margins/padding in parent elements */
+body, html {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
