@@ -19,7 +19,6 @@ const Navbar = () => {
       });
     } catch (error) {
       console.error('Error tracking action:', error);
-      // Fail silently - don't disrupt user experience
     }
   };
 
@@ -33,7 +32,6 @@ const Navbar = () => {
   };
 
   const handleWhatsAppClick = () => {
-    // Track WhatsApp click
     trackAction('whatsapp', {
       userInfo: 'Navbar WhatsApp Button'
     });
@@ -47,11 +45,9 @@ const Navbar = () => {
   };
 
   const handleCallClick = () => {
-    // Track Call click
     trackAction('call', {
       userInfo: 'Navbar Call Button'
     });
-
     window.location.href = 'tel:+919447975836';
   };
 
@@ -72,9 +68,9 @@ const Navbar = () => {
     <>
       <header className="navbar-professional">
         <div className="navbar-container">
-          {/* Logo */}
+          {/* Logo - SINGLE INSTANCE */}
           <div className="navbar-brand">
-            <Link to="/" className="logo-link">
+            <Link to="/" className="logo-link" onClick={() => setIsOpen(false)}>
               <div className="logo-wrapper">
                 <img 
                   src={LogoImage} 
@@ -176,15 +172,9 @@ const Navbar = () => {
       {isOpen && (
         <div className="mobile-overlay" onClick={() => setIsOpen(false)}>
           <div className="mobile-menu" onClick={e => e.stopPropagation()}>
-            {/* Mobile Menu Header */}
+            {/* Mobile Menu Header - NO DUPLICATE LOGO */}
             <div className="mobile-header">
-              <Link to="/" className="mobile-logo" onClick={() => setIsOpen(false)}>
-                <img src={LogoImage} alt="Upasana" className="mobile-logo-img" />
-                <div>
-                  <div className="mobile-logo-main">UPASANA</div>
-                  <div className="mobile-logo-sub">CATERING</div>
-                </div>
-              </Link>
+              <h3 className="mobile-menu-title">Menu</h3>
               <button 
                 className="mobile-close" 
                 onClick={() => setIsOpen(false)}
@@ -226,7 +216,6 @@ const Navbar = () => {
               <button 
                 className="mobile-nav-item"
                 onClick={handleAdminLogin}
-                style={{width: '100%', textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer'}}
               >
                 <i className="fas fa-user-circle"></i>
                 <span>Admin Login</span>
@@ -254,6 +243,7 @@ const Navbar = () => {
         </div>
       )}
 
+      {/* Spacer to prevent content from hiding under fixed navbar */}
       <div className="nav-spacer"></div>
     </>
   );

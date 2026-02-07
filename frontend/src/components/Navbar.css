@@ -30,7 +30,7 @@
   font-weight: 400;
 }
 
-/* Navbar Container */
+/* ==================== NAVBAR CONTAINER ==================== */
 .navbar-professional {
   position: fixed;
   top: 0;
@@ -39,21 +39,21 @@
   background: var(--white);
   box-shadow: var(--shadow);
   z-index: 1000;
-  height: 70px;
+  height: 75px;
 }
 
 .navbar-container {
-  max-width: 1400px; /* Increased from 1200px */
+  max-width: 1400px;
   margin: 0 auto;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1.5rem; /* Reduced from 2rem */
-  gap: 1rem; /* Reduced from 2rem */
+  padding: 0 2rem;
+  gap: 1.5rem;
 }
 
-/* Logo Section */
+/* ==================== LOGO SECTION ==================== */
 .navbar-brand {
   flex-shrink: 0;
 }
@@ -66,11 +66,11 @@
 .logo-wrapper {
   display: flex;
   align-items: center;
-  gap: 10px; /* Reduced from 12px */
+  gap: 12px;
 }
 
 .logo-image {
-  height: 45px; /* Reduced from 50px */
+  height: 50px;
   width: auto;
   object-fit: contain;
 }
@@ -81,7 +81,7 @@
 }
 
 .logo-main {
-  font-size: 20px; /* Reduced from 22px */
+  font-size: 22px;
   font-weight: 800;
   color: var(--orange);
   line-height: 1;
@@ -89,26 +89,26 @@
 }
 
 .logo-sub {
-  font-size: 10px; /* Reduced from 11px */
+  font-size: 11px;
   color: var(--gray);
-  letter-spacing: 1px; /* Reduced from 1.2px */
+  letter-spacing: 1.2px;
   text-transform: uppercase;
   margin-top: 2px;
   font-weight: 500;
 }
 
-/* Desktop Navigation */
+/* ==================== DESKTOP NAVIGATION ==================== */
 .navbar-nav {
   flex: 1;
   display: flex;
   justify-content: center;
-  min-width: 0; /* Allow flex item to shrink */
+  min-width: 0;
 }
 
 .nav-list {
   display: flex;
   list-style: none;
-  gap: 2px; /* Reduced from 4px */
+  gap: 4px;
 }
 
 .nav-item {
@@ -118,12 +118,12 @@
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 6px; /* Reduced from 8px */
+  gap: 8px;
   text-decoration: none;
   color: var(--dark);
   font-weight: 500;
-  font-size: 14px; /* Reduced from 15px */
-  padding: 8px 14px; /* Reduced from 10px 18px */
+  font-size: 15px;
+  padding: 10px 18px;
   border-radius: 8px;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -131,8 +131,8 @@
 
 .nav-link i {
   color: var(--orange);
-  font-size: 13px; /* Reduced from 14px */
-  width: 14px; /* Reduced from 16px */
+  font-size: 14px;
+  width: 16px;
   text-align: center;
 }
 
@@ -141,11 +141,11 @@
   color: var(--orange);
 }
 
-/* Right Section (Search + Login + Buttons) */
+/* ==================== RIGHT SECTION ==================== */
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 10px; /* Reduced from 15px */
+  gap: 12px;
   flex-shrink: 0;
 }
 
@@ -162,7 +162,7 @@
   border-radius: 30px;
   overflow: hidden;
   transition: all 0.3s ease;
-  width: 200px; /* Reduced from 260px */
+  width: 220px;
 }
 
 .search-form:focus-within {
@@ -173,8 +173,8 @@
 .search-input {
   flex: 1;
   border: none;
-  padding: 8px 14px; /* Reduced from 10px 18px */
-  font-size: 13px; /* Reduced from 14px */
+  padding: 10px 16px;
+  font-size: 14px;
   color: var(--dark);
   background: transparent;
   outline: none;
@@ -185,13 +185,12 @@
   color: var(--gray);
 }
 
-/* Search Button */
 .search-btn {
   background: var(--orange);
   border: none;
   color: white;
-  width: 38px; /* Reduced from 42px */
-  height: 38px; /* Reduced from 42px */
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -206,7 +205,7 @@
 }
 
 .search-btn i {
-  font-size: 14px; /* Reduced from 16px */
+  font-size: 15px;
 }
 
 /* Login Icon Button */
@@ -214,16 +213,16 @@
   background: none;
   border: none;
   color: var(--orange);
-  font-size: 22px; /* Reduced from 24px */
+  font-size: 24px;
   cursor: pointer;
-  padding: 6px; /* Reduced from 8px */
+  padding: 8px;
   border-radius: 50%;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 38px; /* Reduced from 42px */
-  height: 38px; /* Reduced from 42px */
+  width: 40px;
+  height: 40px;
 }
 
 .login-icon-btn:hover {
@@ -242,18 +241,18 @@
 /* Action Buttons */
 .action-buttons {
   display: flex;
-  gap: 8px; /* Reduced from 12px */
+  gap: 10px;
 }
 
 .btn-whatsapp,
 .btn-call {
   display: flex;
   align-items: center;
-  gap: 6px; /* Reduced from 8px */
-  padding: 8px 16px; /* Reduced from 10px 20px */
+  gap: 8px;
+  padding: 10px 20px;
   border: none;
   border-radius: 8px;
-  font-size: 13px; /* Reduced from 14px */
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -268,7 +267,8 @@
 
 .btn-whatsapp:hover {
   background: #128C7E;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
 }
 
 .btn-call {
@@ -278,15 +278,16 @@
 
 .btn-call:hover {
   background: var(--orange-dark);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
 
 .btn-whatsapp i,
 .btn-call i {
-  font-size: 14px; /* Reduced from 16px */
+  font-size: 16px;
 }
 
-/* Mobile Toggle Button */
+/* ==================== MOBILE TOGGLE ==================== */
 .mobile-toggle {
   display: none;
   background: none;
@@ -304,13 +305,13 @@
 }
 
 .hamburger-line {
-  height: 2px;
+  height: 3px;
   background: var(--dark);
   border-radius: 2px;
   transition: all 0.3s ease;
 }
 
-/* Mobile Menu Overlay */
+/* ==================== MOBILE MENU ==================== */
 .mobile-overlay {
   position: fixed;
   top: 0;
@@ -338,7 +339,7 @@
   to { transform: translateX(0); }
 }
 
-/* Mobile Header */
+/* Mobile Header - NO DUPLICATE LOGO */
 .mobile-header {
   display: flex;
   align-items: center;
@@ -347,39 +348,22 @@
   border-bottom: 1px solid var(--border);
 }
 
-.mobile-logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-}
-
-.mobile-logo-img {
-  height: 40px;
-  width: auto;
-}
-
-.mobile-logo-main {
-  font-size: 18px;
+.mobile-menu-title {
+  font-size: 20px;
   font-weight: 700;
-  color: var(--orange);
-}
-
-.mobile-logo-sub {
-  font-size: 10px;
-  color: var(--gray);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  color: var(--dark);
+  margin: 0;
 }
 
 .mobile-close {
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 24px;
   color: var(--dark);
   cursor: pointer;
   padding: 8px;
   border-radius: 50%;
+  transition: all 0.3s ease;
 }
 
 .mobile-close:hover {
@@ -405,6 +389,12 @@
   border-radius: 8px;
   font-size: 14px;
   outline: none;
+  transition: all 0.3s ease;
+}
+
+.mobile-search-input:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
 }
 
 .mobile-search-btn {
@@ -417,6 +407,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.mobile-search-btn:hover {
+  background: var(--orange-dark);
 }
 
 .mobile-search-btn i {
@@ -489,13 +484,18 @@
   color: white;
 }
 
+.mobile-btn-whatsapp:hover {
+  background: #128C7E;
+  transform: translateY(-2px);
+}
+
 .mobile-btn-call {
   background: var(--orange);
   color: white;
 }
 
-.mobile-btn-whatsapp:hover,
 .mobile-btn-call:hover {
+  background: var(--orange-dark);
   transform: translateY(-2px);
 }
 
@@ -506,43 +506,37 @@
 
 /* Spacer */
 .nav-spacer {
-  height: 70px;
+  height: 75px;
 }
 
-/* Responsive Design */
+/* ==================== RESPONSIVE DESIGN ==================== */
 
-/* Large Desktop - Add new breakpoint for better scaling */
+/* Large Desktop */
 @media (min-width: 1441px) {
   .navbar-container {
     max-width: 1600px;
-    padding: 0 2rem;
-    gap: 1.5rem;
+    padding: 0 3rem;
   }
   
   .search-form {
     width: 260px;
-  }
-  
-  .btn-whatsapp,
-  .btn-call {
-    padding: 10px 20px;
-    font-size: 14px;
   }
 }
 
 /* Tablet Landscape & Small Desktop */
 @media (min-width: 993px) and (max-width: 1440px) {
   .navbar-container {
-    padding: 0 1.25rem;
+    padding: 0 1.5rem;
+    gap: 1rem;
   }
   
   .search-form {
     width: 180px;
   }
   
-  .btn-whatsapp span,
-  .btn-call span {
-    display: inline; /* Keep text visible */
+  .nav-link {
+    padding: 8px 14px;
+    font-size: 14px;
   }
 }
 
@@ -558,12 +552,7 @@
   }
   
   .navbar-container {
-    padding: 0 1rem;
-    gap: 1rem;
-  }
-  
-  .logo-wrapper {
-    gap: 8px;
+    padding: 0 1.5rem;
   }
   
   .logo-image {
@@ -588,12 +577,12 @@
     padding: 0 1rem;
   }
   
-  .logo-main {
-    font-size: 18px;
+  .navbar-professional {
+    height: 65px;
   }
   
-  .logo-sub {
-    font-size: 9px;
+  .nav-spacer {
+    height: 65px;
   }
 }
 
@@ -604,18 +593,18 @@
   }
   
   .logo-main {
-    font-size: 16px;
+    font-size: 18px;
   }
   
   .logo-sub {
-    font-size: 8px;
-  }
-  
-  .nav-spacer {
-    height: 60px;
+    font-size: 9px;
   }
   
   .navbar-professional {
+    height: 60px;
+  }
+  
+  .nav-spacer {
     height: 60px;
   }
 }
