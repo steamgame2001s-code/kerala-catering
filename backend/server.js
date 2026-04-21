@@ -781,8 +781,82 @@ app.get('/api/actions/stats', async (req, res) => {
 });
 
 // =================== FORGOT PASSWORD ENDPOINTS ===================
-// (Keep all your existing forgot password, verify OTP, reset password endpoints here)
-// They should remain unchanged as they don't involve file uploads
+// =================== FORGOT PASSWORD ENDPOINTS ===================
+app.post('/api/admin/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, error: 'Email is required' });
+
+    const admin = await Admin.findOne({ email: email.toLowerCase().trim(), isActive: true });
+    if (!admin) {
+      return res.json({ success: true, message: 'If an admin with this email exists, an OTP has been sent' });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    admin.resetPasswordOTP = otp;
+    admin.resetPasswordOTPExpires = Date.now() + 10 * 60 * 1000;
+    await admin.save();
+
+    if (process.env.SENDGRID_API_KEY) {
+      const msg = {
+        to: admin.email,
+        from: { email: process.env.FROM_EMAIL || 'upasanawebemail@gmail.com', name: process.env.FROM_NAME || 'Upasana Catering' },
+        subject: '🔐 Password Reset OTP - Upasana Catering',
+        html: `<h2>Password Reset OTP</h2><p>Your OTP is: <strong>${otp}</strong></p><p>Valid for 10 minutes.</p>`,
+        text: `Your OTP is: ${otp}. Valid for 10 minutes.`
+      };
+      setTimeout(async () => {
+        try { await sgMail.send(msg); console.log('✅ OTP email sent'); }
+        catch (e) { console.error('❌ Email error:', e.message); }
+      }, 100);
+    }
+
+    res.json({ success: true, message: 'OTP has been sent to your email', email });
+  } catch (error) {
+    console.error('❌ Forgot password error:', error);
+    res.status(500).json({ success: false, error: 'Failed to process request' });
+  }
+});
+
+app.post('/api/admin/verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const admin = await Admin.findOne({ email: email.toLowerCase().trim(), isActive: true });
+
+    if (!admin || admin.resetPasswordOTP !== otp) {
+      return res.status(400).json({ success: false, error: 'Invalid OTP' });
+    }
+    if (Date.now() > admin.resetPasswordOTPExpires) {
+      return res.status(400).json({ success: false, error: 'OTP has expired' });
+    }
+
+    const resetToken = jwt.sign({ id: admin._id, email: admin.email }, process.env.JWT_SECRET || 'your-secret-key', { expiresIn: '15m' });
+    admin.resetPasswordOTP = undefined;
+    admin.resetPasswordOTPExpires = undefined;
+    await admin.save();
+
+    res.json({ success: true, message: 'OTP verified', resetToken });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to verify OTP' });
+  }
+});
+
+app.post('/api/admin/reset-password', async (req, res) => {
+  try {
+    const { resetToken, newPassword } = req.body;
+    const decoded = jwt.verify(resetToken, process.env.JWT_SECRET || 'your-secret-key');
+    const admin = await Admin.findById(decoded.id);
+
+    if (!admin) return res.status(404).json({ success: false, error: 'Admin not found' });
+
+    admin.password = newPassword;
+    await admin.save();
+
+    res.json({ success: true, message: 'Password reset successful' });
+  } catch (error) {
+    res.status(400).json({ success: false, error: 'Invalid or expired reset token' });
+  }
+});
 
 // =================== PUBLIC ROUTES ===================
 app.get('/api/festivals', async (req, res) => {
