@@ -746,6 +746,7 @@ app.post('/api/email/send-inquiry', async (req, res) => {
 });
 
 // =================== FIXED FORGOT PASSWORD ENDPOINT (GMAIL SMTP) ===================
+// =================== FIXED FORGOT PASSWORD ENDPOINT (SECURE - USES BUSINESS_EMAIL) ===================
 app.post('/api/admin/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
@@ -760,13 +761,28 @@ app.post('/api/admin/forgot-password', async (req, res) => {
       });
     }
     
+    // ========== SECURITY: ONLY ALLOW BUSINESS EMAIL ==========
+    const businessEmail = process.env.BUSINESS_EMAIL || 'upasanacatering@gmail.com';
+    
+    // Check if the requested email matches the business email
+    if (email.toLowerCase().trim() !== businessEmail.toLowerCase().trim()) {
+      console.log(`⚠️ SECURITY: Unauthorized password reset attempt for: ${email} (Expected: ${businessEmail})`);
+      return res.status(403).json({
+        success: false,
+        error: 'Unauthorized access',
+        message: 'Unauthorized access. Only the registered business email can reset passwords.'
+      });
+    }
+    // ==========================================================
+    
     const admin = await Admin.findOne({ email: email.toLowerCase().trim(), isActive: true });
     
     if (!admin) {
-      console.log(`⚠️ Admin not found: ${email}`);
-      return res.json({
-        success: true,
-        message: 'If an admin with this email exists, an OTP has been sent'
+      console.log(`⚠️ Admin account not found for: ${email}`);
+      return res.status(404).json({
+        success: false,
+        error: 'Admin account not found',
+        message: 'No admin account exists with this email. Please contact support.'
       });
     }
     
@@ -778,7 +794,7 @@ app.post('/api/admin/forgot-password', async (req, res) => {
     admin.resetPasswordOTPExpires = Date.now() + 10 * 60 * 1000;
     await admin.save();
     
-    console.log(`🔑 OTP Generated: ${otp}`);
+    console.log(`🔑 OTP Generated for ${admin.email}: ${otp}`);
     
     // Send email asynchronously
     setTimeout(async () => {
@@ -794,22 +810,22 @@ app.post('/api/admin/forgot-password', async (req, res) => {
       }
     }, 100);
     
-    // Send immediate response
+    // Send success response
     res.json({
       success: true,
-      message: 'OTP has been sent to your email',
-      email: email
+      message: `Password reset OTP has been sent to ${businessEmail}`,
+      email: businessEmail
     });
     
   } catch (error) {
     console.error('❌ FORGOT PASSWORD ERROR:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to process request'
+      error: 'Failed to process request',
+      message: 'Internal server error. Please try again later.'
     });
   }
 });
-
 // =================== VERIFY OTP ENDPOINT ===================
 app.post('/api/admin/verify-otp', async (req, res) => {
   try {
