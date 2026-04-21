@@ -1,4 +1,4 @@
-// backend/server.js - COMPLETE FIXED VERSION WITH ALL FIXES
+// backend/server.js - COMPLETE FIXED VERSION WITH EMAIL WORKING
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -23,8 +23,9 @@ const {
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   console.log('✅ SendGrid configured');
+  console.log('📧 SendGrid API Key prefix:', process.env.SENDGRID_API_KEY.substring(0, 10));
 } else {
-  console.log('⚠️ SendGrid not configured');
+  console.log('⚠️ SendGrid not configured - email sending disabled');
 }
 
 // Import models
@@ -86,15 +87,14 @@ console.log('+ All localhost ports');
 
 // ========== REQUEST TIMEOUT HANDLING ==========
 app.use((req, res, next) => {
-  // Increase timeout for file uploads
-  req.setTimeout(120000); // 2 minutes
-  res.setTimeout(120000); // 2 minutes
+  req.setTimeout(120000);
+  res.setTimeout(120000);
   next();
 });
 
 // ========== CLOUDINARY UPLOAD TIMEOUT FIX ==========
 const extendRequestTimeout = (req, res, next) => {
-  req.setTimeout(180000); // 3 minutes for Cloudinary uploads
+  req.setTimeout(180000);
   res.setTimeout(180000);
   next();
 };
@@ -114,7 +114,6 @@ app.use(express.urlencoded({ extended: true }));
 
 // ========== HTTP2 WORKAROUND FOR RENDER.COM ==========
 app.use((req, res, next) => {
-  // Disable HTTP/2 for file upload routes to prevent protocol errors on Render.com
   if (req.url.includes('/admin/gallery') && req.method === 'POST') {
     res.setHeader('Connection', 'close');
   }
@@ -281,12 +280,29 @@ app.get('/api/cors-test', (req, res) => {
   });
 });
 
+// =================== DEBUG ENDPOINT FOR API KEY ===================
+app.get('/api/email/debug-key', async (req, res) => {
+  try {
+    const hasKey = !!process.env.SENDGRID_API_KEY;
+    const keyPrefix = hasKey ? process.env.SENDGRID_API_KEY.substring(0, 15) : 'None';
+    
+    res.json({
+      success: true,
+      hasApiKey: hasKey,
+      keyPrefix: keyPrefix,
+      keyLength: hasKey ? process.env.SENDGRID_API_KEY.length : 0,
+      note: 'If API key exists but emails fail, check IP Access Management in SendGrid settings'
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // =================== CLOUDINARY TEST ENDPOINT ===================
 app.get('/api/test-cloudinary', async (req, res) => {
   try {
     const pingResult = await cloudinary.api.ping();
     
-    // Get Cloudinary account info
     const cloudinaryConfig = cloudinary.config();
     
     res.json({
@@ -382,7 +398,7 @@ app.post('/api/upload-test',
   }
 );
 
-// =================== EMAIL TEST ENDPOINT ===================
+// =================== FIXED EMAIL TEST ENDPOINT ===================
 app.get('/api/email/test', async (req, res) => {
   try {
     console.log('📧 Testing email configuration...');
@@ -400,12 +416,10 @@ app.get('/api/email/test', async (req, res) => {
     
     const toEmail = process.env.BUSINESS_EMAIL || 'upasanacatering@gmail.com';
     
+    // FIXED: 'from' as string, not object
     const msg = {
       to: toEmail,
-      from: {
-        email: 'upasanawebemail@gmail.com',
-        name: 'Upasana Catering Test'
-      },
+      from: 'upasanawebemail@gmail.com',  // ✅ FIXED: String format
       subject: '✅ Test Email - Upasana Catering',
       text: `This is a test email sent from your catering website backend.\n\nProvider: SendGrid\nTO: ${toEmail}\nTime: ${new Date().toLocaleString()}`,
       html: `
@@ -417,6 +431,7 @@ app.get('/api/email/test', async (req, res) => {
       `
     };
 
+    console.log('📤 Sending test email to:', toEmail);
     const response = await sgMail.send(msg);
     
     return res.status(200).json({ 
@@ -429,16 +444,17 @@ app.get('/api/email/test', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Email test error:', error);
+    console.error('❌ Email test error:', error.response?.body || error.message);
     res.status(500).json({ 
       success: false, 
       message: 'Failed to test email configuration',
-      error: error.message
+      error: error.response?.body || error.message,
+      suggestion: 'Check SendGrid API key permissions and IP Access Management'
     });
   }
 });
 
-// =================== SEND INQUIRY ENDPOINT ===================
+// =================== FIXED SEND INQUIRY ENDPOINT ===================
 app.post('/api/email/send-inquiry', async (req, res) => {
   try {
     console.log('📧 Received inquiry request:', req.body);
@@ -570,18 +586,17 @@ app.post('/api/email/send-inquiry', async (req, res) => {
           ${email ? `Email: ${email}` : ''}
         `;
 
+        // FIXED: 'from' as string, not object
         const msg = {
           to: toEmail,
-          from: {
-            email: 'upasanawebemail@gmail.com',
-            name: 'Upasana Catering Website'
-          },
+          from: 'upasanawebemail@gmail.com',  // ✅ FIXED: String format
           replyTo: email || 'upasanacatering@gmail.com',
           subject: `🍽️ New Menu Inquiry - ${name} - ${inquiryId}`,
           html: htmlTemplate,
           text: textTemplate
         };
 
+        console.log('📤 Sending inquiry email to:', toEmail);
         await sgMail.send(msg);
         
         emailSent = true;
@@ -589,7 +604,7 @@ app.post('/api/email/send-inquiry', async (req, res) => {
         console.log(`✅ Inquiry sent via SendGrid: ${inquiryId}`);
         
       } catch (sendGridError) {
-        console.log('SendGrid failed:', sendGridError.message);
+        console.error('SendGrid failed:', sendGridError.response?.body || sendGridError.message);
       }
     }
     
@@ -668,6 +683,171 @@ app.post('/api/email/send-inquiry', async (req, res) => {
   }
 });
 
+// =================== FIXED FORGOT PASSWORD ENDPOINT ===================
+app.post('/api/admin/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    console.log('\n🔐 === FORGOT PASSWORD REQUEST ===');
+    console.log(`📧 Requested email: ${email}`);
+    
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email is required'
+      });
+    }
+    
+    const admin = await Admin.findOne({ email: email.toLowerCase().trim(), isActive: true });
+    
+    if (!admin) {
+      console.log(`⚠️ Admin not found: ${email}`);
+      return res.json({
+        success: true,
+        message: 'If an admin with this email exists, an OTP has been sent'
+      });
+    }
+    
+    console.log(`✅ Admin found: ${admin.email} (${admin.username})`);
+    
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    admin.resetPasswordOTP = otp;
+    admin.resetPasswordOTPExpires = Date.now() + 10 * 60 * 1000;
+    await admin.save();
+    
+    console.log(`🔑 OTP Generated: ${otp}`);
+    
+    // Send email asynchronously
+    setTimeout(async () => {
+      try {
+        if (process.env.SENDGRID_API_KEY) {
+          // FIXED: 'from' as string, not object
+          const msg = {
+            to: admin.email,
+            from: 'upasanawebemail@gmail.com',  // ✅ FIXED: String format
+            subject: '🔐 Password Reset OTP - Upasana Catering',
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #f97316;">Password Reset Request</h2>
+                <p>Hello ${admin.name || admin.username},</p>
+                <p>You requested to reset your password. Use the OTP below to verify your identity:</p>
+                <div style="background: #fef3c7; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; border-radius: 10px; margin: 20px 0;">
+                  ${otp}
+                </div>
+                <p>This OTP is valid for <strong>10 minutes</strong>.</p>
+                <p>If you didn't request this, please ignore this email.</p>
+                <hr style="margin: 30px 0;">
+                <p style="color: #6b7280; font-size: 12px;">Upasana Catering Services</p>
+              </div>
+            `,
+            text: `Your OTP for password reset is: ${otp}. Valid for 10 minutes.`
+          };
+          
+          await sgMail.send(msg);
+          console.log(`✅ OTP email sent to ${admin.email}`);
+        } else {
+          console.log('⚠️ SendGrid not configured - OTP email not sent');
+        }
+      } catch (emailError) {
+        console.error('❌ Failed to send OTP email:', emailError.response?.body || emailError.message);
+      }
+    }, 100);
+    
+    // Send immediate response
+    res.json({
+      success: true,
+      message: 'OTP has been sent to your email',
+      email: email
+    });
+    
+  } catch (error) {
+    console.error('❌ FORGOT PASSWORD ERROR:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to process request'
+    });
+  }
+});
+
+// =================== VERIFY OTP ENDPOINT ===================
+app.post('/api/admin/verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    
+    const admin = await Admin.findOne({ email: email.toLowerCase().trim(), isActive: true });
+    
+    if (!admin || admin.resetPasswordOTP !== otp) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Invalid OTP' 
+      });
+    }
+    
+    if (Date.now() > admin.resetPasswordOTPExpires) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'OTP has expired' 
+      });
+    }
+    
+    const resetToken = jwt.sign(
+      { id: admin._id, email: admin.email }, 
+      process.env.JWT_SECRET || 'your-secret-key', 
+      { expiresIn: '15m' }
+    );
+    
+    admin.resetPasswordOTP = undefined;
+    admin.resetPasswordOTPExpires = undefined;
+    await admin.save();
+    
+    res.json({ 
+      success: true, 
+      message: 'OTP verified', 
+      resetToken 
+    });
+    
+  } catch (error) {
+    console.error('❌ Verify OTP error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to verify OTP' 
+    });
+  }
+});
+
+// =================== RESET PASSWORD ENDPOINT ===================
+app.post('/api/admin/reset-password', async (req, res) => {
+  try {
+    const { resetToken, newPassword } = req.body;
+    
+    const decoded = jwt.verify(resetToken, process.env.JWT_SECRET || 'your-secret-key');
+    const admin = await Admin.findById(decoded.id);
+    
+    if (!admin) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Admin not found' 
+      });
+    }
+    
+    admin.password = newPassword;
+    await admin.save();
+    
+    res.json({ 
+      success: true, 
+      message: 'Password reset successful' 
+    });
+    
+  } catch (error) {
+    console.error('❌ Reset password error:', error);
+    res.status(400).json({ 
+      success: false, 
+      error: 'Invalid or expired reset token' 
+    });
+  }
+});
+
 // =================== USER ACTION TRACKING ROUTES ===================
 app.post('/api/actions/log', async (req, res) => {
   try {
@@ -675,7 +855,6 @@ app.post('/api/actions/log', async (req, res) => {
 
     console.log('📊 [ACTION] Logging user action:', { type, name, phone });
 
-    // Validate action type
     if (!['whatsapp', 'call', 'form'].includes(type)) {
       return res.status(400).json({ 
         success: false,
@@ -683,10 +862,8 @@ app.post('/api/actions/log', async (req, res) => {
       });
     }
 
-    // Get IP address
     const ipAddress = req.ip || req.connection.remoteAddress;
 
-    // Create action log
     const action = new UserAction({
       type,
       name: name || '',
@@ -779,10 +956,6 @@ app.get('/api/actions/stats', async (req, res) => {
     });
   }
 });
-
-// =================== FORGOT PASSWORD ENDPOINTS ===================
-// (Keep all your existing forgot password, verify OTP, reset password endpoints here)
-// They should remain unchanged as they don't involve file uploads
 
 // =================== PUBLIC ROUTES ===================
 app.get('/api/festivals', async (req, res) => {
@@ -1052,7 +1225,6 @@ app.post('/api/admin/login', async (req, res) => {
   }
 });
 
-// Get all inquiries
 app.get('/api/admin/inquiries', authenticateAdmin, async (req, res) => {
   try {
     const inquiries = await Inquiry.find().sort({ createdAt: -1 });
@@ -1130,16 +1302,7 @@ app.get('/api/admin/dashboard/stats', authenticateAdmin, async (req, res) => {
       time: new Date(activity.time).toLocaleString()
     }));
 
-    console.log(`✅ [DASHBOARD] Stats compiled:
-      - Festivals: ${festivalsCount}
-      - Food Items: ${foodItemsCount}
-      - Gallery: ${galleryCount}
-      - Users: ${usersCount}
-      - Total Inquiries: ${inquiriesCount}
-      - Pending Inquiries: ${pendingInquiries}
-      - Total Actions: ${totalActions}
-      - Recent Activities: ${recentActivities.length}
-    `);
+    console.log(`✅ [DASHBOARD] Stats compiled`);
 
     res.json({
       success: true,
@@ -1239,7 +1402,6 @@ app.post('/api/admin/festivals/:festivalId/menu-images',
         return res.status(404).json({ success: false, error: 'Festival not found' });
       }
       
-      // Check limit
       if (festival.menuImages && festival.menuImages.length >= 2) {
         return res.status(400).json({ 
           success: false, 
@@ -1248,8 +1410,8 @@ app.post('/api/admin/festivals/:festivalId/menu-images',
       }
       
       const menuImage = {
-        imageUrl: req.file.path, // Cloudinary URL
-        cloudinaryPublicId: req.file.filename, // Cloudinary public ID
+        imageUrl: req.file.path,
+        cloudinaryPublicId: req.file.filename,
         caption: req.body.caption || '',
         order: festival.menuImages ? festival.menuImages.length : 0
       };
@@ -1290,7 +1452,6 @@ app.delete('/api/admin/festivals/:festivalId/menu-images/:imageId',
       
       const imageToDelete = festival.menuImages[imageIndex];
       
-      // Delete from Cloudinary if public ID exists
       if (imageToDelete.imageUrl) {
         await deleteImage(imageToDelete.imageUrl);
         console.log('✅ Image deleted from Cloudinary');
@@ -1354,21 +1515,18 @@ app.post('/api/admin/festivals',
         isActive: req.body.isActive === 'true' || req.body.isActive === true || req.body.isActive !== 'false'
       };
       
-      // Handle image upload to Cloudinary
       if (req.files?.image) {
-        festivalData.image = req.files.image[0].path; // Cloudinary URL
-        festivalData.cloudinaryImageId = req.files.image[0].filename; // Cloudinary public ID
+        festivalData.image = req.files.image[0].path;
+        festivalData.cloudinaryImageId = req.files.image[0].filename;
         console.log('✅ Main image uploaded to Cloudinary:', festivalData.image);
       }
       
-      // Handle banner image upload to Cloudinary
       if (req.files?.bannerImage) {
         festivalData.bannerImage = req.files.bannerImage[0].path;
         festivalData.cloudinaryBannerId = req.files.bannerImage[0].filename;
         console.log('✅ Banner image uploaded to Cloudinary:', festivalData.bannerImage);
       }
       
-      // Auto-generate slug if not provided
       if (!festivalData.slug && festivalData.name) {
         festivalData.slug = festivalData.name
           .toLowerCase()
@@ -1376,7 +1534,6 @@ app.post('/api/admin/festivals',
           .replace(/[^a-z0-9-]/g, '');
       }
       
-      // Parse array fields if they're strings
       if (req.body.categories) {
         festivalData.categories = typeof req.body.categories === 'string' 
           ? req.body.categories.split(',').map(c => c.trim()).filter(Boolean)
@@ -1401,9 +1558,6 @@ app.post('/api/admin/festivals',
           : req.body.tags;
       }
       
-      console.log('Final festival data:', JSON.stringify(festivalData, null, 2));
-      
-      // Validate required fields
       if (!festivalData.name) {
         return res.status(400).json({ 
           success: false, 
@@ -1447,7 +1601,6 @@ app.post('/api/admin/festivals',
 );
 
 // UPDATE festival with optional image upload
-// backend/server.js - FIXED FESTIVAL PUT ROUTE
 app.put('/api/admin/festivals/:id', 
   authenticateAdmin,
   extendRequestTimeout,
@@ -1458,19 +1611,6 @@ app.put('/api/admin/festivals/:id',
   async (req, res) => {
     try {
       console.log('🔄 PUT /api/admin/festivals/:id - Updating festival:', req.params.id);
-      console.log('📊 Body keys:', Object.keys(req.body));
-      console.log('📁 Files received:', req.files ? Object.keys(req.files) : 'No files');
-      
-      // Debug log for files
-      if (req.files) {
-        Object.keys(req.files).forEach(key => {
-          console.log(`  ${key}:`, req.files[key].map(f => ({
-            originalname: f.originalname,
-            fieldname: f.fieldname,
-            size: f.size
-          })));
-        });
-      }
       
       const festival = await Festival.findById(req.params.id);
       if (!festival) {
@@ -1482,11 +1622,9 @@ app.put('/api/admin/festivals/:id',
       
       const festivalData = { ...req.body };
       
-      // FIX 1: Handle new main image upload PROPERLY
       if (req.files?.image && req.files.image[0]) {
         console.log('📸 New main image uploaded:', req.files.image[0].originalname);
         
-        // Delete old image from Cloudinary if exists
         if (festival.image && festival.image.includes('cloudinary.com')) {
           try {
             await deleteImage(festival.image);
@@ -1499,15 +1637,11 @@ app.put('/api/admin/festivals/:id',
         festivalData.image = req.files.image[0].path;
         festivalData.cloudinaryImageId = req.files.image[0].filename;
         console.log('✅ Main image updated to:', festivalData.image);
-      } else {
-        console.log('🔄 Keeping existing main image');
       }
       
-      // FIX 2: Handle banner image upload PROPERLY
       if (req.files?.bannerImage && req.files.bannerImage[0]) {
         console.log('📸 New banner image uploaded:', req.files.bannerImage[0].originalname);
         
-        // Delete old banner image from Cloudinary if exists
         if (festival.bannerImage && festival.bannerImage.includes('cloudinary.com')) {
           try {
             await deleteImage(festival.bannerImage);
@@ -1521,10 +1655,8 @@ app.put('/api/admin/festivals/:id',
         festivalData.cloudinaryBannerId = req.files.bannerImage[0].filename;
         console.log('✅ Banner image updated to:', festivalData.bannerImage);
       } else if (req.body.removeBanner === 'true') {
-        // FIX 3: Handle banner image removal when user clears it
         console.log('🗑️ Removing banner image as requested');
         
-        // Delete old banner image from Cloudinary if exists
         if (festival.bannerImage && festival.bannerImage.includes('cloudinary.com')) {
           try {
             await deleteImage(festival.bannerImage);
@@ -1536,16 +1668,8 @@ app.put('/api/admin/festivals/:id',
         
         festivalData.bannerImage = null;
         festivalData.cloudinaryBannerId = null;
-      } else {
-        console.log('🔄 Keeping existing banner image (if any)');
-        // Keep existing banner image if not updating
-        if (!festivalData.bannerImage && festival.bannerImage) {
-          festivalData.bannerImage = festival.bannerImage;
-          festivalData.cloudinaryBannerId = festival.cloudinaryBannerId;
-        }
       }
       
-      // FIX 4: Parse ALL array fields properly
       const arrayFields = ['categories', 'popularItems', 'highlights', 'tags'];
       arrayFields.forEach(field => {
         if (festivalData[field]) {
@@ -1554,17 +1678,12 @@ app.put('/api/admin/festivals/:id',
               .split(',')
               .map(item => item.trim())
               .filter(Boolean);
-          } else if (Array.isArray(festivalData[field])) {
-            // Already an array, keep as is
-            festivalData[field] = festivalData[field].filter(Boolean);
           }
         } else {
-          // If field is not provided, keep existing value
           festivalData[field] = festival[field];
         }
       });
       
-      // FIX 5: Parse numeric fields
       if (festivalData.rating) {
         festivalData.rating = parseFloat(festivalData.rating);
       }
@@ -1573,7 +1692,6 @@ app.put('/api/admin/festivals/:id',
         festivalData.reviewCount = parseInt(festivalData.reviewCount);
       }
       
-      // FIX 6: Handle boolean fields properly
       if (festivalData.isFeatured !== undefined) {
         festivalData.isFeatured = festivalData.isFeatured === 'true' || festivalData.isFeatured === true;
       }
@@ -1582,17 +1700,9 @@ app.put('/api/admin/festivals/:id',
         festivalData.isActive = festivalData.isActive !== 'false' && festivalData.isActive !== false;
       }
       
-      // FIX 7: Ensure slug is unique and lowercase
       if (festivalData.slug) {
         festivalData.slug = festivalData.slug.toLowerCase().trim();
       }
-      
-      console.log('📝 Final update data:', {
-        name: festivalData.name,
-        hasBannerImage: !!festivalData.bannerImage,
-        isFeatured: festivalData.isFeatured,
-        isActive: festivalData.isActive
-      });
       
       const updatedFestival = await Festival.findByIdAndUpdate(
         req.params.id,
@@ -1605,7 +1715,6 @@ app.put('/api/admin/festivals/:id',
       );
       
       console.log('✅ Festival updated successfully:', updatedFestival.name);
-      console.log('📸 Banner image status:', updatedFestival.bannerImage ? 'Has banner' : 'No banner');
       
       res.json({ 
         success: true, 
@@ -1615,9 +1724,7 @@ app.put('/api/admin/festivals/:id',
       
     } catch (error) {
       console.error('❌ Update festival error:', error);
-      console.error('Error stack:', error.stack);
       
-      // Handle validation errors
       if (error.name === 'ValidationError') {
         const errors = Object.values(error.errors).map(e => e.message);
         return res.status(400).json({ 
@@ -1627,7 +1734,6 @@ app.put('/api/admin/festivals/:id',
         });
       }
       
-      // Handle duplicate key error (slug)
       if (error.code === 11000) {
         return res.status(400).json({ 
           success: false, 
@@ -1645,7 +1751,7 @@ app.put('/api/admin/festivals/:id',
   }
 );
 
-// FIXED DELETE festival route
+// DELETE festival route
 app.delete('/api/admin/festivals/:id', authenticateAdmin, async (req, res) => {
   try {
     console.log('🗑️ DELETE /api/admin/festivals/:id - Deleting festival:', req.params.id);
@@ -1660,51 +1766,29 @@ app.delete('/api/admin/festivals/:id', authenticateAdmin, async (req, res) => {
     
     console.log(`Deleting festival: ${festival.name}`);
     
-    // FIX: Delete images from Cloudinary with better error handling
     const deletePromises = [];
     
-    // Delete main image
     if (festival.image && festival.image.includes('cloudinary.com')) {
       deletePromises.push(
-        deleteImage(festival.image).then(result => {
-          if (result) {
-            console.log('✅ Main image deleted from Cloudinary');
-          } else {
-            console.log('⚠️ Main image deletion may have failed');
-          }
-        }).catch(err => {
+        deleteImage(festival.image).catch(err => {
           console.error('❌ Error deleting main image:', err.message);
         })
       );
     }
     
-    // Delete banner image
     if (festival.bannerImage && festival.bannerImage.includes('cloudinary.com')) {
       deletePromises.push(
-        deleteImage(festival.bannerImage).then(result => {
-          if (result) {
-            console.log('✅ Banner image deleted from Cloudinary');
-          } else {
-            console.log('⚠️ Banner image deletion may have failed');
-          }
-        }).catch(err => {
+        deleteImage(festival.bannerImage).catch(err => {
           console.error('❌ Error deleting banner image:', err.message);
         })
       );
     }
     
-    // Also delete menu images if any
     if (festival.menuImages && festival.menuImages.length > 0) {
       festival.menuImages.forEach((menuImage, index) => {
         if (menuImage.imageUrl && menuImage.imageUrl.includes('cloudinary.com')) {
           deletePromises.push(
-            deleteImage(menuImage.imageUrl).then(result => {
-              if (result) {
-                console.log(`✅ Menu image ${index + 1} deleted from Cloudinary`);
-              } else {
-                console.log(`⚠️ Menu image ${index + 1} deletion may have failed`);
-              }
-            }).catch(err => {
+            deleteImage(menuImage.imageUrl).catch(err => {
               console.error(`❌ Error deleting menu image ${index + 1}:`, err.message);
             })
           );
@@ -1712,28 +1796,15 @@ app.delete('/api/admin/festivals/:id', authenticateAdmin, async (req, res) => {
       });
     }
     
-    // Wait for all image deletions to complete
     await Promise.allSettled(deletePromises);
     
-    // Delete festival from database
-    const deletedFestival = await Festival.findByIdAndDelete(req.params.id);
-    
-    if (!deletedFestival) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Festival not found after deletion attempt' 
-      });
-    }
+    await Festival.findByIdAndDelete(req.params.id);
     
     console.log(`✅ Festival "${festival.name}" deleted successfully`);
     
     res.json({ 
       success: true, 
-      message: 'Festival deleted successfully',
-      deletedFestival: {
-        id: deletedFestival._id,
-        name: deletedFestival.name
-      }
+      message: 'Festival deleted successfully'
     });
     
   } catch (error) {
@@ -1745,6 +1816,7 @@ app.delete('/api/admin/festivals/:id', authenticateAdmin, async (req, res) => {
     });
   }
 });
+
 // =================== FOOD ITEM ROUTES (WITH CLOUDINARY) ===================
 app.get('/api/admin/food-items', authenticateAdmin, async (req, res) => {
   try {
@@ -1759,7 +1831,7 @@ app.get('/api/admin/food-items', authenticateAdmin, async (req, res) => {
   }
 });
 
-// CREATE food item with image upload (to Cloudinary)
+// CREATE food item with image upload
 app.post('/api/admin/food-items',
   authenticateAdmin,
   extendRequestTimeout,
@@ -1792,11 +1864,10 @@ app.post('/api/admin/food-items',
         isBestSeller: req.body.isBestSeller === 'true' || req.body.isBestSeller === true,
         isAvailable: req.body.isAvailable === 'true' || req.body.isAvailable === true || req.body.isAvailable !== 'false',
         isActive: req.body.isActive === 'true' || req.body.isActive === true || req.body.isActive !== 'false',
-        image: req.file.path, // Cloudinary URL
-        cloudinaryImageId: req.file.filename // Cloudinary public ID
+        image: req.file.path,
+        cloudinaryImageId: req.file.filename
       };
       
-      // Auto-generate slug
       if (!foodItemData.slug && foodItemData.name) {
         foodItemData.slug = foodItemData.name
           .toLowerCase()
@@ -1804,7 +1875,6 @@ app.post('/api/admin/food-items',
           .replace(/[^a-z0-9-]/g, '');
       }
       
-      // Parse ingredients if string
       if (req.body.ingredients) {
         if (typeof req.body.ingredients === 'string') {
           foodItemData.ingredients = req.body.ingredients
@@ -1816,7 +1886,6 @@ app.post('/api/admin/food-items',
         }
       }
       
-      // Validate required fields
       if (!foodItemData.name) {
         return res.status(400).json({ 
           success: false, 
@@ -1859,9 +1928,7 @@ app.put('/api/admin/food-items/:id',
       
       const foodItemData = { ...req.body };
       
-      // Handle new image upload
       if (req.file) {
-        // Delete old image from Cloudinary if exists
         if (foodItem.image && foodItem.image.includes('cloudinary.com')) {
           await deleteImage(foodItem.image);
         }
@@ -1870,7 +1937,6 @@ app.put('/api/admin/food-items/:id',
         foodItemData.cloudinaryImageId = req.file.filename;
       }
       
-      // Parse ingredients
       if (typeof foodItemData.ingredients === 'string') {
         foodItemData.ingredients = foodItemData.ingredients
           .split(',')
@@ -1899,7 +1965,7 @@ app.put('/api/admin/food-items/:id',
   }
 );
 
-// DELETE food item (and image from Cloudinary)
+// DELETE food item
 app.delete('/api/admin/food-items/:id', authenticateAdmin, async (req, res) => {
   try {
     const foodItem = await FoodItem.findById(req.params.id);
@@ -1907,7 +1973,6 @@ app.delete('/api/admin/food-items/:id', authenticateAdmin, async (req, res) => {
       return res.status(404).json({ success: false, error: 'Food item not found' });
     }
     
-    // Delete image from Cloudinary if exists
     if (foodItem.image && foodItem.image.includes('cloudinary.com')) {
       await deleteImage(foodItem.image);
     }
@@ -1923,7 +1988,7 @@ app.delete('/api/admin/food-items/:id', authenticateAdmin, async (req, res) => {
   }
 });
 
-// =================== GALLERY ROUTES (WITH CLOUDINARY) ===================
+// =================== GALLERY ROUTES ===================
 app.get('/api/admin/gallery', authenticateAdmin, async (req, res) => {
   try {
     const gallery = await Gallery.find()
@@ -1935,7 +2000,7 @@ app.get('/api/admin/gallery', authenticateAdmin, async (req, res) => {
   }
 });
 
-// CREATE gallery item with image upload (to Cloudinary) - SIMPLIFIED
+// CREATE gallery item
 app.post('/api/admin/gallery',
   authenticateAdmin,
   extendRequestTimeout,
@@ -1943,20 +2008,14 @@ app.post('/api/admin/gallery',
   async (req, res) => {
     try {
       console.log('📝 CREATE Gallery route hit');
-      console.log('📊 Has file:', !!req.file);
       
       if (!req.file) {
-        console.log('❌ No image file provided');
         return res.status(400).json({ 
           success: false, 
-          error: 'Image file is required',
-          received: req.body
+          error: 'Image file is required'
         });
       }
       
-      console.log('✅ File uploaded:', req.file.path);
-      
-      // Basic validation
       if (!req.body.title) {
         return res.status(400).json({ 
           success: false, 
@@ -1978,8 +2037,6 @@ app.post('/api/admin/gallery',
       
       await galleryItem.save();
       
-      console.log('✅ Gallery item saved to database');
-      
       res.status(201).json({ 
         success: true, 
         galleryItem,
@@ -1990,22 +2047,19 @@ app.post('/api/admin/gallery',
       console.error('❌ Create gallery error:', error.message);
       res.status(500).json({ 
         success: false, 
-        error: error.message,
-        note: 'Please try with a smaller image file'
+        error: error.message
       });
     }
   }
 );
 
-// UPDATE gallery item with optional image upload - SIMPLIFIED
+// UPDATE gallery item
 app.put('/api/admin/gallery/:id',
   authenticateAdmin,
   extendRequestTimeout,
   uploadGallery.single('image'),
   async (req, res) => {
     try {
-      console.log('🔄 UPDATE Gallery route hit for ID:', req.params.id);
-      
       const galleryItem = await Gallery.findById(req.params.id);
       if (!galleryItem) {
         return res.status(404).json({ success: false, error: 'Gallery item not found' });
@@ -2013,15 +2067,10 @@ app.put('/api/admin/gallery/:id',
       
       const galleryData = { ...req.body };
       
-      // Handle new image upload
       if (req.file) {
-        console.log('📸 New image uploaded:', req.file.path);
-        
-        // Delete old image if exists
         if (galleryItem.imageUrl && galleryItem.imageUrl.includes('cloudinary.com')) {
           try {
             await deleteImage(galleryItem.imageUrl);
-            console.log('🗑️ Old image deleted');
           } catch (deleteError) {
             console.log('⚠️ Could not delete old image:', deleteError.message);
           }
@@ -2036,8 +2085,6 @@ app.put('/api/admin/gallery/:id',
         galleryData,
         { new: true, runValidators: true }
       );
-      
-      console.log('✅ Gallery item updated');
       
       res.json({ 
         success: true, 
@@ -2054,7 +2101,7 @@ app.put('/api/admin/gallery/:id',
   }
 );
 
-// DELETE gallery item (and image from Cloudinary)
+// DELETE gallery item
 app.delete('/api/admin/gallery/:id', authenticateAdmin, async (req, res) => {
   try {
     const galleryItem = await Gallery.findById(req.params.id);
@@ -2062,7 +2109,6 @@ app.delete('/api/admin/gallery/:id', authenticateAdmin, async (req, res) => {
       return res.status(404).json({ success: false, error: 'Gallery item not found' });
     }
     
-    // Delete image from Cloudinary if exists
     if (galleryItem.imageUrl && galleryItem.imageUrl.includes('cloudinary.com')) {
       await deleteImage(galleryItem.imageUrl);
     }
@@ -2103,7 +2149,6 @@ app.get('/api/seed', async (req, res) => {
     });
     await admin.save();
 
-    // FIXED: Complete the festivals array with proper syntax
     const festivals = [
       {
         name: 'Christmas',
@@ -2151,7 +2196,6 @@ app.get('/api/seed', async (req, res) => {
 
     const createdFestivals = await Festival.insertMany(festivals);
 
-    // Add sample food items
     const foodItems = [
       {
         name: 'Christmas Plum Cake',
@@ -2238,6 +2282,7 @@ app.get('/', (req, res) => {
       testCloudinary: '/api/test-cloudinary',
       festivals: '/api/festivals',
       gallery: '/api/gallery',
+      emailDebug: '/api/email/debug-key',
       admin: {
         login: 'POST /api/admin/login',
         dashboard: 'GET /api/admin/dashboard/stats',
@@ -2267,7 +2312,6 @@ app.get('/', (req, res) => {
 app.use((err, req, res, next) => {
   console.error('❌ Global Error Handler:', err);
   
-  // Multer file upload errors
   if (err.code === 'LIMIT_FILE_SIZE') {
     return res.status(400).json({
       success: false,
@@ -2282,7 +2326,6 @@ app.use((err, req, res, next) => {
     });
   }
   
-  // JWT errors
   if (err.name === 'JsonWebTokenError') {
     return res.status(401).json({
       success: false,
@@ -2299,7 +2342,6 @@ app.use((err, req, res, next) => {
     });
   }
   
-  // MongoDB errors
   if (err.name === 'ValidationError') {
     return res.status(400).json({
       success: false,
@@ -2308,7 +2350,6 @@ app.use((err, req, res, next) => {
     });
   }
   
-  // Default error response
   res.status(err.status || 500).json({
     success: false,
     error: err.message || 'Internal server error',
@@ -2337,22 +2378,13 @@ const server = app.listen(PORT, () => {
   console.log(`📡 Test endpoints:`);
   console.log(`   http://localhost:${PORT}/api/ping`);
   console.log(`   http://localhost:${PORT}/api/health`);
-  console.log(`   http://localhost:${PORT}/api/cors-test`);
-  console.log(`   http://localhost:${PORT}/api/test-cloudinary`);
-  console.log(`   http://localhost:${PORT}/api/festivals`);
+  console.log(`   http://localhost:${PORT}/api/email/debug-key`);
   console.log(`   http://localhost:${PORT}/api/email/test`);
   console.log(`\n🔑 Admin login: POST http://localhost:${PORT}/api/admin/login`);
-  console.log(`   Email: ${process.env.ADMIN_EMAIL || '❌ NOT SET'}`);
-  console.log(`   Password: ${process.env.ADMIN_PASSWORD ? '✓ Set in .env' : '❌ NOT SET'}`);
   console.log(`\n📨 Email Configuration:`);
   console.log(`   SendGrid: ${process.env.SENDGRID_API_KEY ? '✅ Configured' : '❌ Not configured'}`);
-  console.log(`\n🌐 CORS Configuration:`);
-  console.log(`   Allowed origins: ${JSON.stringify(allowedOrigins)}`);
-  console.log(`   + All *.vercel.app domains`);
-  console.log(`   + All localhost ports`);
-  console.log(`\n☁️ Cloudinary Configuration:`);
-  console.log(`   Images will be uploaded to Cloudinary automatically`);
-  console.log(`   Folders: kerala-catering/festivals, kerala-catering/food-items, etc.`);
+  console.log(`\n🌐 CORS Configuration: Enabled for Vercel and localhost`);
+  console.log(`\n☁️ Cloudinary: ${cloudinary.config().cloud_name ? '✅ Configured' : '❌ Not configured'}`);
 });
 
 // =================== GRACEFUL SHUTDOWN ===================
