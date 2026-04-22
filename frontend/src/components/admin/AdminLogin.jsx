@@ -1,4 +1,4 @@
-// frontend/src/components/admin/AdminLogin.jsx - UPDATED
+// frontend/src/components/admin/AdminLogin.jsx - FIXED (No hardcoded email)
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAdmin } from '../../context/AdminContext';
@@ -7,7 +7,7 @@ import { FaLock, FaEnvelope, FaSignInAlt, FaArrowLeft, FaKey, FaExclamationCircl
 import './AdminLogin.css';
 
 const AdminLogin = () => {
-  const [email, setEmail] = useState('upasanacatering@gmail.com');
+  const [email, setEmail] = useState(''); // REMOVED hardcoded email
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,6 +29,20 @@ const AdminLogin = () => {
     setError('');
     setIsLoading(true);
     
+    // Validate email is not empty
+    if (!email.trim()) {
+      setError('Please enter your email address');
+      setIsLoading(false);
+      return;
+    }
+    
+    // Validate password is not empty
+    if (!password.trim()) {
+      setError('Please enter your password');
+      setIsLoading(false);
+      return;
+    }
+    
     try {
       console.log('Attempting login with:', { email });
       
@@ -49,7 +63,10 @@ const AdminLogin = () => {
           await login(email, password);
         }
         
-        // REMOVED ALERT - Silent redirect
+        // Clear form fields after successful login
+        setEmail('');
+        setPassword('');
+        
         // Redirect to dashboard
         setTimeout(() => {
           navigate('/admin/dashboard/home');

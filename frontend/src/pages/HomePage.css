@@ -1,4 +1,4 @@
-/* frontend/src/pages/HomePage.css - COMPLETELY FIXED */
+/* frontend/src/pages/HomePage.css - COMPLETELY FIXED (NO GAPS) */
 
 /* ==================== ROOT VARIABLES ==================== */
 :root {
@@ -85,7 +85,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
   width: 100%;
   gap: 24px;
   flex-wrap: wrap;
@@ -243,11 +243,12 @@ body {
   color: var(--orange);
 }
 
-/* ==================== HORIZONTAL SCROLL CONTAINERS ==================== */
+/* ==================== HORIZONTAL SCROLL CONTAINERS - FIXED NO GAPS ==================== */
 .horizontal-scroll-container {
   position: relative;
-  margin: 0 -24px;
-  padding: 0 24px;
+  margin: 0;
+  padding: 0;
+  width: 100%;
 }
 
 .horizontal-scroll {
@@ -255,12 +256,13 @@ body {
   gap: 24px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 8px 0 24px;
+  padding: 8px 0 16px;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x mandatory;
 }
 
+/* Remove any extra margin/padding */
 .horizontal-scroll::-webkit-scrollbar {
   height: 4px;
 }
@@ -268,13 +270,11 @@ body {
 .horizontal-scroll::-webkit-scrollbar-track {
   background: var(--border);
   border-radius: 4px;
-  margin: 0 24px;
 }
 
 .horizontal-scroll::-webkit-scrollbar-thumb {
   background: var(--orange);
   border-radius: 4px;
-  transition: all 0.3s ease;
 }
 
 .horizontal-scroll {
@@ -282,7 +282,7 @@ body {
   scrollbar-color: var(--orange) var(--border);
 }
 
-/* ==================== FESTIVAL CARDS - UPDATED ==================== */
+/* ==================== FESTIVAL CARDS ==================== */
 .festival-card {
   flex: 0 0 auto;
   width: clamp(280px, 28vw, 320px);
@@ -336,7 +336,6 @@ body {
   color: var(--dark);
   margin-bottom: 10px;
   line-height: 1.3;
-  word-wrap: break-word;
 }
 
 .festival-description {
@@ -371,7 +370,6 @@ body {
   padding: 8px 18px;
   border: 2px solid var(--orange);
   border-radius: 40px;
-  white-space: nowrap;
   background: transparent;
   font-size: 0.875rem;
 }
@@ -391,7 +389,7 @@ body {
   transform: translateX(3px);
 }
 
-/* ==================== FOOD ITEM CARDS - UPDATED ==================== */
+/* ==================== FOOD ITEM CARDS ==================== */
 .food-item-card {
   flex: 0 0 auto;
   width: clamp(260px, 26vw, 300px);
@@ -402,7 +400,6 @@ body {
   overflow: hidden;
   transition: all 0.3s ease;
   border: 1px solid var(--border);
-  text-align: center;
   display: flex;
   flex-direction: column;
   cursor: pointer;
@@ -486,13 +483,13 @@ body {
 .food-view-details {
   color: var(--orange);
   font-weight: 600;
-  text-decoration: none;
   font-size: 0.875rem;
   transition: all 0.3s ease;
   display: inline-block;
   margin-top: auto;
   padding-top: 12px;
   border-top: 1px solid var(--border);
+  text-align: center;
 }
 
 .food-view-details:hover {
@@ -500,7 +497,7 @@ body {
   transform: translateX(4px);
 }
 
-/* ==================== GALLERY ITEMS - UPDATED ==================== */
+/* ==================== GALLERY ITEMS ==================== */
 .gallery-item {
   flex: 0 0 auto;
   width: clamp(280px, 28vw, 320px);
@@ -672,7 +669,7 @@ body {
 
 /* ==================== RESPONSIVE DESIGN ==================== */
 
-/* Laptop / Desktop (1024px and above) */
+/* Desktop */
 @media (min-width: 1024px) {
   .horizontal-scroll {
     gap: 28px;
@@ -692,7 +689,7 @@ body {
   }
 }
 
-/* Tablet (768px to 1023px) */
+/* Tablet */
 @media (max-width: 1023px) and (min-width: 769px) {
   .horizontal-scroll {
     gap: 20px;
@@ -717,7 +714,7 @@ body {
   }
 }
 
-/* Mobile (768px and below) */
+/* Mobile */
 @media (max-width: 768px) {
   .container {
     padding: 0 16px;
@@ -732,7 +729,7 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
   }
 
   .view-all-link {
@@ -751,14 +748,9 @@ body {
     max-width: 280px;
   }
 
-  .horizontal-scroll-container {
-    margin: 0 -16px;
-    padding: 0 16px;
-  }
-
   .horizontal-scroll {
     gap: 16px;
-    padding: 6px 0 20px;
+    padding: 6px 0 12px;
   }
 
   .festival-card {
@@ -800,7 +792,7 @@ body {
   }
 }
 
-/* Small Mobile (576px and below) */
+/* Small Mobile */
 @media (max-width: 576px) {
   .section-white,
   .section-gray {
@@ -808,7 +800,7 @@ body {
   }
 
   .section-header {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
   
   .section-title {
@@ -892,7 +884,7 @@ body {
   }
 }
 
-/* Very Small Mobile (400px and below) */
+/* Very Small Mobile */
 @media (max-width: 400px) {
   .festival-card {
     width: 240px;
