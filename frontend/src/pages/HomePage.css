@@ -39,6 +39,13 @@ body {
   padding: 0 24px;
 }
 
+/* CRITICAL FIX: Remove container padding on mobile for scroll sections */
+@media (max-width: 768px) {
+  .container {
+    padding: 0;
+  }
+}
+
 .min-h-screen {
   min-height: 100vh;
 }
@@ -82,6 +89,14 @@ body {
   margin: 0;
 }
 
+/* Mobile section padding fix */
+@media (max-width: 768px) {
+  .section-white,
+  .section-gray {
+    padding: 24px 0;
+  }
+}
+
 /* ==================== SECTION HEADERS ==================== */
 .section-header {
   display: flex;
@@ -91,6 +106,8 @@ body {
   width: 100%;
   gap: 10px;
   flex-wrap: nowrap;
+  /* CRITICAL: Add padding to header only, not the scroll container */
+  padding: 0 16px;
 }
 
 .section-title-wrapper {
@@ -151,6 +168,18 @@ body {
 
 .view-all-link:hover .arrow-icon {
   transform: translateX(3px);
+}
+
+@media (max-width: 768px) {
+  .section-header {
+    margin-bottom: 16px;
+    padding: 0 16px;
+  }
+  
+  .view-all-link {
+    font-size: 0.75rem;
+    padding: 5px 11px;
+  }
 }
 
 /* ==================== HERO SECTION ==================== */
@@ -251,7 +280,19 @@ body {
   color: var(--orange);
 }
 
-/* ==================== HORIZONTAL SCROLL CONTAINERS - FIXED NO GAPS ==================== */
+@media (max-width: 768px) {
+  .hero-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .hero-button {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+/* ==================== HORIZONTAL SCROLL CONTAINERS - COMPLETELY FIXED ==================== */
 .horizontal-scroll-container {
   position: relative;
   margin: 0;
@@ -260,20 +301,33 @@ body {
   overflow: visible;
 }
 
+/* CRITICAL FIX: Remove any padding/margin that creates gaps */
 .horizontal-scroll {
   display: flex;
-  gap: 24px;
+  gap: 20px;
   overflow-x: auto;
   overflow-y: visible;
-  padding: 4px 0 8px 0;  /* FIXED: removed large bottom padding that caused blank space */
+  /* CRITICAL: No bottom padding to eliminate blank space */
+  padding: 4px 0 0 0;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x mandatory;
   align-items: stretch;
-  margin-bottom: 0;  /* FIXED: ensure no margin bottom */
+  margin-bottom: 0;
+  /* CRITICAL: Add padding to first/last items for visual breathing room */
+  scroll-padding: 0 16px;
 }
 
-/* Scrollbar styling - desktop only */
+/* Add padding to first and last items for spacing */
+.horizontal-scroll > *:first-child {
+  margin-left: 16px;
+}
+
+.horizontal-scroll > *:last-child {
+  margin-right: 16px;
+}
+
+/* Scrollbar styling */
 .horizontal-scroll::-webkit-scrollbar {
   height: 3px;
 }
@@ -299,9 +353,19 @@ body {
     height: 0;
     display: none;
   }
-
+  
   .horizontal-scroll {
     scrollbar-width: none;
+    gap: 16px;
+    padding: 4px 0 0 0;
+  }
+  
+  .horizontal-scroll > *:first-child {
+    margin-left: 16px;
+  }
+  
+  .horizontal-scroll > *:last-child {
+    margin-right: 16px;
   }
 }
 
@@ -319,7 +383,7 @@ body {
   flex-direction: column;
   border: 1px solid var(--border);
   cursor: pointer;
-  margin-bottom: 0;  /* FIXED: no margin bottom */
+  margin-bottom: 0;
 }
 
 .festival-card:hover {
@@ -413,6 +477,51 @@ body {
   transform: translateX(3px);
 }
 
+@media (max-width: 768px) {
+  .festival-card {
+    width: 270px;
+  }
+  
+  .festival-image-container {
+    height: 180px;
+  }
+  
+  .festival-content {
+    padding: 16px;
+  }
+  
+  .festival-name {
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .festival-card {
+    width: 260px;
+  }
+  
+  .festival-image-container {
+    height: 170px;
+  }
+  
+  .festival-content {
+    padding: 14px;
+  }
+  
+  .festival-name {
+    font-size: 1rem;
+  }
+  
+  .festival-description {
+    font-size: 0.8rem;
+  }
+  
+  .festival-link {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+  }
+}
+
 /* ==================== FOOD ITEM CARDS ==================== */
 .food-item-card {
   flex: 0 0 auto;
@@ -427,7 +536,7 @@ body {
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  margin-bottom: 0;  /* FIXED: no margin bottom */
+  margin-bottom: 0;
 }
 
 .food-item-card:hover {
@@ -522,6 +631,43 @@ body {
   transform: translateX(4px);
 }
 
+@media (max-width: 768px) {
+  .food-item-card {
+    width: 250px;
+  }
+  
+  .food-image-container {
+    height: 160px;
+  }
+}
+
+@media (max-width: 576px) {
+  .food-item-card {
+    width: 240px;
+  }
+  
+  .food-image-container {
+    height: 150px;
+  }
+  
+  .food-content {
+    padding: 12px;
+  }
+  
+  .food-name {
+    font-size: 1rem;
+  }
+  
+  .food-category {
+    font-size: 0.7rem;
+    padding: 3px 10px;
+  }
+  
+  .food-view-details {
+    font-size: 0.8rem;
+  }
+}
+
 /* ==================== GALLERY ITEMS ==================== */
 .gallery-item {
   flex: 0 0 auto;
@@ -535,7 +681,7 @@ body {
   box-shadow: var(--shadow-md);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
-  margin-bottom: 0;  /* FIXED: no margin bottom */
+  margin-bottom: 0;
 }
 
 .gallery-item:hover {
@@ -591,10 +737,33 @@ body {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+@media (max-width: 768px) {
+  .gallery-item {
+    width: 270px;
+    height: 270px;
+  }
+}
+
+@media (max-width: 576px) {
+  .gallery-item {
+    width: 260px;
+    height: 260px;
+  }
+  
+  .gallery-overlay {
+    padding: 16px;
+  }
+  
+  .gallery-title {
+    font-size: 0.9rem;
+  }
+}
+
 /* ==================== FEATURES SECTION ==================== */
 .features-header {
   text-align: center;
   margin-bottom: 48px;
+  padding: 0 16px;
 }
 
 .features-header .section-title {
@@ -610,6 +779,7 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 30px;
+  padding: 0 16px;
 }
 
 .feature-card {
@@ -661,6 +831,17 @@ body {
   color: var(--gray);
   line-height: 1.5;
   font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .feature-card {
+    padding: 28px 20px;
+  }
 }
 
 /* ==================== LOADER ==================== */
@@ -738,201 +919,6 @@ body {
   .features-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 24px;
-  }
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .container {
-    padding: 0 16px;
-  }
-
-  .section-white,
-  .section-gray {
-    padding: 24px 0;
-  }
-
-  .section-header {
-    margin-bottom: 20px;
-    gap: 10px;
-  }
-
-  .view-all-link {
-    font-size: 0.75rem;
-    padding: 5px 11px;
-  }
-
-  .hero-actions {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .hero-button {
-    width: 100%;
-    max-width: 280px;
-  }
-
-  .horizontal-scroll {
-    gap: 16px;
-    padding: 4px 0 4px 0;  /* FIXED: minimal padding on mobile */
-  }
-
-  .festival-card {
-    width: 270px;
-  }
-  
-  .festival-image-container {
-    height: 180px;
-  }
-  
-  .festival-content {
-    padding: 16px;
-  }
-  
-  .festival-name {
-    font-size: 1.125rem;
-  }
-  
-  .gallery-item {
-    width: 270px;
-    height: 270px;
-  }
-  
-  .food-item-card {
-    width: 250px;
-  }
-  
-  .food-image-container {
-    height: 160px;
-  }
-  
-  .features-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  
-  .feature-card {
-    padding: 28px 20px;
-  }
-}
-
-/* Small Mobile */
-@media (max-width: 576px) {
-  .section-white,
-  .section-gray {
-    padding: 20px 0;
-  }
-
-  .section-header {
-    margin-bottom: 16px;
-    gap: 8px;
-  }
-  
-  .section-title {
-    font-size: 1.1rem;
-  }
-
-  .hero-section {
-    padding: 50px 0;
-  }
-  
-  .hero-title {
-    font-size: 1.75rem;
-  }
-  
-  .hero-subtitle {
-    font-size: 0.95rem;
-    margin-bottom: 32px;
-  }
-
-  .festival-card {
-    width: 260px;
-  }
-  
-  .festival-image-container {
-    height: 170px;
-  }
-  
-  .festival-content {
-    padding: 14px;
-  }
-  
-  .festival-name {
-    font-size: 1rem;
-  }
-  
-  .festival-description {
-    font-size: 0.8rem;
-  }
-  
-  .festival-link {
-    padding: 6px 14px;
-    font-size: 0.8rem;
-  }
-  
-  .gallery-item {
-    width: 260px;
-    height: 260px;
-  }
-  
-  .gallery-overlay {
-    padding: 16px;
-  }
-  
-  .gallery-title {
-    font-size: 0.9rem;
-  }
-  
-  .food-item-card {
-    width: 240px;
-  }
-  
-  .food-image-container {
-    height: 150px;
-  }
-  
-  .food-content {
-    padding: 12px;
-  }
-  
-  .food-name {
-    font-size: 1rem;
-  }
-  
-  .food-category {
-    font-size: 0.7rem;
-    padding: 3px 10px;
-  }
-  
-  .food-view-details {
-    font-size: 0.8rem;
-  }
-}
-
-/* Very Small Mobile */
-@media (max-width: 400px) {
-  .festival-card {
-    width: 240px;
-  }
-  
-  .gallery-item {
-    width: 240px;
-    height: 240px;
-  }
-  
-  .food-item-card {
-    width: 220px;
-  }
-  
-  .hero-button {
-    min-width: auto;
-    width: 100%;
-    max-width: 240px;
-  }
-  
-  .festival-link {
-    width: 100%;
-    justify-content: center;
   }
 }
 

@@ -4,6 +4,8 @@
   color: white;
   padding: 48px 0 0;
   margin-top: auto;
+  position: relative;
+  width: 100%;
 }
 
 .footer-container {
@@ -37,7 +39,6 @@
   line-height: 1;
 }
 
-/* First <p> — the subtitle "CATERING, SERVICE AND EVENTS" */
 .footer-logo p:first-of-type {
   font-size: 0.7rem;
   font-weight: 700;
@@ -76,7 +77,6 @@
   margin: 0;
 }
 
-/* FIX: Target button elements (JSX uses buttons, not <a> tags) */
 .footer-links button {
   background: none;
   border: none;
@@ -137,11 +137,9 @@
   width: 16px;
   text-align: center;
   flex-shrink: 0;
-  /* Align icon with first line of text */
   margin-top: 2px;
 }
 
-/* FIX: Contact phone/email buttons */
 .footer-contact button {
   background: none;
   border: none;
@@ -214,11 +212,6 @@
   box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);
 }
 
-.social-icon.facebook:hover {
-  background: #1877F2;
-  box-shadow: 0 4px 14px rgba(24, 119, 242, 0.4);
-}
-
 /* ==================== FOOTER BOTTOM ==================== */
 .footer-bottom {
   text-align: center;
@@ -232,36 +225,52 @@
   margin: 0;
 }
 
-/* ==================== RESPONSIVE ==================== */
+/* ==================== RESPONSIVE DESIGN - COMPLETELY FIXED FOR MOBILE ==================== */
 
-/* Tablet */
-@media (max-width: 900px) {
+/* Tablet (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .footer {
+    padding: 40px 0 0;
+  }
+
+  .footer-container {
+    padding: 0 1.5rem;
+  }
+
   .footer-content {
     grid-template-columns: 1fr 1fr;
     gap: 32px;
     padding-bottom: 32px;
   }
 
-  /* Logo spans full width on tablet */
   .footer-logo {
     grid-column: 1 / -1;
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 20px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 24px;
+    align-items: center;
     padding-bottom: 24px;
     border-bottom: 1px solid #2a2a2a;
+    margin-bottom: 0;
   }
 
-  .footer-logo-text {
-    display: flex;
-    flex-direction: column;
+  .footer-logo h3 {
+    font-size: 1.5rem;
+  }
+
+  .footer-logo p:first-of-type {
+    font-size: 0.65rem;
+  }
+
+  .footer-logo p:last-of-type {
+    margin-bottom: 0;
   }
 }
 
-/* Mobile */
-@media (max-width: 600px) {
+/* Mobile (up to 767px) - COMPLETELY REFINED */
+@media (max-width: 767px) {
   .footer {
-    padding: 24px 0 0;
+    padding: 32px 0 0;
   }
 
   .footer-container {
@@ -269,87 +278,312 @@
   }
 
   .footer-content {
-    grid-template-columns: 1fr;
-    /* Tightened from 24px to 16px */
+    display: flex;
+    flex-direction: column;
     gap: 0;
     padding-bottom: 0;
   }
 
+  /* Logo Section - Top */
   .footer-logo {
+    padding: 0 0 20px 0;
+    margin-bottom: 0;
     border-bottom: 1px solid #2a2a2a;
-    padding-bottom: 16px;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  /* Each section gets a consistent top padding as its gap */
-  .footer-links,
-  .footer-contact {
-    padding-top: 16px;
-    padding-bottom: 16px;
-    border-top: none;
-    border-bottom: 1px solid #2a2a2a;
-  }
-
-  .footer-links h4,
-  .footer-contact h4 {
-    margin-bottom: 10px;
-    font-size: 0.68rem;
+    gap: 8px;
   }
 
   .footer-logo h3 {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+  }
+
+  .footer-logo p:first-of-type {
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
   }
 
   .footer-logo p {
-    font-size: 0.82rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
   }
 
-  /* Tighten list items on mobile */
+  /* Quick Links Section */
+  .footer-links {
+    padding: 20px 0;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  .footer-links h4 {
+    font-size: 0.7rem;
+    margin-bottom: 16px;
+    letter-spacing: 1.5px;
+  }
+
   .footer-links ul {
     gap: 0;
   }
 
+  .footer-links li {
+    margin: 0;
+  }
+
   .footer-links button {
-    padding: 4px 0;
-    font-size: 0.85rem;
-  }
-
-  .footer-contact p {
-    font-size: 0.82rem;
-    margin-bottom: 10px;
-  }
-
-  .social-icons {
-    justify-content: flex-start;
-    margin-top: 12px;
-  }
-
-  .social-icon {
-    width: 34px;
-    height: 34px;
+    padding: 10px 0;
     font-size: 0.9rem;
   }
 
+  .footer-links button::before {
+    font-size: 0.85rem;
+  }
+
+  /* Contact Section */
+  .footer-contact {
+    padding: 20px 0;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  .footer-contact h4 {
+    font-size: 0.7rem;
+    margin-bottom: 16px;
+    letter-spacing: 1.5px;
+  }
+
+  .footer-contact p {
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+    gap: 10px;
+  }
+
+  .footer-contact i {
+    width: 18px;
+    font-size: 0.85rem;
+    margin-top: 2px;
+  }
+
+  .footer-contact button {
+    font-size: 0.85rem;
+    word-break: break-word;
+    flex: 1;
+  }
+
+  /* Social Icons */
+  .social-icons {
+    margin-top: 16px;
+    gap: 12px;
+  }
+
+  .social-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
+    background: #2a2a2a;
+  }
+
+  /* Footer Bottom */
   .footer-bottom {
-    padding: 12px 0;
-    font-size: 0.72rem;
+    padding: 16px 0 20px;
+    font-size: 0.7rem;
   }
 }
 
-/* Small mobile */
-@media (max-width: 380px) {
+/* Small Mobile (480px and below) */
+@media (max-width: 480px) {
+  .footer {
+    padding: 28px 0 0;
+  }
+
   .footer-container {
     padding: 0 1rem;
+  }
+
+  .footer-logo {
+    padding: 0 0 16px 0;
   }
 
   .footer-logo h3 {
     font-size: 1.35rem;
   }
 
+  .footer-logo p:first-of-type {
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+  }
+
+  .footer-logo p {
+    font-size: 0.8rem;
+  }
+
+  .footer-links {
+    padding: 16px 0;
+  }
+
+  .footer-links h4 {
+    font-size: 0.65rem;
+    margin-bottom: 14px;
+  }
+
+  .footer-links button {
+    padding: 8px 0;
+    font-size: 0.85rem;
+  }
+
+  .footer-contact {
+    padding: 16px 0;
+  }
+
+  .footer-contact h4 {
+    font-size: 0.65rem;
+    margin-bottom: 14px;
+  }
+
+  .footer-contact p {
+    margin-bottom: 10px;
+    font-size: 0.8rem;
+    gap: 10px;
+  }
+
+  .footer-contact button {
+    font-size: 0.8rem;
+  }
+
+  .social-icons {
+    margin-top: 12px;
+    gap: 10px;
+  }
+
   .social-icon {
-    width: 34px;
-    height: 34px;
-    font-size: 0.9rem;
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .footer-bottom {
+    padding: 14px 0 18px;
+    font-size: 0.65rem;
+  }
+}
+
+/* Very Small Mobile (380px and below) */
+@media (max-width: 380px) {
+  .footer-container {
+    padding: 0 0.875rem;
+  }
+
+  .footer-logo h3 {
+    font-size: 1.25rem;
+  }
+
+  .footer-logo p:first-of-type {
+    font-size: 0.55rem;
+  }
+
+  .footer-logo p {
+    font-size: 0.75rem;
+  }
+
+  .footer-links button {
+    font-size: 0.8rem;
+    padding: 7px 0;
+  }
+
+  .footer-contact p {
+    font-size: 0.75rem;
+  }
+
+  .footer-contact button {
+    font-size: 0.75rem;
+  }
+
+  .social-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Touch Optimization for Mobile */
+@media (hover: none) and (pointer: coarse) {
+  .footer-links button {
+    min-height: 44px;
+    padding: 12px 0;
+  }
+
+  .social-icon {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .footer-contact button {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .footer-links button::before {
+    opacity: 1;
+    transform: translateX(0);
+    color: #FF6B35;
+  }
+
+  .footer-links button {
+    padding-left: 4px;
+    color: #FF6B35;
+  }
+}
+
+/* Smooth transitions for all interactive elements */
+.footer-links button,
+.social-icon,
+.footer-contact button {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ensure no horizontal scroll on mobile */
+@media (max-width: 767px) {
+  .footer,
+  .footer-container,
+  .footer-content {
+    overflow-x: hidden;
+  }
+
+  .footer-contact p {
+    word-break: break-word;
+  }
+
+  .footer-contact button {
+    word-break: break-word;
+    white-space: normal;
+  }
+}
+
+/* Animation for mobile menu items when clicked */
+.footer-links button:active {
+  transform: translateX(4px);
+  opacity: 0.8;
+}
+
+.social-icon:active {
+  transform: scale(0.95);
+}
+
+/* Accessibility improvements */
+.footer-links button:focus-visible,
+.footer-contact button:focus-visible,
+.social-icon:focus-visible {
+  outline: 2px solid #FF6B35;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .footer {
+    background: #0f0f0f;
+  }
+  
+  .social-icon {
+    background: #1f1f1f;
+    border-color: #2a2a2a;
   }
 }
