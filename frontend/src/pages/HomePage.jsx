@@ -49,22 +49,30 @@ const HomePage = () => {
         axios.get('/food')
       ]);
 
+      // Fix: Handle festivals data
       if (festivalsRes.data?.success) {
         setFestivals((festivalsRes.data.festivals || []).slice(0, 5));
       } else if (Array.isArray(festivalsRes.data)) {
         setFestivals(festivalsRes.data.slice(0, 5));
+      } else if (festivalsRes.data?.data && Array.isArray(festivalsRes.data.data)) {
+        setFestivals(festivalsRes.data.data.slice(0, 5));
       } else {
         setFestivals([]);
       }
 
+      // Fix: Handle gallery data
       if (galleryRes.data?.success) {
-        setGalleryItems((galleryRes.data.gallery || galleryRes.data.items || []).slice(0, 5));
+        const galleryArray = galleryRes.data.gallery || galleryRes.data.items || galleryRes.data.data || [];
+        setGalleryItems(galleryArray.slice(0, 5));
       } else if (Array.isArray(galleryRes.data)) {
         setGalleryItems(galleryRes.data.slice(0, 5));
+      } else if (galleryRes.data?.data && Array.isArray(galleryRes.data.data)) {
+        setGalleryItems(galleryRes.data.data.slice(0, 5));
       } else {
         setGalleryItems([]);
       }
 
+      // Fix: Handle food data
       let foodData = [];
       
       if (foodRes.data?.success && foodRes.data.foodItems) {
@@ -73,22 +81,26 @@ const HomePage = () => {
         foodData = foodRes.data;
       } else if (foodRes.data?.foodItems) {
         foodData = foodRes.data.foodItems;
+      } else if (foodRes.data?.data && Array.isArray(foodRes.data.data)) {
+        foodData = foodRes.data.data;
       }
       
-      const featuredFood = foodData
-        .filter(item => {
-          const isActive = item.isActive !== false;
-          const isAvailable = item.isAvailable !== false;
-          return isActive && isAvailable;
-        })
-        .sort((a, b) => {
-          if (a.isBestSeller && !b.isBestSeller) return -1;
-          if (!a.isBestSeller && b.isBestSeller) return 1;
-          if (a.displayOnHome && !b.displayOnHome) return -1;
-          if (!a.displayOnHome && b.displayOnHome) return 1;
-          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-        })
-        .slice(0, 8);
+      const featuredFood = Array.isArray(foodData) 
+        ? foodData
+            .filter(item => {
+              const isActive = item.isActive !== false;
+              const isAvailable = item.isAvailable !== false;
+              return isActive && isAvailable;
+            })
+            .sort((a, b) => {
+              if (a.isBestSeller && !b.isBestSeller) return -1;
+              if (!a.isBestSeller && b.isBestSeller) return 1;
+              if (a.displayOnHome && !b.displayOnHome) return -1;
+              if (!a.displayOnHome && b.displayOnHome) return 1;
+              return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+            })
+            .slice(0, 8)
+        : [];
       
       setFoodItems(featuredFood);
 
@@ -156,9 +168,6 @@ const HomePage = () => {
           <div className="section-header">
             <div className="section-title-wrapper">
               <h2 className="section-title">Festival Specials</h2>
-              <p className="section-subtitle">
-                Celebrate every festival with our authentic traditional feasts
-              </p>
             </div>
             <Link to="/festivals" className="view-all-link">
               View All <FaArrowRight className="arrow-icon" />
@@ -168,11 +177,11 @@ const HomePage = () => {
           <div className="horizontal-scroll-container">
             <div className="horizontal-scroll">
               {festivals.map(festival => (
-                <div key={festival._id} className="festival-card">
+                <div key={festival._id || festival.id} className="festival-card">
                   <div className="festival-image-container">
                     <img
                       src={festival.image || festival.bannerImage || '/default-festival.jpg'}
-                      alt={festival.name}
+                      alt={festival.name || 'Festival'}
                       className="festival-image"
                       onError={(e) => {
                         e.target.src = 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
@@ -181,13 +190,13 @@ const HomePage = () => {
                     />
                   </div>
                   <div className="festival-content">
-                    <h3 className="festival-name">{festival.name}</h3>
+                    <h3 className="festival-name">{festival.name || 'Festival'}</h3>
                     <p className="festival-description">
                       {festival.description || 'Traditional festival feast'}
                     </p>
                     <div className="festival-footer">
                       <Link 
-                        to={`/festival/${festival.slug || festival._id}`} 
+                        to={`/festival/${festival.slug || festival._id || festival.id}`} 
                         className="festival-link"
                       >
                         Explore <FaArrowRight />
@@ -217,7 +226,7 @@ const HomePage = () => {
             <div className="horizontal-scroll">
               {foodItems.map(item => (
                 <div 
-                  key={item._id} 
+                  key={item._id || item.id} 
                   className="food-item-card"
                   onClick={() => handleFoodItemClick(item)}
                   style={{ cursor: 'pointer' }}
@@ -225,7 +234,7 @@ const HomePage = () => {
                   <div className="food-image-container">
                     <img 
                       src={item.image || '/default-food.jpg'} 
-                      alt={item.name}
+                      alt={item.name || 'Food item'}
                       className="food-image"
                       onError={(e) => {
                         e.target.src = 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80';
@@ -239,7 +248,7 @@ const HomePage = () => {
                     )}
                   </div>
                   <div className="food-content">
-                    <h4 className="food-name">{item.name}</h4>
+                    <h4 className="food-name">{item.name || 'Item'}</h4>
                     {item.category && (
                       <span className="food-category">
                         {item.category}
@@ -262,7 +271,6 @@ const HomePage = () => {
           <div className="section-header">
             <div className="section-title-wrapper">
               <h2 className="section-title">Gallery</h2>
-              <p className="section-subtitle">A glimpse of our culinary journey</p>
             </div>
             <Link to="/gallery" className="view-all-link">
               View All <FaArrowRight className="arrow-icon" />
@@ -272,7 +280,7 @@ const HomePage = () => {
           <div className="horizontal-scroll-container">
             <div className="horizontal-scroll">
               {galleryItems.map(item => (
-                <div key={item._id} className="gallery-item">
+                <div key={item._id || item.id} className="gallery-item">
                   <div className="gallery-image-wrapper">
                     <img 
                       src={item.imageUrl || item.image || '/default-gallery.jpg'} 

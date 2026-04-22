@@ -1,44 +1,46 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosConfig';
 import './Footer.css';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const navigate = useNavigate();
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
-  // Track user actions
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const trackAction = async (type, additionalData = {}) => {
     try {
       await axios.post('/actions/log', {
         type,
         page: window.location.pathname,
-        ...additionalData
+        ...additionalData,
       });
     } catch (error) {
       console.error('Error tracking action:', error);
     }
   };
 
-  // Scroll to top function
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Navigate and scroll to top
   const handleNavigation = (path) => {
     navigate(path);
-    // Use setTimeout to ensure navigation completes first
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'instant' });
     }, 0);
   };
 
-  const handleWhatsAppClick = () => {
-    trackAction('whatsapp', {
-      userInfo: 'Footer WhatsApp Button'
-    });
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
+  const handleWhatsAppClick = () => {
+    trackAction('whatsapp', { userInfo: 'Footer WhatsApp Button' });
     const phoneNumber = '919447975836';
     const message = 'Hello Upasana Catering! I am interested in your services.';
     window.open(
@@ -52,10 +54,7 @@ const Footer = () => {
   };
 
   const handlePhoneClick = () => {
-    trackAction('call', {
-      userInfo: 'Footer Phone Number'
-    });
-    
+    trackAction('call', { userInfo: 'Footer Phone Number' });
     window.location.href = 'tel:+919447975836';
   };
 
@@ -63,134 +62,143 @@ const Footer = () => {
     window.location.href = 'mailto:upasanacatering@gmail.com';
   };
 
+  const navLinks = [
+    { label: 'Home', path: '/' },
+    { label: 'Menu', path: '/menu' },
+    { label: 'Festivals', path: '/festivals' },
+    { label: 'Gallery', path: '/gallery' },
+    { label: 'About', path: '/about' },
+  ];
+
   return (
-    <footer className="footer">
-      <div className="footer-container">
-        <div className="footer-content">
-          {/* Logo Section */}
-          <div className="footer-logo">
-            <h3>UPASANA</h3>
-            <p>CATERING, SERVICE AND EVENTS</p>
-            <p>Authentic Kerala cuisine delivered to your doorstep.</p>
-            <br />
-            <p>Serving customers across Alappuzha and Ernakulam districts</p>
-          </div>
+    <>
+      <footer className="footer">
+        <div className="footer-container">
 
-          {/* Quick Links */}
-          <div className="footer-links">
-            <h4>Quick Links</h4>
-            <ul>
-              <li>
-                <button 
-                  onClick={() => handleNavigation('/')} 
-                  style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', textDecoration: 'none', padding: 0, font: 'inherit', textAlign: 'left', width: '100%' }}
-                >
-                  Home
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => handleNavigation('/menu')} 
-                  style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', textDecoration: 'none', padding: 0, font: 'inherit', textAlign: 'left', width: '100%' }}
-                >
-                  Menu
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => handleNavigation('/festivals')} 
-                  style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', textDecoration: 'none', padding: 0, font: 'inherit', textAlign: 'left', width: '100%' }}
-                >
-                  Festivals
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => handleNavigation('/gallery')} 
-                  style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', textDecoration: 'none', padding: 0, font: 'inherit', textAlign: 'left', width: '100%' }}
-                >
-                  Gallery
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => handleNavigation('/about')} 
-                  style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', textDecoration: 'none', padding: 0, font: 'inherit', textAlign: 'left', width: '100%' }}
-                >
-                  About
-                </button>
-              </li>
-            </ul>
-          </div>
+          {/* Main Content */}
+          <div className="footer-top">
+            <div className="footer-content">
 
-          {/* Contact Info */}
-          <div className="footer-contact">
-            <h4>Contact Us</h4>
-            <p>
-              <i className="fas fa-map-marker-alt"></i> 
-              Upasana Caterings, Kuthiathodu, Cherthala, Alappuzha, Kerala, India
-            </p>
-            <p>
-              <i className="fas fa-phone"></i> 
-              <button 
-                onClick={handlePhoneClick}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'inherit',
-                  cursor: 'pointer',
-                  textDecoration: 'underline',
-                  padding: 0,
-                  font: 'inherit'
-                }}
-              >
-                +91 94479 75836
-              </button>
-            </p>
-            <p>
-              <i className="fas fa-envelope"></i> 
-              <button
-                onClick={handleEmailClick}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'inherit',
-                  cursor: 'pointer',
-                  textDecoration: 'underline',
-                  padding: 0,
-                  font: 'inherit'
-                }}
-              >
-                upasanacatering@gmail.com
-              </button>
-            </p>
-            
-            {/* Social Media */}
-            <div className="social-icons">
-              <button 
-                className="social-icon instagram"
-                onClick={handleInstagramClick}
-                aria-label="Instagram"
-              >
-                <i className="fab fa-instagram"></i>
-              </button>
-              
-              <button 
-                className="social-icon whatsapp"
-                onClick={handleWhatsAppClick}
-                aria-label="WhatsApp"
-              >
-                <i className="fab fa-whatsapp"></i>
-              </button>
+              {/* Brand */}
+              <div className="footer-logo">
+                <h3 className="footer-logo-name">
+                  Up<span>a</span>sana
+                </h3>
+                <p className="footer-logo-tagline">Catering, Service &amp; Events</p>
+                <div className="footer-logo-divider" />
+                <p className="footer-logo-desc">
+                  Authentic Kerala cuisine crafted with tradition and care —
+                  delivered to your doorstep for every celebration.
+                </p>
+                <span className="footer-logo-service-area">
+                  <i className="fas fa-map-marker-alt" />
+                  Serving Alappuzha &amp; Ernakulam districts
+                </span>
+              </div>
+
+              {/* Quick Links */}
+              <div className="footer-links">
+                <h4>Navigation</h4>
+                <ul>
+                  {navLinks.map(({ label, path }) => (
+                    <li key={path}>
+                      <button
+                        className="footer-nav-btn"
+                        onClick={() => handleNavigation(path)}
+                      >
+                        {label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Contact */}
+              <div className="footer-contact">
+                <h4>Get in Touch</h4>
+
+                <div className="footer-contact-item">
+                  <div className="footer-contact-icon">
+                    <i className="fas fa-map-marker-alt" />
+                  </div>
+                  <div className="footer-contact-text">
+                    <span className="footer-contact-label">Address</span>
+                    <span className="footer-contact-value">
+                      Kuthiathodu, Cherthala,<br />
+                      Alappuzha, Kerala, India
+                    </span>
+                  </div>
+                </div>
+
+                <div className="footer-contact-item">
+                  <div className="footer-contact-icon">
+                    <i className="fas fa-phone" />
+                  </div>
+                  <div className="footer-contact-text">
+                    <span className="footer-contact-label">Phone</span>
+                    <button className="footer-contact-link" onClick={handlePhoneClick}>
+                      +91 94479 75836
+                    </button>
+                  </div>
+                </div>
+
+                <div className="footer-contact-item">
+                  <div className="footer-contact-icon">
+                    <i className="fas fa-envelope" />
+                  </div>
+                  <div className="footer-contact-text">
+                    <span className="footer-contact-label">Email</span>
+                    <button className="footer-contact-link" onClick={handleEmailClick}>
+                      upasanacatering@gmail.com
+                    </button>
+                  </div>
+                </div>
+
+                <div className="social-icons">
+                  <button
+                    className="social-icon instagram"
+                    onClick={handleInstagramClick}
+                    aria-label="Follow us on Instagram"
+                    title="Instagram"
+                  >
+                    <i className="fab fa-instagram" />
+                  </button>
+                  <button
+                    className="social-icon whatsapp"
+                    onClick={handleWhatsAppClick}
+                    aria-label="Chat with us on WhatsApp"
+                    title="WhatsApp"
+                  >
+                    <i className="fab fa-whatsapp" />
+                  </button>
+                </div>
+              </div>
+
             </div>
           </div>
-        </div>
 
-        <div className="footer-bottom">
-          <p>&copy; 1998 UPASANA Catering. All rights reserved.</p>
+          <div className="footer-divider" />
+
+          <div className="footer-bottom">
+            <p className="footer-bottom-copy">
+              &copy; 1998&ndash;{currentYear} <strong>Upasana Catering</strong>. All rights reserved.
+            </p>
+            <span className="footer-bottom-badge">Est. 1998 · Kerala, India</span>
+          </div>
+
         </div>
-      </div>
-    </footer>
+      </footer>
+
+      {/* Scroll to top */}
+      <button
+        className={`footer-scroll-top${showScrollTop ? ' visible' : ''}`}
+        onClick={scrollToTop}
+        aria-label="Scroll to top"
+        title="Back to top"
+      >
+        <i className="fas fa-chevron-up" />
+      </button>
+    </>
   );
 };
 
