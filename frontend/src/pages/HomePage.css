@@ -87,10 +87,10 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  /* FIX: was 32px — reduced to close the gap between header and cards */
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   width: 100%;
-  gap: 16px;
+  gap: 10px;
+  /* CRITICAL: never let this wrap — title+button always stay on one row */
   flex-wrap: nowrap;
 }
 
@@ -100,37 +100,45 @@ body {
 }
 
 .section-title {
-  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  /* clamp: min 1.15rem so it's never tiny, scales with vw, max 2.2rem desktop */
+  font-size: clamp(1.15rem, 4vw, 2.2rem);
   font-weight: 700;
   color: var(--dark);
   line-height: 1.2;
-  margin-bottom: 8px;
-  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+  letter-spacing: -0.3px;
 }
 
 .section-subtitle {
   color: var(--gray);
-  font-size: clamp(0.875rem, 2vw, 1rem);
+  font-size: clamp(0.78rem, 2vw, 1rem);
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.4;
   max-width: 600px;
+  /* Clamp to 2 lines on mobile so it never pushes layout down */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .view-all-link {
   color: var(--orange);
   font-weight: 600;
   text-decoration: none;
-  font-size: clamp(0.875rem, 2vw, 1rem);
+  /* Fixed small size — no clamp, keeps button compact at all widths */
+  font-size: 0.8rem;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
+  gap: 5px;
+  padding: 6px 13px;
   border: 2px solid var(--orange);
   border-radius: 40px;
   transition: all 0.3s ease;
   white-space: nowrap;
   flex-shrink: 0;
   background: transparent;
+  margin-top: 2px;
 }
 
 .view-all-link:hover {
@@ -141,12 +149,12 @@ body {
 }
 
 .arrow-icon {
-  font-size: 0.85rem;
+  font-size: 0.72rem;
   transition: transform 0.3s ease;
 }
 
 .view-all-link:hover .arrow-icon {
-  transform: translateX(4px);
+  transform: translateX(3px);
 }
 
 /* ==================== HERO SECTION ==================== */
@@ -271,13 +279,13 @@ body {
   align-items: stretch;
 }
 
-/* Scrollbar styling */
+/* Scrollbar styling — desktop only */
 .horizontal-scroll::-webkit-scrollbar {
-  height: 4px;
+  height: 3px;
 }
 
 .horizontal-scroll::-webkit-scrollbar-track {
-  background: var(--border);
+  background: transparent;
   border-radius: 4px;
 }
 
@@ -288,7 +296,19 @@ body {
 
 .horizontal-scroll {
   scrollbar-width: thin;
-  scrollbar-color: var(--orange) var(--border);
+  scrollbar-color: var(--orange) transparent;
+}
+
+/* Hide scrollbar on mobile — the orange line at section bottom */
+@media (max-width: 768px) {
+  .horizontal-scroll::-webkit-scrollbar {
+    height: 0;
+    display: none;
+  }
+
+  .horizontal-scroll {
+    scrollbar-width: none;
+  }
 }
 
 /* ==================== FESTIVAL CARDS ==================== */
@@ -735,20 +755,18 @@ body {
 
   .section-white,
   .section-gray {
-    padding: 28px 0;
+    padding: 24px 0;
   }
 
+  /* Keep header as a row on mobile — title left, button right */
   .section-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
+    gap: 10px;
   }
 
   .view-all-link {
-    align-self: flex-start;
-    padding: 8px 18px;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
+    padding: 5px 11px;
   }
 
   .hero-actions {
@@ -809,11 +827,16 @@ body {
 @media (max-width: 576px) {
   .section-white,
   .section-gray {
-    padding: 24px 0;
+    padding: 20px 0;
   }
 
   .section-header {
-    margin-bottom: 14px;
+    margin-bottom: 12px;
+    gap: 8px;
+  }
+  
+  .section-title {
+    font-size: 1.1rem;
   }
   
   .section-title {

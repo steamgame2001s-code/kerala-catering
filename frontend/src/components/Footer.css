@@ -261,8 +261,7 @@
 /* Mobile */
 @media (max-width: 600px) {
   .footer {
-    /* FIX: reduced padding from 48px to 32px on mobile */
-    padding: 32px 0 0;
+    padding: 24px 0 0;
   }
 
   .footer-container {
@@ -270,45 +269,71 @@
   }
 
   .footer-content {
-    /* FIX: single column on mobile, gap reduced from 2rem (32px) to 24px */
     grid-template-columns: 1fr;
-    gap: 24px;
-    padding-bottom: 24px;
+    /* Tightened from 24px to 16px */
+    gap: 0;
+    padding-bottom: 0;
   }
 
   .footer-logo {
-    /* FIX: Remove bottom border used in tablet layout */
-    border-bottom: none;
-    padding-bottom: 0;
+    border-bottom: 1px solid #2a2a2a;
+    padding-bottom: 16px;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
   }
 
-  /* Divider lines between sections on mobile for clean separation */
+  /* Each section gets a consistent top padding as its gap */
   .footer-links,
   .footer-contact {
-    padding-top: 20px;
-    border-top: 1px solid #2a2a2a;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    border-top: none;
+    border-bottom: 1px solid #2a2a2a;
   }
 
   .footer-links h4,
   .footer-contact h4 {
-    margin-bottom: 14px;
+    margin-bottom: 10px;
+    font-size: 0.68rem;
   }
 
   .footer-logo h3 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+  }
+
+  .footer-logo p {
+    font-size: 0.82rem;
+  }
+
+  /* Tighten list items on mobile */
+  .footer-links ul {
+    gap: 0;
+  }
+
+  .footer-links button {
+    padding: 4px 0;
+    font-size: 0.85rem;
+  }
+
+  .footer-contact p {
+    font-size: 0.82rem;
+    margin-bottom: 10px;
   }
 
   .social-icons {
-    /* FIX: left-align on mobile instead of centered — matches rest of column */
     justify-content: flex-start;
-    margin-top: 16px;
+    margin-top: 12px;
+  }
+
+  .social-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 0.9rem;
   }
 
   .footer-bottom {
-    padding: 14px 0;
-    font-size: 0.75rem;
+    padding: 12px 0;
+    font-size: 0.72rem;
   }
 }
 
