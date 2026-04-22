@@ -87,10 +87,9 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
   width: 100%;
   gap: 10px;
-  /* CRITICAL: never let this wrap — title+button always stay on one row */
   flex-wrap: nowrap;
 }
 
@@ -100,7 +99,6 @@ body {
 }
 
 .section-title {
-  /* clamp: min 1.15rem so it's never tiny, scales with vw, max 2.2rem desktop */
   font-size: clamp(1.15rem, 4vw, 2.2rem);
   font-weight: 700;
   color: var(--dark);
@@ -115,7 +113,6 @@ body {
   font-weight: 400;
   line-height: 1.4;
   max-width: 600px;
-  /* Clamp to 2 lines on mobile so it never pushes layout down */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -126,7 +123,6 @@ body {
   color: var(--orange);
   font-weight: 600;
   text-decoration: none;
-  /* Fixed small size — no clamp, keeps button compact at all widths */
   font-size: 0.8rem;
   display: inline-flex;
   align-items: center;
@@ -165,7 +161,6 @@ body {
   text-align: center;
   position: relative;
   overflow: hidden;
-  /* FIX: Ensure no bottom margin leaks into next section */
   margin-bottom: 0;
 }
 
@@ -262,8 +257,7 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
-  overflow: hidden;
-  /* FIX: removed padding-bottom — was creating gap below cards */
+  overflow: visible;
 }
 
 .horizontal-scroll {
@@ -271,15 +265,15 @@ body {
   gap: 24px;
   overflow-x: auto;
   overflow-y: visible;
-  /* FIX: minimal top padding; bottom just enough for hover shadow */
-  padding: 4px 2px 20px;
+  padding: 4px 0 8px 0;  /* FIXED: removed large bottom padding that caused blank space */
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x mandatory;
   align-items: stretch;
+  margin-bottom: 0;  /* FIXED: ensure no margin bottom */
 }
 
-/* Scrollbar styling — desktop only */
+/* Scrollbar styling - desktop only */
 .horizontal-scroll::-webkit-scrollbar {
   height: 3px;
 }
@@ -299,7 +293,7 @@ body {
   scrollbar-color: var(--orange) transparent;
 }
 
-/* Hide scrollbar on mobile — the orange line at section bottom */
+/* Hide scrollbar on mobile */
 @media (max-width: 768px) {
   .horizontal-scroll::-webkit-scrollbar {
     height: 0;
@@ -325,6 +319,7 @@ body {
   flex-direction: column;
   border: 1px solid var(--border);
   cursor: pointer;
+  margin-bottom: 0;  /* FIXED: no margin bottom */
 }
 
 .festival-card:hover {
@@ -432,6 +427,7 @@ body {
   display: flex;
   flex-direction: column;
   cursor: pointer;
+  margin-bottom: 0;  /* FIXED: no margin bottom */
 }
 
 .food-item-card:hover {
@@ -506,7 +502,6 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border: 1px solid var(--orange-light);
-  /* FIX: was 'align-self: center' which broke flex column layout causing gaps */
   align-self: flex-start;
 }
 
@@ -516,7 +511,6 @@ body {
   font-size: 0.875rem;
   transition: all 0.3s ease;
   display: block;
-  /* FIX: Use margin-top: auto instead of padding-top to avoid adding phantom height */
   margin-top: auto;
   padding-top: 12px;
   border-top: 1px solid var(--border);
@@ -540,8 +534,8 @@ body {
   cursor: pointer;
   box-shadow: var(--shadow-md);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  /* FIX: Explicit flex-shrink: 0 to prevent gallery items collapsing in flex row */
   flex-shrink: 0;
+  margin-bottom: 0;  /* FIXED: no margin bottom */
 }
 
 .gallery-item:hover {
@@ -758,9 +752,8 @@ body {
     padding: 24px 0;
   }
 
-  /* Keep header as a row on mobile — title left, button right */
   .section-header {
-    margin-bottom: 14px;
+    margin-bottom: 20px;
     gap: 10px;
   }
 
@@ -781,7 +774,7 @@ body {
 
   .horizontal-scroll {
     gap: 16px;
-    padding: 4px 2px 16px;
+    padding: 4px 0 4px 0;  /* FIXED: minimal padding on mobile */
   }
 
   .festival-card {
@@ -831,16 +824,12 @@ body {
   }
 
   .section-header {
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     gap: 8px;
   }
   
   .section-title {
     font-size: 1.1rem;
-  }
-  
-  .section-title {
-    font-size: 1.5rem;
   }
 
   .hero-section {
