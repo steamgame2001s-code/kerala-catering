@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaEnvelope, FaPaperPlane, FaSpinner } from 'react-icons/fa';
-import axios from '../../api/axiosConfig'; // Import axios instance
+import axios from '../../api/axiosConfig';
 import './ForgotPassword.css';
 
 const ForgotPassword = () => {
@@ -25,24 +25,33 @@ const ForgotPassword = () => {
     setMessage('');
     
     try {
-      // Use axios instance instead of fetch
       const response = await axios.post('/admin/forgot-password', { email });
       
       if (response.data.success) {
-        setMessage('OTP has been sent to your email. Please check your inbox.');
+        setMessage(response.data.message || 'OTP has been sent to your email.');
+        // Store the email for OTP verification
+        localStorage.setItem('resetEmail', response.data.email || email);
         // Redirect to verify OTP page after 2 seconds
         setTimeout(() => {
-          navigate('/admin/verify-otp', { state: { email } });
+          navigate('/admin/verify-otp', { state: { email: response.data.email || email } });
         }, 2000);
-      } else {
-        setError(response.data.error || 'Failed to send OTP');
       }
     } catch (err) {
       console.error('Forgot password error:', err);
-      setError(err.response?.data?.error || 'Network error. Please check your connection.');
+      
+      // Handle different error status codes
+      if (err.response?.status === 403) {
+        setError(err.response?.data?.message || 'Only the business admin email can reset passwords.');
+      } else if (err.response?.status === 404) {
+        setError(err.response?.data?.message || 'Admin account not found. Please contact support.');
+      } else if (err.response?.status === 400) {
+        setError(err.response?.data?.error || 'Invalid request. Please check your email.');
+      } else {
+        setError(err.response?.data?.error || 'Network error. Please check your connection.');
+      }
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (
@@ -79,7 +88,7 @@ const ForgotPassword = () => {
               disabled={loading}
             />
             <p className="form-hint">
-              Enter the email address associated with your admin account.
+              Only the authorized business email can reset passwords.
             </p>
           </div>
 
@@ -116,13 +125,16 @@ const ForgotPassword = () => {
           <div className="info-box">
             <h4>📝 How it works:</h4>
             <ol>
-              <li>Enter your admin email address</li>
+              <li>Enter the authorized admin email address</li>
               <li>Check your email for a 6-digit OTP</li>
               <li>Enter the OTP on the next page</li>
               <li>Set your new password</li>
             </ol>
             <p className="note">
               <strong>Note:</strong> OTP is valid for 10 minutes only.
+            </p>
+            <p className="note">
+              <strong>Security:</strong> Only the business email ({process.env.REACT_APP_BUSINESS_EMAIL || 'upasanacatering@gmail.com'}) can reset passwords.
             </p>
           </div>
         </form>

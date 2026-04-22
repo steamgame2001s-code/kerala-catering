@@ -1,13 +1,14 @@
-// frontend/src/pages/FestivalsPage.jsx - PRODUCTION READY
 import React, { useState, useEffect } from 'react';
-import FestivalCard from '../components/FestivalCard';
+import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosConfig';
+import './FestivalsPage.css';
 
 const FestivalsPage = () => {
   const [festivals, setFestivals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
+  const navigate = useNavigate();
 
   const fetchFestivals = async () => {
     try {
@@ -17,16 +18,15 @@ const FestivalsPage = () => {
       console.log('🔍 Fetching festivals from API...');
       console.log('📡 API Base URL:', axios.defaults.baseURL);
       
-      // Use axios config (already has correct URL)
       const response = await axios.get('/festivals', {
-        timeout: 60000 // 60 seconds for first request (Render cold start)
+        timeout: 60000
       });
       
       console.log('✅ API Response:', response.data);
       
       if (response.data.success) {
         setFestivals(response.data.festivals || []);
-        console.log(`✅ Loaded ${response.data.festivals.length} festivals`);
+        console.log(`✅ Loaded ${response.data.festivals?.length || 0} festivals`);
       } else if (Array.isArray(response.data)) {
         setFestivals(response.data);
         console.log(`✅ Loaded ${response.data.length} festivals (array format)`);
@@ -59,20 +59,33 @@ const FestivalsPage = () => {
     fetchFestivals();
   };
 
+  const handleFestivalClick = (festivalId, slug) => {
+    const route = slug || festivalId;
+    navigate(`/festival/${route}`);
+  };
+
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    const baseURL = process.env.REACT_APP_API_URL || '';
+    return `${baseURL}${imagePath}`;
+  };
+
   if (loading) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-orange-500 mx-auto"></div>
-          <p className="mt-6 text-gray-600 text-lg font-semibold">Loading festivals...</p>
+      <div className="festivals-page">
+        <div className="loading-container-custom">
+          <div className="loading-spinner-custom"></div>
+          <p className="loading-text-custom">
+            {retryCount === 0 
+              ? "Discovering festival delights..." 
+              : `Retry attempt #${retryCount}...`}
+          </p>
           {retryCount === 0 && (
-            <p className="mt-2 text-gray-500 text-sm italic">
+            <p className="text-sm text-gray-500 mt-2 italic">
               First load may take 30-60 seconds if backend is sleeping
-            </p>
-          )}
-          {retryCount > 0 && (
-            <p className="mt-2 text-gray-500 text-sm">
-              Retry attempt #{retryCount}
             </p>
           )}
         </div>
@@ -82,19 +95,15 @@ const FestivalsPage = () => {
 
   if (error) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen px-4 bg-gray-50">
-        <div className="text-center max-w-md bg-white p-8 rounded-xl shadow-lg">
-          <div className="text-orange-500 text-6xl mb-6">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-3">Connection Error</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <button 
-            onClick={handleRetry}
-            className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-semibold transition-all duration-300 hover:shadow-lg"
-          >
+      <div className="festivals-page">
+        <div className="empty-state-custom">
+          <div className="empty-icon">⚠️</div>
+          <h3 className="empty-title">Unable to Load Festivals</h3>
+          <p className="empty-text">{error}</p>
+          <button className="refresh-btn" onClick={handleRetry}>
             🔄 Try Again
           </button>
           
-          {/* Debug Info */}
           <details className="mt-6 text-left">
             <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
               Debug Information
@@ -112,50 +121,88 @@ Environment: {process.env.NODE_ENV}
   }
 
   return (
-    <div className="festivals-page bg-gray-50 min-h-screen">
-      {/* Banner */}
-      <div className="relative h-64 bg-gradient-to-r from-orange-500 to-orange-600 shadow-xl">
-        <div className="absolute inset-0 flex flex-col justify-center items-center text-white px-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
-            Our Festivals
-          </h1>
-          <p className="text-lg md:text-xl">Experience authentic Kerala festival feasts</p>
+    <div className="festivals-page">
+      {/* Hero Banner */}
+      <div className="festivals-hero">
+        <div className="hero-content">
+          <h1 className="hero-title">Celebrate with Tradition</h1>
+          <p className="hero-subtitle">
+            Experience authentic Kerala festival feasts, crafted with love and tradition
+          </p>
         </div>
       </div>
-      <br />
-      
+
+      {/* Stats Bar */}
+      <div className="container mx-auto px-4">
+        <div className="stats-bar">
+          <div className="stats-count">{festivals.length}+</div>
+          <div className="stats-label">Festival Specials</div>
+        </div>
+      </div>
+
       {/* Festivals Grid */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="mb-8">
-          <div className="flex justify-between items-center flex-wrap gap-4">
-            <h2 className="text-3xl font-bold text-gray-800">Available Festivals</h2>
-            <span className="bg-orange-100 text-orange-700 px-5 py-2 rounded-full font-semibold">
-              {festivals.length} {festivals.length === 1 ? 'festival' : 'festivals'}
-            </span>
-          </div>
-          <p className="text-gray-600 mt-2">
-            Explore our authentic Kerala festival catering services
+      <div className="container mx-auto px-4">
+        <div className="section-header-custom">
+          <h2 className="section-title-custom">Our Festival Collection</h2>
+          <p className="section-subtitle-custom">
+            From Onam Sadhya to Christmas feasts, celebrate every occasion with us
           </p>
         </div>
 
         {festivals.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="festivals-grid">
             {festivals.map((festival) => (
-              <FestivalCard 
-                key={festival._id}
-                festival={festival}
-              />
+              <div 
+                key={festival._id} 
+                className="festival-card-custom"
+                onClick={() => handleFestivalClick(festival._id, festival.slug)}
+              >
+                <div className="card-image-wrapper">
+                  <img 
+                    src={getImageUrl(festival.image || festival.bannerImage)} 
+                    alt={festival.name}
+                    className="festival-card-image"
+                    onError={(e) => {
+                      e.target.src = 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=300&fit=crop';
+                      e.target.onerror = null;
+                    }}
+                  />
+                  {festival.isFeatured && (
+                    <div className="featured-badge">Featured</div>
+                  )}
+                  <div className="rating-badge">
+                    <span className="star-icon">★</span>
+                    <span>{festival.rating || '4.8'}</span>
+                  </div>
+                </div>
+                
+                <div className="card-content-custom">
+                  <h3 className="festival-card-title">{festival.name}</h3>
+                  <p className="festival-card-description">
+                    {festival.description || 'Experience the authentic flavors of this traditional festival feast, prepared with care and served with love.'}
+                  </p>
+                  
+                  <div className="card-footer-custom">
+                    <div className="price-info">
+                      <span className="price-label">Starting at</span>
+                      <span className="price-value">₹{festival.price || '2499'}</span>
+                    </div>
+                    <button className="explore-btn">
+                      Explore <span>→</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-16 bg-white rounded-xl shadow-lg">
-            <div className="text-gray-400 text-6xl mb-4">🍽️</div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">No festivals available</h3>
-            <p className="text-gray-500 mb-6">Check back soon for upcoming festival specials.</p>
-            <button 
-              onClick={handleRetry}
-              className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-semibold transition-all duration-300 hover:shadow-lg"
-            >
+          <div className="empty-state-custom">
+            <div className="empty-icon">🎉</div>
+            <h3 className="empty-title">Coming Soon!</h3>
+            <p className="empty-text">
+              New festival specials are being prepared. Check back soon!
+            </p>
+            <button className="refresh-btn" onClick={fetchFestivals}>
               Refresh
             </button>
           </div>
