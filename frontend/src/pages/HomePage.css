@@ -73,11 +73,21 @@ body {
 .section-white {
   padding: 60px 0;
   background: var(--white);
+  /* FIX: Collapse margin between adjacent same-colored sections */
+  margin: 0;
 }
 
 .section-gray {
   padding: 60px 0;
   background: var(--light-gray);
+  /* FIX: Collapse margin between adjacent same-colored sections */
+  margin: 0;
+}
+
+/* FIX: Remove any gap between adjacent sections caused by block-level spacing */
+.section-white + .section-white,
+.section-gray + .section-gray {
+  padding-top: 0;
 }
 
 /* ==================== SECTION HEADERS ==================== */
@@ -154,6 +164,8 @@ body {
   text-align: center;
   position: relative;
   overflow: hidden;
+  /* FIX: Ensure no bottom margin leaks into next section */
+  margin-bottom: 0;
 }
 
 .hero-section::before {
@@ -249,20 +261,27 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
+  /* FIX: Clip overflow so card shadows don't create phantom spacing below */
+  overflow: hidden;
+  /* FIX: Add vertical padding here instead of on the scroll child, so shadows render correctly */
+  padding-bottom: 8px;
 }
 
 .horizontal-scroll {
   display: flex;
   gap: 24px;
   overflow-x: auto;
-  overflow-y: hidden;
-  padding: 8px 0 16px;
+  overflow-y: visible;
+  /* FIX: Reduced top padding; removed bottom padding (moved to container) */
+  padding: 8px 4px 16px;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x mandatory;
+  /* FIX: Prevent the scrollbar and padding from adding unexpected height */
+  align-items: stretch;
 }
 
-/* Remove any extra margin/padding */
+/* Scrollbar styling */
 .horizontal-scroll::-webkit-scrollbar {
   height: 4px;
 }
@@ -477,7 +496,8 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border: 1px solid var(--orange-light);
-  align-self: center;
+  /* FIX: was 'align-self: center' which broke flex column layout causing gaps */
+  align-self: flex-start;
 }
 
 .food-view-details {
@@ -485,7 +505,8 @@ body {
   font-weight: 600;
   font-size: 0.875rem;
   transition: all 0.3s ease;
-  display: inline-block;
+  display: block;
+  /* FIX: Use margin-top: auto instead of padding-top to avoid adding phantom height */
   margin-top: auto;
   padding-top: 12px;
   border-top: 1px solid var(--border);
@@ -509,6 +530,8 @@ body {
   cursor: pointer;
   box-shadow: var(--shadow-md);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* FIX: Explicit flex-shrink: 0 to prevent gallery items collapsing in flex row */
+  flex-shrink: 0;
 }
 
 .gallery-item:hover {
@@ -750,7 +773,7 @@ body {
 
   .horizontal-scroll {
     gap: 16px;
-    padding: 6px 0 12px;
+    padding: 6px 4px 12px;
   }
 
   .festival-card {

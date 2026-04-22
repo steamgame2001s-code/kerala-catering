@@ -1,3 +1,4 @@
+/* ==================== ROOT VARIABLES ==================== */
 :root {
   --orange: #FF6B35;
   --orange-dark: #E55A2B;
@@ -10,14 +11,13 @@
   --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Reset */
+/* ==================== RESET ==================== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Ensure Font Awesome icons are loaded globally */
 .fas, .fab {
   font-family: 'Font Awesome 5 Free', 'Font Awesome 5 Brands';
   font-weight: 900;
@@ -39,7 +39,7 @@
   background: var(--white);
   box-shadow: var(--shadow);
   z-index: 1000;
-  height: 80px;
+  height: 72px;
 }
 
 .navbar-container {
@@ -50,10 +50,10 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
-/* ==================== LOGO SECTION ==================== */
+/* ==================== LOGO ==================== */
 .navbar-brand {
   flex-shrink: 0;
 }
@@ -66,11 +66,11 @@
 .logo-wrapper {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .logo-image {
-  height: 55px;
+  height: 50px;
   width: auto;
   object-fit: contain;
 }
@@ -78,10 +78,11 @@
 .logo-text {
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 
 .logo-main {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 800;
   color: var(--orange);
   line-height: 1;
@@ -89,7 +90,7 @@
 }
 
 .logo-sub {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--gray);
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -108,7 +109,8 @@
 .nav-list {
   display: flex;
   list-style: none;
-  gap: 6px;
+  gap: 2px;
+  align-items: center;
 }
 
 .nav-item {
@@ -118,22 +120,24 @@
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   text-decoration: none;
   color: var(--dark);
   font-weight: 500;
-  font-size: 15px;
-  padding: 10px 20px;
+  font-size: 14px;
+  padding: 8px 14px;
   border-radius: 8px;
   transition: all 0.2s ease;
   white-space: nowrap;
+  line-height: 1;
 }
 
 .nav-link i {
   color: var(--orange);
-  font-size: 15px;
-  width: 16px;
+  font-size: 13px;
+  width: 14px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .nav-link:hover {
@@ -145,11 +149,21 @@
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
-/* ==================== SEARCH CONTAINER - PROFESSIONAL SIZE ==================== */
+/* ==================== SEARCH — FIXED ==================== */
+/*
+  ROOT CAUSE OF THE MESSED-UP BUTTON:
+  The old code used overflow:visible on the pill container but then tried
+  to bleed a 48×48 circle out with margin-right:-2px. That makes the button
+  sit partially outside the pill border and look broken.
+
+  FIX: Make the pill overflow:hidden so the button clips cleanly inside it,
+  then size the button to exactly match the pill height so there are no gaps.
+  We use a pill height of 42px throughout.
+*/
 .search-container {
   position: relative;
 }
@@ -160,113 +174,121 @@
   background: var(--light-gray);
   border: 2px solid var(--border);
   border-radius: 30px;
-  overflow: visible;
-  transition: all 0.3s ease;
-  width: 280px; /* INCREASED from 240px */
-  height: 48px; /* INCREASED from 44px */
+  /* FIX: overflow must be hidden so the button clips into the pill correctly */
+  overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  width: 240px;
+  /* FIX: single source-of-truth height; button will match this exactly */
+  height: 42px;
 }
 
 .search-form:focus-within {
   border-color: var(--orange);
   background: var(--white);
-  box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.12);
 }
 
 .search-input {
   flex: 1;
   border: none;
-  padding: 12px 20px; /* INCREASED padding */
-  font-size: 15px; /* INCREASED from 14px */
+  /* FIX: padding adjusted to vertically center text in 42px pill */
+  padding: 0 16px;
+  font-size: 14px;
   color: var(--dark);
   background: transparent;
   outline: none;
   min-width: 0;
+  /* FIX: fill the full height of the pill */
   height: 100%;
+  line-height: 42px;
 }
 
 .search-input::placeholder {
   color: var(--gray);
 }
 
-/* SEARCH BUTTON - PROFESSIONAL SIZE */
+/* FIX: Button is a rectangle that fills the right end of the pill —
+   no negative margins, no border-radius trickery, no overflow:visible needed.
+   It sits flush inside the pill because the pill clips it. */
 .search-btn {
   background: var(--orange);
   border: none;
   color: white;
-  width: 48px; /* INCREASED from 44px */
-  height: 48px; /* INCREASED from 44px */
-  border-radius: 50%;
+  /* FIX: width is explicit; height matches pill exactly → no overflow, no gap */
+  width: 44px;
+  height: 100%; /* fills the 42px pill height perfectly */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.2s ease;
   flex-shrink: 0;
-  margin-right: -2px;
-  position: relative;
-  z-index: 1;
+  /* FIX: no border-radius — the pill's own border-radius clips the right corners */
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .search-btn:hover {
   background: var(--orange-dark);
-  transform: scale(1.08);
-  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
 }
 
 .search-btn i {
-  font-size: 18px; /* INCREASED from 16px */
+  font-size: 14px;
+  line-height: 1;
 }
 
-/* Login Icon Button */
+/* ==================== LOGIN ICON BUTTON ==================== */
 .login-icon-btn {
   background: none;
   border: none;
   color: var(--orange);
-  font-size: 26px; /* INCREASED from 24px */
+  font-size: 22px;
   cursor: pointer;
-  padding: 10px;
+  padding: 0;
   border-radius: 50%;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 46px; /* INCREASED from 40px */
-  height: 46px; /* INCREASED from 40px */
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
 }
 
 .login-icon-btn:hover {
   background: var(--orange-light);
-  transform: scale(1.08);
-}
-
-.login-icon-btn i {
-  transition: all 0.3s ease;
+  transform: scale(1.05);
 }
 
 .login-icon-btn:hover i {
   color: var(--orange-dark);
 }
 
-/* Action Buttons - PROFESSIONAL SIZE */
+/* ==================== ACTION BUTTONS ==================== */
 .action-buttons {
   display: flex;
-  gap: 12px;
+  gap: 8px;
+  align-items: center;
 }
 
 .btn-whatsapp,
 .btn-call {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 24px; /* INCREASED from 10px 20px */
+  gap: 7px;
+  /* FIX: vertical padding drives height; horizontal keeps it compact */
+  padding: 0 16px;
+  height: 42px;
   border: none;
   border-radius: 10px;
-  font-size: 15px; /* INCREASED from 14px */
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   text-decoration: none;
   white-space: nowrap;
+  line-height: 1;
 }
 
 .btn-whatsapp {
@@ -277,7 +299,7 @@
 .btn-whatsapp:hover {
   background: #128C7E;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(37, 211, 102, 0.4);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);
 }
 
 .btn-call {
@@ -288,12 +310,13 @@
 .btn-call:hover {
   background: var(--orange-dark);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.35);
 }
 
 .btn-whatsapp i,
 .btn-call i {
-  font-size: 17px; /* INCREASED from 16px */
+  font-size: 15px;
+  flex-shrink: 0;
 }
 
 /* ==================== MOBILE TOGGLE ==================== */
@@ -310,17 +333,17 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-  width: 26px;
+  width: 24px;
 }
 
 .hamburger-line {
-  height: 3px;
+  height: 2.5px;
   background: var(--dark);
   border-radius: 2px;
   transition: all 0.3s ease;
 }
 
-/* ==================== MOBILE MENU ==================== */
+/* ==================== MOBILE OVERLAY & MENU ==================== */
 .mobile-overlay {
   position: fixed;
   top: 0;
@@ -340,8 +363,8 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  animation: slideIn 0.3s ease;
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.28s ease;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
 }
 
 @keyframes slideIn {
@@ -349,35 +372,32 @@
   to { transform: translateX(0); }
 }
 
-/* Mobile Header - REMOVED TOP GAP */
 .mobile-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px;
+  padding: 18px 20px;
   border-bottom: 2px solid var(--border);
   background: var(--light-gray);
-  margin: 0; /* ENSURE no margin */
 }
 
 .mobile-menu-title {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--dark);
-  margin: 0;
 }
 
 .mobile-close {
   background: var(--white);
   border: none;
-  font-size: 26px;
+  font-size: 22px;
   color: var(--dark);
   cursor: pointer;
-  padding: 10px;
+  padding: 0;
   border-radius: 50%;
-  transition: all 0.3s ease;
-  width: 44px;
-  height: 44px;
+  transition: all 0.25s ease;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -389,76 +409,71 @@
   transform: rotate(90deg);
 }
 
-.mobile-close i {
-  line-height: 1;
-}
-
-/* Mobile Search - REMOVED TOP GAP */
+/* Mobile Search */
 .mobile-search-form {
   display: flex;
-  padding: 20px; /* Keep padding but ensure no extra margin */
-  margin: 0; /* ENSURE no margin */
+  padding: 16px 20px;
   border-bottom: 1px solid var(--border);
   gap: 10px;
+  align-items: center;
 }
 
 .mobile-search-input {
   flex: 1;
-  padding: 14px 18px;
+  padding: 12px 16px;
   border: 2px solid var(--border);
   border-radius: 25px;
-  font-size: 15px;
+  font-size: 14px;
   outline: none;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   background: var(--light-gray);
+  color: var(--dark);
 }
 
 .mobile-search-input:focus {
   border-color: var(--orange);
   background: var(--white);
-  box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
 }
 
 .mobile-search-btn {
   background: var(--orange);
   border: none;
   color: white;
-  width: 50px;
-  height: 50px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   flex-shrink: 0;
 }
 
 .mobile-search-btn:hover {
   background: var(--orange-dark);
-  transform: scale(1.08);
-  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+  transform: scale(1.06);
 }
 
 .mobile-search-btn i {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 /* Mobile Navigation */
 .mobile-nav {
   flex: 1;
-  padding: 10px 0;
-  margin: 0; /* ENSURE no margin */
+  padding: 8px 0;
 }
 
 .mobile-nav-item {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 18px 24px;
+  padding: 16px 24px;
   text-decoration: none;
   color: var(--dark);
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 500;
   transition: all 0.2s ease;
   border: none;
@@ -470,10 +485,10 @@
 
 .mobile-nav-item i {
   color: var(--orange);
-  width: 22px;
+  width: 20px;
   text-align: center;
   flex-shrink: 0;
-  font-size: 18px;
+  font-size: 17px;
 }
 
 .mobile-nav-item:hover {
@@ -484,29 +499,28 @@
 /* Mobile Contact */
 .mobile-contact {
   padding: 20px;
-  margin: 0; /* ENSURE no margin */
   border-top: 2px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   background: var(--light-gray);
 }
 
 .mobile-btn-whatsapp,
 .mobile-btn-call {
-  padding: 16px;
+  padding: 14px;
   border: none;
-  border-radius: 25px;
-  font-size: 16px;
+  border-radius: 12px;
+  font-size: 15px;
   font-weight: 600;
   text-decoration: none;
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 }
 
 .mobile-btn-whatsapp {
@@ -517,7 +531,7 @@
 .mobile-btn-whatsapp:hover {
   background: #128C7E;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(37, 211, 102, 0.4);
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
 }
 
 .mobile-btn-call {
@@ -528,81 +542,113 @@
 .mobile-btn-call:hover {
   background: var(--orange-dark);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
+  box-shadow: 0 4px 14px rgba(255, 107, 53, 0.35);
 }
 
 .mobile-btn-whatsapp i,
 .mobile-btn-call i {
-  font-size: 20px;
+  font-size: 18px;
 }
 
-/* Spacer */
+/* ==================== SPACER ==================== */
 .nav-spacer {
-  height: 80px;
+  height: 72px;
 }
 
-/* ==================== RESPONSIVE DESIGN ==================== */
+/* ==================== RESPONSIVE ==================== */
 
-/* Large Desktop */
+/* Large Desktop — give search a bit more room */
 @media (min-width: 1441px) {
   .navbar-container {
     max-width: 1600px;
     padding: 0 3rem;
   }
-  
-  .search-form {
-    width: 320px;
-  }
-}
 
-/* Tablet Landscape & Small Desktop */
-@media (min-width: 993px) and (max-width: 1440px) {
-  .navbar-container {
-    padding: 0 1.5rem;
-    gap: 1.5rem;
-  }
-  
   .search-form {
-    width: 240px;
+    width: 280px;
   }
-  
+
   .nav-link {
     padding: 9px 16px;
-    font-size: 14px;
+    font-size: 15px;
   }
-  
+
   .btn-whatsapp,
   .btn-call {
-    padding: 10px 20px;
-    font-size: 14px;
+    padding: 0 20px;
+    font-size: 15px;
   }
 }
 
-/* Tablets and below */
+/* Mid desktop — tighten spacing so nothing wraps */
+@media (min-width: 993px) and (max-width: 1280px) {
+  .navbar-container {
+    padding: 0 1.25rem;
+    gap: 1rem;
+  }
+
+  .search-form {
+    width: 200px;
+  }
+
+  .nav-link {
+    padding: 8px 10px;
+    font-size: 13px;
+    gap: 5px;
+  }
+
+  .nav-link i {
+    font-size: 12px;
+  }
+
+  .btn-whatsapp,
+  .btn-call {
+    padding: 0 12px;
+    font-size: 13px;
+    gap: 6px;
+  }
+
+  .btn-whatsapp i,
+  .btn-call i {
+    font-size: 13px;
+  }
+
+  .login-icon-btn {
+    font-size: 20px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .logo-main {
+    font-size: 20px;
+  }
+}
+
+/* Tablets and below — collapse to mobile hamburger */
 @media (max-width: 992px) {
   .navbar-nav,
   .navbar-right {
     display: none;
   }
-  
+
   .mobile-toggle {
     display: block;
   }
-  
+
   .navbar-container {
-    padding: 0 1.5rem;
+    padding: 0 1.25rem;
   }
-  
+
   .logo-image {
-    height: 48px;
+    height: 46px;
   }
-  
+
   .logo-main {
-    font-size: 22px;
+    font-size: 20px;
   }
-  
+
   .logo-sub {
-    font-size: 10px;
+    font-size: 9px;
   }
 }
 
@@ -610,56 +656,52 @@
   .mobile-menu {
     width: 100%;
   }
-  
+
   .navbar-container {
     padding: 0 1rem;
   }
-  
-  .navbar-professional {
-    height: 70px;
-  }
-  
-  .nav-spacer {
-    height: 70px;
-  }
-  
-  .logo-image {
-    height: 45px;
-  }
-  
-  .logo-main {
-    font-size: 20px;
-  }
-}
 
-/* Small Mobile */
-@media (max-width: 480px) {
+  .navbar-professional {
+    height: 64px;
+  }
+
+  .nav-spacer {
+    height: 64px;
+  }
+
   .logo-image {
     height: 42px;
   }
-  
+
   .logo-main {
-    font-size: 18px;
-  }
-  
-  .logo-sub {
-    font-size: 9px;
-  }
-  
-  .navbar-professional {
-    height: 65px;
-  }
-  
-  .nav-spacer {
-    height: 65px;
-  }
-  
-  .mobile-menu {
-    width: 100%;
+    font-size: 19px;
   }
 }
 
-/* For devices with very small height */
+@media (max-width: 480px) {
+  .logo-image {
+    height: 40px;
+  }
+
+  .logo-main {
+    font-size: 17px;
+  }
+
+  .logo-sub {
+    font-size: 8.5px;
+    letter-spacing: 1px;
+  }
+
+  .navbar-professional {
+    height: 60px;
+  }
+
+  .nav-spacer {
+    height: 60px;
+  }
+}
+
+/* Very short screens */
 @media (max-height: 600px) {
   .mobile-menu {
     height: auto;
