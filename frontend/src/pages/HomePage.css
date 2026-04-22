@@ -1,18 +1,22 @@
-/* frontend/src/pages/HomePage.css */
+/* frontend/src/pages/HomePage.css - COMPLETELY FIXED */
 
 /* ==================== ROOT VARIABLES ==================== */
 :root {
   --orange: #FF8A00;
   --orange-dark: #FF6D00;
   --orange-light: #FFE0B2;
+  --orange-50: #fff7ed;
   --white: #ffffff;
   --dark: #1a202c;
   --gray: #4a5568;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
   --light-gray: #f8fafc;
   --border: #e2e8f0;
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-hover: 0 12px 28px rgba(255, 107, 0, 0.15);
 }
 
 /* ==================== GLOBAL STYLES ==================== */
@@ -80,10 +84,11 @@ body {
 .section-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 48px;
+  align-items: center;
+  margin-bottom: 40px;
   width: 100%;
   gap: 24px;
+  flex-wrap: wrap;
 }
 
 .section-title-wrapper {
@@ -92,19 +97,19 @@ body {
 }
 
 .section-title {
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
   font-weight: 700;
   color: var(--dark);
   line-height: 1.2;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   letter-spacing: -0.5px;
 }
 
 .section-subtitle {
   color: var(--gray);
-  font-size: clamp(1rem, 2vw, 1.125rem);
+  font-size: clamp(0.875rem, 2vw, 1rem);
   font-weight: 400;
-  line-height: 1.6;
+  line-height: 1.5;
   max-width: 600px;
 }
 
@@ -116,12 +121,13 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 24px;
+  padding: 10px 20px;
   border: 2px solid var(--orange);
-  border-radius: 8px;
+  border-radius: 40px;
   transition: all 0.3s ease;
   white-space: nowrap;
   flex-shrink: 0;
+  background: transparent;
 }
 
 .view-all-link:hover {
@@ -132,7 +138,7 @@ body {
 }
 
 .arrow-icon {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   transition: transform 0.3s ease;
 }
 
@@ -186,7 +192,7 @@ body {
 }
 
 .hero-subtitle {
-  font-size: clamp(1rem, 3vw, 1.375rem);
+  font-size: clamp(1rem, 3vw, 1.25rem);
   opacity: 0.95;
   line-height: 1.6;
   margin-bottom: 48px;
@@ -206,11 +212,11 @@ body {
 .hero-button {
   background: var(--white);
   color: var(--orange);
-  padding: clamp(14px, 3vw, 16px) clamp(24px, 5vw, 36px);
-  border-radius: 8px;
+  padding: clamp(12px, 3vw, 14px) clamp(24px, 5vw, 32px);
+  border-radius: 40px;
   font-weight: 600;
   text-decoration: none;
-  font-size: clamp(1rem, 2vw, 1.125rem);
+  font-size: clamp(0.9rem, 2vw, 1rem);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-block;
   border: 2px solid transparent;
@@ -246,17 +252,17 @@ body {
 
 .horizontal-scroll {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 10px 0 30px;
+  padding: 8px 0 24px;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x proximity;
+  scroll-snap-type: x mandatory;
 }
 
 .horizontal-scroll::-webkit-scrollbar {
-  height: 6px;
+  height: 4px;
 }
 
 .horizontal-scroll::-webkit-scrollbar-track {
@@ -266,39 +272,35 @@ body {
 }
 
 .horizontal-scroll::-webkit-scrollbar-thumb {
-  background: var(--orange-light);
+  background: var(--orange);
   border-radius: 4px;
   transition: all 0.3s ease;
 }
 
-.horizontal-scroll:hover::-webkit-scrollbar-thumb {
-  background: var(--orange);
-}
-
 .horizontal-scroll {
   scrollbar-width: thin;
-  scrollbar-color: var(--orange-light) var(--border);
+  scrollbar-color: var(--orange) var(--border);
 }
 
-/* ==================== FESTIVAL CARDS ==================== */
+/* ==================== FESTIVAL CARDS - UPDATED ==================== */
 .festival-card {
   flex: 0 0 auto;
-  width: clamp(260px, 30vw, 320px);
+  width: clamp(280px, 28vw, 320px);
   scroll-snap-align: start;
   background: var(--white);
-  border-radius: 16px;
+  border-radius: 20px;
   box-shadow: var(--shadow-md);
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   border: 1px solid var(--border);
-  min-height: 420px;
+  cursor: pointer;
 }
 
 .festival-card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-6px);
   border-color: var(--orange-light);
 }
 
@@ -314,7 +316,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.7s ease;
+  transition: transform 0.5s ease;
 }
 
 .festival-card:hover .festival-image {
@@ -329,10 +331,10 @@ body {
 }
 
 .festival-name {
-  font-size: clamp(1.1rem, 3vw, 1.375rem);
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--dark);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   line-height: 1.3;
   word-wrap: break-word;
 }
@@ -340,9 +342,13 @@ body {
 .festival-description {
   color: var(--gray);
   margin-bottom: 16px;
-  line-height: 1.6;
+  line-height: 1.5;
   flex: 1;
-  font-size: clamp(0.875rem, 2vw, 1rem);
+  font-size: 0.875rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .festival-footer {
@@ -362,12 +368,12 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
+  padding: 8px 18px;
   border: 2px solid var(--orange);
-  border-radius: 8px;
+  border-radius: 40px;
   white-space: nowrap;
   background: transparent;
-  font-size: clamp(0.85rem, 2vw, 1rem);
+  font-size: 0.875rem;
 }
 
 .festival-link:hover {
@@ -378,20 +384,20 @@ body {
 
 .festival-link svg {
   transition: transform 0.3s ease;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 .festival-link:hover svg {
   transform: translateX(3px);
 }
 
-/* ==================== FOOD ITEM CARDS ==================== */
+/* ==================== FOOD ITEM CARDS - UPDATED ==================== */
 .food-item-card {
   flex: 0 0 auto;
-  width: clamp(260px, 30vw, 320px);
+  width: clamp(260px, 26vw, 300px);
   scroll-snap-align: start;
   background: var(--white);
-  border-radius: 12px;
+  border-radius: 16px;
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   transition: all 0.3s ease;
@@ -399,17 +405,17 @@ body {
   text-align: center;
   display: flex;
   flex-direction: column;
-  min-height: 380px;
+  cursor: pointer;
 }
 
 .food-item-card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-hover);
   transform: translateY(-4px);
   border-color: var(--orange-light);
 }
 
 .food-image-container {
-  height: 200px;
+  height: 180px;
   overflow: hidden;
   position: relative;
   flex-shrink: 0;
@@ -424,83 +430,64 @@ body {
 }
 
 .food-item-card:hover .food-image {
-  transform: scale(1.1);
+  transform: scale(1.08);
 }
 
 .best-seller-badge {
   position: absolute;
   top: 12px;
   right: 12px;
-  background: var(--orange);
+  background: linear-gradient(135deg, var(--orange), var(--orange-dark));
   color: white;
-  padding: 6px 14px;
+  padding: 5px 12px;
   border-radius: 20px;
-  font-size: clamp(0.7rem, 1.5vw, 0.75rem);
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   z-index: 2;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-sm);
 }
 
 .food-content {
-  padding: 20px;
+  padding: 16px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
 .food-name {
   font-weight: 600;
   color: var(--dark);
   margin-bottom: 8px;
-  font-size: clamp(1.05rem, 2.5vw, 1.25rem);
+  font-size: 1.1rem;
   line-height: 1.3;
-  min-height: 2.6em;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  word-wrap: break-word;
-}
-
-.food-description {
-  color: var(--gray);
-  font-size: clamp(0.85rem, 2vw, 0.95rem);
-  line-height: 1.5;
-  margin-bottom: 12px;
-  flex: 1;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-height: 2.85em;
 }
 
 .food-category {
   display: inline-block;
-  background: var(--light-gray);
+  background: var(--orange-50);
   color: var(--orange);
   padding: 4px 12px;
-  border-radius: 15px;
-  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+  border-radius: 20px;
+  font-size: 0.75rem;
   font-weight: 600;
   margin-bottom: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border: 1px solid var(--orange-light);
+  align-self: center;
 }
 
 .food-view-details {
   color: var(--orange);
   font-weight: 600;
   text-decoration: none;
-  font-size: clamp(0.875rem, 2vw, 0.95rem);
+  font-size: 0.875rem;
   transition: all 0.3s ease;
   display: inline-block;
   margin-top: auto;
@@ -513,16 +500,23 @@ body {
   transform: translateX(4px);
 }
 
-/* ==================== GALLERY ITEMS ==================== */
+/* ==================== GALLERY ITEMS - UPDATED ==================== */
 .gallery-item {
   flex: 0 0 auto;
-  width: clamp(260px, 30vw, 320px);
+  width: clamp(280px, 28vw, 320px);
   scroll-snap-align: start;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
   position: relative;
   height: 300px;
   cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gallery-item:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-hover);
 }
 
 .gallery-image-wrapper {
@@ -537,7 +531,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .gallery-item:hover .gallery-image {
@@ -550,12 +544,13 @@ body {
   left: 0;
   right: 0;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%);
-  padding: 24px 20px;
+  padding: 20px;
   color: white;
   opacity: 0;
   transition: opacity 0.3s ease;
   display: flex;
   align-items: flex-end;
+  min-height: 100px;
 }
 
 .gallery-item:hover .gallery-overlay {
@@ -564,7 +559,7 @@ body {
 
 .gallery-title {
   font-weight: 600;
-  font-size: clamp(1rem, 2.5vw, 1.125rem);
+  font-size: 1rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -575,11 +570,11 @@ body {
 /* ==================== FEATURES SECTION ==================== */
 .features-header {
   text-align: center;
-  margin-bottom: 60px;
+  margin-bottom: 48px;
 }
 
 .features-header .section-title {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .features-header .section-subtitle {
@@ -589,59 +584,59 @@ body {
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 30px;
 }
 
 .feature-card {
   background: var(--white);
-  border-radius: 16px;
+  border-radius: 20px;
   box-shadow: var(--shadow-md);
-  padding: 40px 24px;
+  padding: 32px 20px;
   text-align: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   height: 100%;
-  border: 2px solid transparent;
+  border: 1px solid var(--border);
 }
 
 .feature-card:hover {
   border-color: var(--orange);
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-hover);
 }
 
 .feature-icon-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   background: var(--orange-light);
   border-radius: 50%;
-  margin: 0 auto 24px;
+  margin: 0 auto 20px;
   color: var(--orange);
-  font-size: 2rem;
+  font-size: 1.75rem;
   transition: all 0.3s ease;
 }
 
 .feature-card:hover .feature-icon-wrapper {
   background: var(--orange);
   color: white;
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 
 .feature-title {
-  font-size: clamp(1.2rem, 3vw, 1.375rem);
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--dark);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   line-height: 1.3;
 }
 
 .feature-description {
   color: var(--gray);
-  line-height: 1.6;
-  font-size: clamp(0.95rem, 2vw, 1.05rem);
+  line-height: 1.5;
+  font-size: 0.9rem;
 }
 
 /* ==================== LOADER ==================== */
@@ -655,8 +650,8 @@ body {
 }
 
 .spinner {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border: 4px solid var(--border);
   border-top: 4px solid var(--orange);
   border-radius: 50%;
@@ -666,7 +661,7 @@ body {
 .loading-text {
   margin-top: 20px;
   color: var(--gray);
-  font-size: clamp(1rem, 2vw, 1.125rem);
+  font-size: 1rem;
   font-weight: 500;
 }
 
@@ -677,7 +672,52 @@ body {
 
 /* ==================== RESPONSIVE DESIGN ==================== */
 
-/* Tablets (768px and below) */
+/* Laptop / Desktop (1024px and above) */
+@media (min-width: 1024px) {
+  .horizontal-scroll {
+    gap: 28px;
+  }
+  
+  .festival-card {
+    width: 320px;
+  }
+  
+  .gallery-item {
+    width: 320px;
+    height: 320px;
+  }
+  
+  .food-item-card {
+    width: 300px;
+  }
+}
+
+/* Tablet (768px to 1023px) */
+@media (max-width: 1023px) and (min-width: 769px) {
+  .horizontal-scroll {
+    gap: 20px;
+  }
+  
+  .festival-card {
+    width: 290px;
+  }
+  
+  .gallery-item {
+    width: 290px;
+    height: 290px;
+  }
+  
+  .food-item-card {
+    width: 270px;
+  }
+  
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+}
+
+/* Mobile (768px and below) */
 @media (max-width: 768px) {
   .container {
     padding: 0 16px;
@@ -692,12 +732,13 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
-    margin-bottom: 32px;
+    margin-bottom: 28px;
   }
 
   .view-all-link {
     align-self: flex-start;
-    padding: 10px 20px;
+    padding: 8px 18px;
+    font-size: 0.85rem;
   }
 
   .hero-actions {
@@ -707,7 +748,7 @@ body {
 
   .hero-button {
     width: 100%;
-    max-width: 320px;
+    max-width: 280px;
   }
 
   .horizontal-scroll-container {
@@ -717,27 +758,50 @@ body {
 
   .horizontal-scroll {
     gap: 16px;
-    padding: 10px 0 24px;
+    padding: 6px 0 20px;
   }
 
-  .festival-card,
-  .food-item-card,
+  .festival-card {
+    width: 270px;
+  }
+  
+  .festival-image-container {
+    height: 180px;
+  }
+  
+  .festival-content {
+    padding: 16px;
+  }
+  
+  .festival-name {
+    font-size: 1.125rem;
+  }
+  
   .gallery-item {
-    width: 280px;
+    width: 270px;
+    height: 270px;
   }
-
+  
+  .food-item-card {
+    width: 250px;
+  }
+  
+  .food-image-container {
+    height: 160px;
+  }
+  
   .features-grid {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 20px;
+  }
+  
+  .feature-card {
+    padding: 28px 20px;
   }
 }
 
-/* Mobile (576px and below) */
+/* Small Mobile (576px and below) */
 @media (max-width: 576px) {
-  .container {
-    padding: 0 16px;
-  }
-
   .section-white,
   .section-gray {
     padding: 32px 0;
@@ -746,45 +810,109 @@ body {
   .section-header {
     margin-bottom: 24px;
   }
+  
+  .section-title {
+    font-size: 1.5rem;
+  }
 
   .hero-section {
-    padding: 60px 0;
+    padding: 50px 0;
+  }
+  
+  .hero-title {
+    font-size: 1.75rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 0.95rem;
+    margin-bottom: 32px;
   }
 
-  .festival-card,
-  .food-item-card,
-  .gallery-item {
+  .festival-card {
     width: 260px;
   }
-
-  .festival-content,
-  .food-content {
+  
+  .festival-image-container {
+    height: 170px;
+  }
+  
+  .festival-content {
+    padding: 14px;
+  }
+  
+  .festival-name {
+    font-size: 1rem;
+  }
+  
+  .festival-description {
+    font-size: 0.8rem;
+  }
+  
+  .festival-link {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+  }
+  
+  .gallery-item {
+    width: 260px;
+    height: 260px;
+  }
+  
+  .gallery-overlay {
     padding: 16px;
   }
-
-  .festival-footer {
-    margin-top: 12px;
-    padding-top: 12px;
+  
+  .gallery-title {
+    font-size: 0.9rem;
   }
-
-  .festival-link {
-    padding: 8px 16px;
+  
+  .food-item-card {
+    width: 240px;
+  }
+  
+  .food-image-container {
+    height: 150px;
+  }
+  
+  .food-content {
+    padding: 12px;
+  }
+  
+  .food-name {
+    font-size: 1rem;
+  }
+  
+  .food-category {
+    font-size: 0.7rem;
+    padding: 3px 10px;
+  }
+  
+  .food-view-details {
+    font-size: 0.8rem;
   }
 }
 
 /* Very Small Mobile (400px and below) */
 @media (max-width: 400px) {
-  .festival-card,
-  .food-item-card,
-  .gallery-item {
+  .festival-card {
     width: 240px;
   }
-
+  
+  .gallery-item {
+    width: 240px;
+    height: 240px;
+  }
+  
+  .food-item-card {
+    width: 220px;
+  }
+  
   .hero-button {
     min-width: auto;
     width: 100%;
+    max-width: 240px;
   }
-
+  
   .festival-link {
     width: 100%;
     justify-content: center;
@@ -832,5 +960,22 @@ button:focus-visible {
   .gallery-overlay {
     opacity: 1;
     background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+  }
+  
+  .festival-card:hover .festival-image,
+  .gallery-item:hover .gallery-image {
+    transform: none;
+  }
+}
+
+/* ==================== SMOOTH SCROLLING ==================== */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ==================== FIX FOR IOS SAFARI ==================== */
+@supports (-webkit-touch-callout: none) {
+  .min-h-screen {
+    min-height: -webkit-fill-available;
   }
 }

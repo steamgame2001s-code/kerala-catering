@@ -135,68 +135,47 @@ const GalleryPage = () => {
       {/* Gallery Grid - Dynamic from admin */}
       <div className="gallery-container">
         {filteredItems.length > 0 ? (
-          <>
-            <div className="gallery-grid">
-              {filteredItems.map((item, index) => (
-                <div 
-                  key={item._id || index} 
-                  className="gallery-item-custom"
-                  onClick={() => setSelectedImage(item)}
-                >
-                  <div className="gallery-image-wrapper-custom">
-                    <img 
-                      src={getImageUrl(item.imageUrl || item.image)} 
-                      alt={item.title || 'Gallery image'}
-                      className="gallery-image-custom"
-                      onError={(e) => {
-                        // Silent fail - use fallback image
-                        e.target.src = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&h=450&fit=crop';
-                        e.target.onerror = null;
-                      }}
-                    />
-                    {item.featured && (
-                      <div className="featured-badge-custom">Featured</div>
-                    )}
-                    <button className="view-btn">
-                      🔍
-                    </button>
-                    <div className="gallery-overlay-custom">
-                      <h3 className="gallery-title-custom">{item.title || 'Delicious Moments'}</h3>
-                      <span className="gallery-category-custom">
-                        {item.category || 'Cuisine'}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="gallery-card-footer">
-                    <span className="gallery-date">
-                      {formatDate(item.createdAt)}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      {item.category || 'Uncategorized'}
+          <div className="gallery-grid">
+            {filteredItems.map((item, index) => (
+              <div 
+                key={item._id || index} 
+                className="gallery-item-custom"
+                onClick={() => setSelectedImage(item)}
+              >
+                <div className="gallery-image-wrapper-custom">
+                  <img 
+                    src={getImageUrl(item.imageUrl || item.image)} 
+                    alt={item.title || 'Gallery image'}
+                    className="gallery-image-custom"
+                    onError={(e) => {
+                      e.target.src = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&h=450&fit=crop';
+                      e.target.onerror = null;
+                    }}
+                  />
+                  {item.featured && (
+                    <div className="featured-badge-custom">Featured</div>
+                  )}
+                  <button className="view-btn">
+                    🔍
+                  </button>
+                  <div className="gallery-overlay-custom">
+                    <h3 className="gallery-title-custom">{item.title || 'Delicious Moments'}</h3>
+                    <span className="gallery-category-custom">
+                      {item.category || 'Cuisine'}
                     </span>
                   </div>
                 </div>
-              ))}
-            </div>
-
-            {/* Stats Section - Dynamic from admin data */}
-            <div className="gallery-stats">
-              <div className="stats-grid">
-                <div className="stat-item">
-                  <span className="stat-number">{galleryItems.length}+</span>
-                  <span className="stat-label">Moments Captured</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-number">{categories.length - 1}</span>
-                  <span className="stat-label">Categories</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-number">10+</span>
-                  <span className="stat-label">Years of Excellence</span>
+                <div className="gallery-card-footer">
+                  <span className="gallery-date">
+                    {formatDate(item.createdAt)}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    {item.category || 'Uncategorized'}
+                  </span>
                 </div>
               </div>
-            </div>
-          </>
+            ))}
+          </div>
         ) : (
           <div className="empty-gallery">
             <div className="empty-gallery-icon">🖼️</div>

@@ -1,4 +1,4 @@
-/* FestivalsPage.css - Professional Design Matching FoodMenu */
+/* FestivalsPage.css - Professional Design */
 
 :root {
   --primary-orange: #f97316;
@@ -76,18 +76,17 @@
   margin: 0 auto;
 }
 
-/* Stats Bar */
+/* Stats Bar - FIXED POSITION */
 .stats-bar {
   background: var(--white);
-  padding: 20px 32px;
-  margin-top: -40px;
-  margin-bottom: 48px;
+  padding: 24px 32px;
+  margin: 40px auto 32px;
   border-radius: 60px;
-  box-shadow: var(--shadow-xl);
-  max-width: 300px;
-  margin-left: auto;
-  margin-right: auto;
+  box-shadow: var(--shadow-lg);
+  max-width: 280px;
   text-align: center;
+  position: relative;
+  z-index: 5;
 }
 
 .stats-count {
@@ -151,7 +150,7 @@
   margin: 0 auto;
 }
 
-/* Festival Card */
+/* Festival Card - FIXED CLICKABLE */
 .festival-card-custom {
   background: var(--white);
   border-radius: 16px;
@@ -397,8 +396,7 @@
   }
   
   .stats-bar {
-    margin-top: -30px;
-    margin-bottom: 32px;
+    margin: 30px auto 24px;
     padding: 16px 24px;
   }
   

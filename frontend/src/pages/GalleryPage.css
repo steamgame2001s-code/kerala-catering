@@ -1,4 +1,4 @@
-/* GalleryPage.css - Professional Gallery Design Matching FoodMenu */
+/* GalleryPage.css - Professional Gallery Design (No Stats) */
 
 :root {
   --primary-orange: #f97316;
@@ -279,40 +279,6 @@
   color: var(--gray-500);
 }
 
-/* Stats Section */
-.gallery-stats {
-  background: var(--white);
-  padding: 40px 24px;
-  margin-top: 48px;
-  border-radius: 20px;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--gray-200);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 32px;
-  text-align: center;
-}
-
-.stat-number {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: var(--primary-orange);
-  display: block;
-  line-height: 1.2;
-}
-
-.stat-label {
-  color: var(--gray-600);
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-top: 8px;
-  font-weight: 600;
-}
-
 /* Empty State */
 .empty-gallery {
   text-align: center;
@@ -336,6 +302,12 @@
   font-weight: 700;
   color: var(--gray-800);
   margin-bottom: 12px;
+}
+
+.empty-text {
+  color: var(--gray-600);
+  margin-bottom: 24px;
+  line-height: 1.6;
 }
 
 /* Lightbox Modal */
@@ -464,11 +436,6 @@
     font-size: 0.75rem;
   }
   
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
-  }
-  
   .gallery-card-footer {
     padding: 12px 16px;
   }
@@ -506,15 +473,6 @@
   .filter-btn {
     padding: 6px 14px;
     font-size: 0.7rem;
-  }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  
-  .stat-number {
-    font-size: 2rem;
   }
   
   .empty-gallery {
