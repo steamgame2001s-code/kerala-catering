@@ -19,65 +19,31 @@ const GalleryPage = () => {
       setLoading(true);
       setError(null);
       
-      console.log('🔍 Fetching gallery data...');
+      console.log('🔍 Fetching gallery data from API...');
       const response = await axios.get('/gallery', { timeout: 60000 });
       
       console.log('✅ Gallery API Response:', response.data);
       
       let items = [];
+      
+      // Dynamic data handling - whatever admin added
       if (response.data.success) {
         items = response.data.gallery || response.data.items || [];
       } else if (Array.isArray(response.data)) {
         items = response.data;
       } else {
-        // Fallback mock data for development
-        items = [
-          {
-            _id: '1',
-            title: "Onam Sadhya Spread",
-            description: "Traditional Onam feast served on banana leaf with 26+ items",
-            imageUrl: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&h=450&fit=crop",
-            category: "Festival",
-            featured: true,
-            createdAt: new Date().toISOString()
-          },
-          {
-            _id: '2',
-            title: "Christmas Feast",
-            description: "Kerala style Christmas celebration with traditional delicacies",
-            imageUrl: "https://images.unsplash.com/photo-1541783245831-57d6fb0926d3?w=600&h=450&fit=crop",
-            category: "Festival",
-            featured: true,
-            createdAt: new Date().toISOString()
-          },
-          {
-            _id: '3',
-            title: "Biriyani Platter",
-            description: "Authentic Kerala style biriyani with raita and salad",
-            imageUrl: "https://images.unsplash.com/photo-1563379091339-03b21ab4a5f8?w=600&h=450&fit=crop",
-            category: "Main Course",
-            featured: false,
-            createdAt: new Date().toISOString()
-          },
-          {
-            _id: '4',
-            title: "Traditional Setup",
-            description: "Elegant dining setup for grand occasions",
-            imageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=450&fit=crop",
-            category: "Setup",
-            featured: false,
-            createdAt: new Date().toISOString()
-          }
-        ];
+        items = [];
       }
       
-      setGalleryItems(items);
+      // Filter only active items for frontend display
+      const activeItems = items.filter(item => item.isActive !== false);
+      setGalleryItems(activeItems);
       
-      // Extract unique categories
-      const uniqueCategories = ['all', ...new Set(items.map(item => item.category).filter(Boolean))];
+      // Extract unique categories from dynamic data
+      const uniqueCategories = ['all', ...new Set(activeItems.map(item => item.category).filter(Boolean))];
       setCategories(uniqueCategories);
       
-      console.log(`✅ Loaded ${items.length} gallery items with ${uniqueCategories.length - 1} categories`);
+      console.log(`✅ Loaded ${activeItems.length} active gallery items with ${uniqueCategories.length - 1} categories`);
       
     } catch (err) {
       console.error('❌ Gallery fetch error:', err);
@@ -151,7 +117,7 @@ const GalleryPage = () => {
         </div>
       </div>
 
-      {/* Category Filter */}
+      {/* Category Filter - Dynamically from admin data */}
       <div className="category-filter">
         <div className="filter-container">
           {categories.map((category) => (
@@ -166,7 +132,7 @@ const GalleryPage = () => {
         </div>
       </div>
 
-      {/* Gallery Grid */}
+      {/* Gallery Grid - Dynamic from admin */}
       <div className="gallery-container">
         {filteredItems.length > 0 ? (
           <>
@@ -183,6 +149,7 @@ const GalleryPage = () => {
                       alt={item.title || 'Gallery image'}
                       className="gallery-image-custom"
                       onError={(e) => {
+                        // Silent fail - use fallback image
                         e.target.src = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&h=450&fit=crop';
                         e.target.onerror = null;
                       }}
@@ -212,7 +179,7 @@ const GalleryPage = () => {
               ))}
             </div>
 
-            {/* Stats Section */}
+            {/* Stats Section - Dynamic from admin data */}
             <div className="gallery-stats">
               <div className="stats-grid">
                 <div className="stat-item">

@@ -24,12 +24,17 @@ const FestivalsPage = () => {
       
       console.log('✅ API Response:', response.data);
       
+      // Dynamic data handling - whatever admin added
       if (response.data.success) {
-        setFestivals(response.data.festivals || []);
-        console.log(`✅ Loaded ${response.data.festivals?.length || 0} festivals`);
+        const festivalsData = response.data.festivals || [];
+        // Filter only active festivals for frontend display
+        const activeFestivals = festivalsData.filter(f => f.isActive !== false);
+        setFestivals(activeFestivals);
+        console.log(`✅ Loaded ${activeFestivals.length} active festivals`);
       } else if (Array.isArray(response.data)) {
-        setFestivals(response.data);
-        console.log(`✅ Loaded ${response.data.length} festivals (array format)`);
+        const activeFestivals = response.data.filter(f => f.isActive !== false);
+        setFestivals(activeFestivals);
+        console.log(`✅ Loaded ${activeFestivals.length} festivals (array format)`);
       } else {
         setError('Invalid response format from server');
       }
@@ -39,9 +44,9 @@ const FestivalsPage = () => {
       if (err.code === 'ECONNABORTED') {
         setError('Backend is waking up... Please wait 30 seconds and try again.');
       } else if (err.message === 'Network Error') {
-        setError('Cannot connect to server. Backend may be sleeping (Render free tier).');
+        setError('Cannot connect to server. Backend may be sleeping.');
       } else if (err.response?.status === 404) {
-        setError('Festivals endpoint not found. Check backend routes.');
+        setError('Festivals endpoint not found.');
       } else {
         setError(err.response?.data?.error || 'Failed to load festivals. Please try again.');
       }
@@ -103,18 +108,6 @@ const FestivalsPage = () => {
           <button className="refresh-btn" onClick={handleRetry}>
             🔄 Try Again
           </button>
-          
-          <details className="mt-6 text-left">
-            <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
-              Debug Information
-            </summary>
-            <pre className="mt-2 p-4 bg-gray-50 rounded text-xs overflow-auto">
-API URL: {axios.defaults.baseURL}
-Retry Count: {retryCount}
-Time: {new Date().toLocaleString()}
-Environment: {process.env.NODE_ENV}
-            </pre>
-          </details>
         </div>
       </div>
     );
@@ -132,7 +125,7 @@ Environment: {process.env.NODE_ENV}
         </div>
       </div>
 
-      {/* Stats Bar */}
+      {/* Stats Bar - Dynamically shows count from admin data */}
       <div className="container mx-auto px-4">
         <div className="stats-bar">
           <div className="stats-count">{festivals.length}+</div>
@@ -140,7 +133,7 @@ Environment: {process.env.NODE_ENV}
         </div>
       </div>
 
-      {/* Festivals Grid */}
+      {/* Festivals Grid - Dynamic from admin */}
       <div className="container mx-auto px-4">
         <div className="section-header-custom">
           <h2 className="section-title-custom">Our Festival Collection</h2>
@@ -163,6 +156,7 @@ Environment: {process.env.NODE_ENV}
                     alt={festival.name}
                     className="festival-card-image"
                     onError={(e) => {
+                      // Silent fail - just use fallback, don't show error to user
                       e.target.src = 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=300&fit=crop';
                       e.target.onerror = null;
                     }}
@@ -179,13 +173,12 @@ Environment: {process.env.NODE_ENV}
                 <div className="card-content-custom">
                   <h3 className="festival-card-title">{festival.name}</h3>
                   <p className="festival-card-description">
-                    {festival.description || 'Experience the authentic flavors of this traditional festival feast, prepared with care and served with love.'}
+                    {festival.description || 'Experience the authentic flavors of this traditional festival feast.'}
                   </p>
                   
                   <div className="card-footer-custom">
                     <div className="price-info">
-                      <span className="price-label">Starting at</span>
-                      <span className="price-value">₹{festival.price || '2499'}</span>
+                      <span className="price-label">Contact for Pricing</span>
                     </div>
                     <button className="explore-btn">
                       Explore <span>→</span>
