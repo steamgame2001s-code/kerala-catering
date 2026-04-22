@@ -71,34 +71,27 @@ body {
 
 /* ==================== SECTIONS ==================== */
 .section-white {
-  padding: 60px 0;
+  padding: 40px 0;
   background: var(--white);
-  /* FIX: Collapse margin between adjacent same-colored sections */
   margin: 0;
 }
 
 .section-gray {
-  padding: 60px 0;
+  padding: 40px 0;
   background: var(--light-gray);
-  /* FIX: Collapse margin between adjacent same-colored sections */
   margin: 0;
-}
-
-/* FIX: Remove any gap between adjacent sections caused by block-level spacing */
-.section-white + .section-white,
-.section-gray + .section-gray {
-  padding-top: 0;
 }
 
 /* ==================== SECTION HEADERS ==================== */
 .section-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
+  align-items: flex-start;
+  /* FIX: was 32px — reduced to close the gap between header and cards */
+  margin-bottom: 20px;
   width: 100%;
-  gap: 24px;
-  flex-wrap: wrap;
+  gap: 16px;
+  flex-wrap: nowrap;
 }
 
 .section-title-wrapper {
@@ -261,10 +254,8 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
-  /* FIX: Clip overflow so card shadows don't create phantom spacing below */
   overflow: hidden;
-  /* FIX: Add vertical padding here instead of on the scroll child, so shadows render correctly */
-  padding-bottom: 8px;
+  /* FIX: removed padding-bottom — was creating gap below cards */
 }
 
 .horizontal-scroll {
@@ -272,12 +263,11 @@ body {
   gap: 24px;
   overflow-x: auto;
   overflow-y: visible;
-  /* FIX: Reduced top padding; removed bottom padding (moved to container) */
-  padding: 8px 4px 16px;
+  /* FIX: minimal top padding; bottom just enough for hover shadow */
+  padding: 4px 2px 20px;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x mandatory;
-  /* FIX: Prevent the scrollbar and padding from adding unexpected height */
   align-items: stretch;
 }
 
@@ -745,14 +735,14 @@ body {
 
   .section-white,
   .section-gray {
-    padding: 40px 0;
+    padding: 28px 0;
   }
 
   .section-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 12px;
+    margin-bottom: 16px;
   }
 
   .view-all-link {
@@ -773,7 +763,7 @@ body {
 
   .horizontal-scroll {
     gap: 16px;
-    padding: 6px 4px 12px;
+    padding: 4px 2px 16px;
   }
 
   .festival-card {
@@ -819,11 +809,11 @@ body {
 @media (max-width: 576px) {
   .section-white,
   .section-gray {
-    padding: 32px 0;
+    padding: 24px 0;
   }
 
   .section-header {
-    margin-bottom: 20px;
+    margin-bottom: 14px;
   }
   
   .section-title {
